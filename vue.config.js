@@ -1,0 +1,7 @@
+module.exports = {
+  devServer: {
+    hot: false,
+    liveReload: false
+  },
+  transpileDependencies: ["vuetify"]
+};
