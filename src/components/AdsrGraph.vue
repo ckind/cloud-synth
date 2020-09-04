@@ -157,7 +157,9 @@ export default class AdsrGraph extends Vue {
 
   // Props
 
-  @Prop({ required: true })
+  // for some reason vue complains about this if its required
+  // even if you have v-model
+  @Prop({ required: false })
   public value!: EnvSettings;
 
   @Prop({ required: false, default: 1000 })

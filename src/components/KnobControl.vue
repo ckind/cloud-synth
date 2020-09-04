@@ -29,7 +29,7 @@ export default class KnobControl extends Vue {
   private dragRange = 70;
   private prevY = -1;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   public value!: number;
 
   @Prop({ required: true })

@@ -38,13 +38,7 @@
           </div>
           <div class="col-4 waveform-select-container">
             <select class="waveform-select" v-model="synth.oscillators[i].type">
-              <option
-                v-for="(waveform, j) in waveforms"
-                :key="j"
-                :value="waveform"
-              >
-                {{ waveform }}
-              </option>
+              <option v-for="(waveform, j) in waveforms" :key="j" :value="waveform">{{ waveform }}</option>
             </select>
           </div>
         </div>
@@ -63,9 +57,7 @@
           </div>
           <div class="col-4 waveform-select-container">
             <select class="waveform-select" v-model="noiseTypeIndex">
-              <option v-for="(noiseType, j) in noiseTypes" :key="j" :value="j">
-                {{ noiseType }}
-              </option>
+              <option v-for="(noiseType, j) in noiseTypes" :key="j" :value="j">{{ noiseType }}</option>
             </select>
           </div>
         </div>
@@ -487,22 +479,26 @@ export default class Home extends Vue {
 .keyboard-container {
   justify-content: center;
 }
+
 .home {
   background-image: url("../assets/metal-1.png");
   background-repeat: repeat;
   color: white;
   font-size: 10pt;
 }
+
 .waveform-select {
   background-color: white;
   border: 1px solid gray;
   width: 75px;
 }
+
 .waveform-select-container {
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .waveform-select-label {
   padding-right: 20px;
 }

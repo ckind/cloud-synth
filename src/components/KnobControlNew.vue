@@ -34,7 +34,9 @@ export default class KnobControlNew extends Vue {
   private prevY = -1;
   private valueCurve: CurvedRange;
 
-  @Prop({ required: true })
+  // for some reason vue complains about this if its required
+  // even if you have v-model
+  @Prop({ required: false })
   public value!: number;
 
   @Prop({ required: true })
