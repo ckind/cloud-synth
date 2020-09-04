@@ -15,7 +15,6 @@ export class VANoiseSynth extends VABaseSynth implements MidiReceiver {
   }
 
   public receiveMidi(message: MidiMessage) {
-    console.log(message);
     switch (message.midiFunction) {
       case "noteon":
         this.triggerAttack();

@@ -140,7 +140,6 @@ export default class PianoKeyboard extends Vue implements MidiSender {
   }
 
   private userKeyPressed(e: KeyboardEvent) {
-    console.log(e.code + " down");
     let n = this.noteKeyCodes.findIndex(c => {
       return c === e.code;
     });
@@ -160,7 +159,6 @@ export default class PianoKeyboard extends Vue implements MidiSender {
   }
 
   private userKeyReleased(e: KeyboardEvent) {
-    console.log(e.code + " up");
     let n = this.noteKeyCodes.findIndex(c => {
       return c === e.code;
     });

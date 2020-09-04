@@ -24,13 +24,13 @@ export class BasicVoiceAssigner implements VoiceAssigner {
         }
       }
     }
-    if (assignedVoice > -1) {
-      console.log(`voice ${assignedVoice} already assigned to ${midiNote}`);
-    } else if (result > -1) {
-      console.log(`voice ${result} assigned to ${midiNote}`);
-    } else {
-      console.log(`no voices available for ${midiNote}`);
-    }
+    // if (assignedVoice > -1) {
+    //   console.log(`voice ${assignedVoice} already assigned to ${midiNote}`);
+    // } else if (result > -1) {
+    //   console.log(`voice ${result} assigned to ${midiNote}`);
+    // } else {
+    //   console.log(`no voices available for ${midiNote}`);
+    // }
     return result;
   }
 
@@ -42,11 +42,11 @@ export class BasicVoiceAssigner implements VoiceAssigner {
         break;
       }
     }
-    console.log(
-      result > -1
-        ? `voice ${result} freed from ${midiNote}`
-        : `no active voice assigned to ${midiNote}`
-    );
+    // console.log(
+    //   result > -1
+    //     ? `voice ${result} freed from ${midiNote}`
+    //     : `no active voice assigned to ${midiNote}`
+    // );
     return result;
   }
 }

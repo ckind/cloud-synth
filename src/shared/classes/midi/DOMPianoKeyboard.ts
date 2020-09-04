@@ -51,7 +51,6 @@ class DOMPianoKeyboard implements MidiSender {
   }
 
   userKeyPressed(e: KeyboardEvent): number {
-    console.log(e.code + " down");
     let n = this.noteKeyCodes.findIndex(c => {
       return c === e.code;
     });
@@ -69,7 +68,6 @@ class DOMPianoKeyboard implements MidiSender {
   }
 
   userKeyReleased(e: KeyboardEvent): number {
-    console.log(e.code + " up");
     let n = this.noteKeyCodes.findIndex(c => {
       return c === e.code;
     });

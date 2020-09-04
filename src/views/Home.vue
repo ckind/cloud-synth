@@ -249,35 +249,8 @@ export default class Home extends Vue {
     pianoKeyboard: PianoKeyboard;
   };
 
-  private test() {
-    const min = 20;
-    const max = 20000;
-    const step = 100;
-    const range = new QuadBezierCurvedRange(min, max);
-    for (let i = min; i <= max; i += step) {
-      console.log(i);
-      console.log(
-        "linear value",
-        range.getLinearValue(range.getCurvedValue(i))
-      );
-      console.log("curved value", range.getCurvedValue(i));
-    }
-    console.log(max);
-    console.log(
-      "linear value",
-      range.getLinearValue(range.getCurvedValue(max))
-    );
-    console.log("curved value", range.getCurvedValue(max));
-  }
-
   public constructor() {
     super();
-
-    try {
-      this.test();
-    } catch (err) {
-      console.log(`Error! ${err}`);
-    }
 
     this.verb = new Tone.Reverb();
     this.verb.wet.setValueAtTime(0.5, Tone.immediate());
