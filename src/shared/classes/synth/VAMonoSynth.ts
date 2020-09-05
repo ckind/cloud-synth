@@ -222,10 +222,10 @@ export class VAMonoSynth implements AnalogMonoSynthModule {
 
   receiveMidi(message: MidiMessage) {
     switch (message.midiFunction) {
-      case MidiFunction.note_on:
+      case MidiFunction.noteon:
         this.triggerAttack(message.noteNumber);
         break;
-      case MidiFunction.note_off:
+      case MidiFunction.noteoff:
         this.triggerRelease(message.noteNumber);
         break;
     }

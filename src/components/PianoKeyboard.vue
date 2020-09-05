@@ -195,13 +195,13 @@ export default class PianoKeyboard extends Vue
 
   receiveMidi(message: MidiMessage) {
     switch (message.midiFunction) {
-      case MidiFunction.note_on:
+      case MidiFunction.noteon:
         Draw.schedule(() => {
           this.displayKeyDown(message.noteNumber);
         }, immediate());
         this.sendMidi(message);
         break;
-      case MidiFunction.note_off:
+      case MidiFunction.noteoff:
         Draw.schedule(() => {
           this.displayKeyUp(message.noteNumber);
         }, immediate());
@@ -220,7 +220,7 @@ export default class PianoKeyboard extends Vue
         this.displayKeyDown(keyNum);
       }, immediate());
       this.sendMidi({
-        midiFunction: MidiFunction.note_on,
+        midiFunction: MidiFunction.noteon,
         noteNumber: keyNum,
         noteVelocity: 67
       });
@@ -236,7 +236,7 @@ export default class PianoKeyboard extends Vue
       this.displayKeyUp(keyNum);
     }, immediate());
     this.sendMidi({
-      midiFunction: MidiFunction.note_off,
+      midiFunction: MidiFunction.noteoff,
       noteNumber: keyNum,
       noteVelocity: 67
     });
@@ -254,7 +254,7 @@ export default class PianoKeyboard extends Vue
         this.displayKeyDown(n);
       }, immediate());
       this.sendMidi({
-        midiFunction: MidiFunction.note_on,
+        midiFunction: MidiFunction.noteon,
         noteNumber: n,
         noteVelocity: 67
       });
@@ -273,7 +273,7 @@ export default class PianoKeyboard extends Vue
         this.displayKeyUp(n);
       }, immediate());
       this.sendMidi({
-        midiFunction: MidiFunction.note_off,
+        midiFunction: MidiFunction.noteoff,
         noteNumber: n,
         noteVelocity: 67
       });

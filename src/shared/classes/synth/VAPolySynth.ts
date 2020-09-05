@@ -257,7 +257,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
   receiveMidi(message: MidiMessage) {
     let voiceNum: number;
     switch (message.midiFunction) {
-      case MidiFunction.note_on:
+      case MidiFunction.noteon:
         voiceNum = this.voiceAssigner.assignNoteOn(message.noteNumber);
         if (voiceNum > -1) {
           this.voices[voiceNum].currentMidiNote = message.noteNumber;
@@ -267,7 +267,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
           // nothing to do - no voices available
         }
         break;
-      case MidiFunction.note_off:
+      case MidiFunction.noteoff:
         voiceNum = this.voiceAssigner.assignNoteOff(message.noteNumber);
         if (voiceNum > -1) {
           this.voices[voiceNum].currentMidiNote = -1;

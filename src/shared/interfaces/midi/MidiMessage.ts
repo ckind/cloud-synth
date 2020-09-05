@@ -1,6 +1,6 @@
 export enum MidiFunction {
-  note_on = "noteon",
-  note_off = "noteoff",
+  noteon = "noteon",
+  noteoff = "noteoff",
 }
 
 export interface MidiMessage {
