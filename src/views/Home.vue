@@ -278,7 +278,7 @@ export default class Home extends Vue {
     const numOscillators = 3;
 
     this.synth = new VAPolySynth(6, numOscillators, "square");
-    this.volumeLevel = -24;
+    this.volumeLevel = -30;
     this.volume = new Tone.Volume(this.volumeLevel);
     this.synth.output.chain(this.volume, Tone.Master);
 
@@ -469,7 +469,7 @@ export default class Home extends Vue {
 }
 
 .home {
-  background-image: url("../assets/metal-1.png");
+  background-image: url("../assets/metal-2.png");
   background-repeat: repeat;
   color: white;
   font-size: 10pt;

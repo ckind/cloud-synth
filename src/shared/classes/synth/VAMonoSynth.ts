@@ -12,7 +12,7 @@ import {
   Time,
   Frequency
 } from "tone";
-import { MidiMessage } from "../../interfaces/midi/MidiMessage";
+import { MidiMessage, MidiFunction } from "../../interfaces/midi/MidiMessage";
 import { DryWetMixer } from "../utility/DryWetMixer";
 import { AnalogMonoSynthModule } from "../../interfaces/synth/AnalogMonoSynthModule";
 import { FilterEnvelope } from "../utility/FilterEnvelope";
@@ -222,10 +222,10 @@ export class VAMonoSynth implements AnalogMonoSynthModule {
 
   receiveMidi(message: MidiMessage) {
     switch (message.midiFunction) {
-      case "noteon":
+      case MidiFunction.note_on:
         this.triggerAttack(message.noteNumber);
         break;
-      case "noteoff":
+      case MidiFunction.note_off:
         this.triggerRelease(message.noteNumber);
         break;
     }

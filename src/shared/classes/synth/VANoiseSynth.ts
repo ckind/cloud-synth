@@ -1,6 +1,6 @@
 import { NoiseType } from "../../interfaces/synth/NoiseModule";
 import { MidiReceiver } from "../../interfaces/midi/MidiReceiver";
-import { MidiMessage } from "../../interfaces/midi/MidiMessage";
+import { MidiMessage, MidiFunction } from "../../interfaces/midi/MidiMessage";
 import { Noise, immediate, Time } from "tone";
 import { VABaseSynth } from "./VABaseSynth";
 
@@ -16,10 +16,10 @@ export class VANoiseSynth extends VABaseSynth implements MidiReceiver {
 
   public receiveMidi(message: MidiMessage) {
     switch (message.midiFunction) {
-      case "noteon":
+      case MidiFunction.note_on:
         this.triggerAttack();
         break;
-      case "noteoff":
+      case MidiFunction.note_off:
         this.triggerRelease();
         break;
     }

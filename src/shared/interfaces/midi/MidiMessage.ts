@@ -1,7 +1,12 @@
+export enum MidiFunction {
+  note_on = "noteon",
+  note_off = "noteoff",
+}
+
 export interface MidiMessage {
   // todo: better implementation
 
-  midiFunction: string;
+  midiFunction: MidiFunction;
 
   noteNumber: number;
 

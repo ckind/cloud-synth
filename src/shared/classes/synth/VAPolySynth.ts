@@ -1,5 +1,5 @@
 import { Gain, ScaleExp, ToneOscillatorType } from "tone";
-import { MidiMessage } from "../../interfaces/midi/MidiMessage";
+import { MidiMessage, MidiFunction } from "../../interfaces/midi/MidiMessage";
 import { VASynthVoice } from "../polyphonic/VASynthVoice";
 import { BasicVoiceAssigner } from "../polyphonic/BasicVoiceAssigner";
 import { PolyOscillator } from "./PolyOscillator";
@@ -257,7 +257,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
   receiveMidi(message: MidiMessage) {
     let voiceNum: number;
     switch (message.midiFunction) {
-      case "noteon":
+      case MidiFunction.note_on:
         voiceNum = this.voiceAssigner.assignNoteOn(message.noteNumber);
         if (voiceNum > -1) {
           this.voices[voiceNum].currentMidiNote = message.noteNumber;
@@ -267,7 +267,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
           // nothing to do - no voices available
         }
         break;
-      case "noteoff":
+      case MidiFunction.note_off:
         voiceNum = this.voiceAssigner.assignNoteOff(message.noteNumber);
         if (voiceNum > -1) {
           this.voices[voiceNum].currentMidiNote = -1;
