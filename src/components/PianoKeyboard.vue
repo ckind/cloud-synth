@@ -125,7 +125,7 @@ export default class PianoKeyboard extends Vue implements MidiSender {
   }
 
   disconnect(receiver: MidiReceiver) {
-    const i = this.connections.indexOf(receiver)
+    const i = this.connections.indexOf(receiver);
     if (i > -1) {
       this.connections.splice(i, 1);
     } else {

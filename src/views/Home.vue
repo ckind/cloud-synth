@@ -1,9 +1,9 @@
 <template>
   <div class="home">
-    <div class="row">
-      <div class="col-4">
-        <div class="row" v-for="(o, i) in synth.oscillators" :key="i">
-          <div class="col-4">
+    <v-row>
+      <v-col cols="4">
+        <v-row v-for="(o, i) in synth.oscillators" :key="i">
+          <v-col cols="4">
             <knob-control
               v-model="oscillatorTunings[i][0]"
               :minValue="-1200"
@@ -19,8 +19,8 @@
               "
               size="70"
             ></knob-control>
-          </div>
-          <div class="col-4">
+          </v-col>
+          <v-col cols="4">
             <knob-control
               v-model="oscillatorTunings[i][1]"
               :minValue="-50"
@@ -35,16 +35,22 @@
               "
               size="70"
             ></knob-control>
-          </div>
-          <div class="col-4 waveform-select-container">
+          </v-col>
+          <v-col cols="4" class="waveform-select-container">
             <select class="waveform-select" v-model="synth.oscillators[i].type">
-              <option v-for="(waveform, j) in waveforms" :key="j" :value="waveform">{{ waveform }}</option>
+              <option
+                v-for="(waveform, j) in waveforms"
+                :key="j"
+                :value="waveform"
+              >
+                {{ waveform }}
+              </option>
             </select>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-4" />
-          <div class="col-4">
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="4" />
+          <v-col cols="4">
             <knob-control
               v-model="oscillatorTunings[0][0]"
               :minValue="-1200"
@@ -54,21 +60,23 @@
               label="Noise Level"
               size="70"
             ></knob-control>
-          </div>
-          <div class="col-4 waveform-select-container">
+          </v-col>
+          <v-col cols="4" class="waveform-select-container">
             <select class="waveform-select" v-model="noiseTypeIndex">
-              <option v-for="(noiseType, j) in noiseTypes" :key="j" :value="j">{{ noiseType }}</option>
+              <option v-for="(noiseType, j) in noiseTypes" :key="j" :value="j">
+                {{ noiseType }}
+              </option>
             </select>
-          </div>
-        </div>
-      </div>
-      <div class="col-4">
+          </v-col>
+        </v-row>
+      </v-col>
+      <v-col cols="4">
         <adsr-graph class="adsr" v-model="filterEnv" :width="300" />
-        <div class="row">
-          <div class="col-1" />
-          <div class="col-10">
-            <div class="row">
-              <div class="col-3">
+        <v-row>
+          <v-col cols="1" />
+          <v-col cols="10">
+            <v-row>
+              <v-col cols="3">
                 <knob-control-new
                   v-model="synth.filterFrequency"
                   :minValue="20"
@@ -78,8 +86,8 @@
                   scale="quadratic bezier"
                   size="70"
                 ></knob-control-new>
-              </div>
-              <div class="col-3">
+              </v-col>
+              <v-col cols="3">
                 <knob-control
                   v-model="synth.filterQ"
                   :minValue="0"
@@ -88,8 +96,8 @@
                   label="Q"
                   size="70"
                 ></knob-control>
-              </div>
-              <div class="col-3">
+              </v-col>
+              <v-col cols="3">
                 <knob-control
                   v-model="synth.filterEnvelopeAmount"
                   :minValue="0"
@@ -98,8 +106,8 @@
                   label="Env Amt"
                   size="70"
                 ></knob-control>
-              </div>
-              <div class="col-3">
+              </v-col>
+              <v-col cols="3">
                 <knob-control
                   v-model="filterTypeIndex"
                   :minValue="0"
@@ -108,13 +116,13 @@
                   label="Type"
                   size="70"
                 ></knob-control>
-              </div>
-            </div>
-          </div>
-          <div class="col-1" />
-        </div>
-        <div class="row">
-          <div class="col-6">
+              </v-col>
+            </v-row>
+          </v-col>
+          <v-col cols="1" />
+        </v-row>
+        <v-row>
+          <v-col cols="6">
             <knob-control
               v-model="filterLFOAmt"
               :minValue="0"
@@ -122,8 +130,8 @@
               id="filterModKnob"
               label="Filter Mod"
             ></knob-control>
-          </div>
-          <div class="col-6">
+          </v-col>
+          <v-col cols="6">
             <knob-control
               v-model="filterLFORate"
               :minValue="0"
@@ -131,14 +139,14 @@
               id="filterModRateKnob"
               label="Mod Rate"
             ></knob-control>
-          </div>
-        </div>
-      </div>
-      <div class="col-4">
+          </v-col>
+        </v-row>
+      </v-col>
+      <v-col cols="4">
         <adsr-graph class="adsr" v-model="ampEnv" :width="300" />
         <!--
-        <div class="row">
-          <div class="col-6">
+        <v-row>
+          <v-col cols="6">
             <knob-control
               v-model="ampLFOAmt"
               :minValue="0"
@@ -146,8 +154,8 @@
               id="ampModKnob"
               label="Amp Mod"
             ></knob-control>
-          </div>
-          <div class="col-6">
+          </v-col>
+          <v-col cols="6">
             <knob-control
               v-model="ampLFORate"
               :minValue="0"
@@ -155,11 +163,11 @@
               id="ampModRateKnob"
               label="Mod Rate"
             ></knob-control>
-          </div>
-        </div>
+          </v-col>
+        </v-row>
         -->
-        <div class="row">
-          <div class="col-6">
+        <v-row>
+          <v-col cols="6">
             <knob-control
               v-model="pitchLFOAmt"
               :minValue="0"
@@ -167,8 +175,8 @@
               id="pitchModKnob"
               label="Pitch Mod"
             ></knob-control>
-          </div>
-          <div class="col-6">
+          </v-col>
+          <v-col cols="6">
             <knob-control
               v-model="pitchLFORate"
               :minValue="0"
@@ -176,10 +184,10 @@
               id="pitchModRateKnob"
               label="Mod Rate"
             ></knob-control>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-12">
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
             <knob-control
               v-model="volumeLevel"
               :minValue="-60"
@@ -187,10 +195,10 @@
               id="volumeLevelKnob"
               label="Volume"
             ></knob-control>
-          </div>
-        </div>
-      </div>
-    </div>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
     <div class="row keyboard-container">
       <piano-keyboard ref="pianoKeyboard"></piano-keyboard>
     </div>

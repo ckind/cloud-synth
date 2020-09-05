@@ -132,9 +132,6 @@ export default class KnobControlNew extends Vue {
   onValueChanged(value: number) {
     this.curvedValue = value;
     this.linearValue = this.valueCurve.getLinearValue(this.curvedValue);
-    console.log(
-      `linearValue ${this.linearValue} curvedValue ${this.curvedValue}`
-    );
   }
 }
 </script>
