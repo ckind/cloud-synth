@@ -268,6 +268,13 @@ export default class Home extends Vue {
       this.verb.generate();
     });
 
+    // hack for making sure audio context starts right away
+    document.documentElement.addEventListener("mousedown", function() {
+      if (Tone.context.state !== "running") {
+        Tone.context.resume();
+      }
+    });
+
     const numOscillators = 3;
 
     this.synth = new VAPolySynth(6, numOscillators, "square");
