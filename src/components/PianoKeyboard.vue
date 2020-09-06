@@ -191,6 +191,8 @@ export default class PianoKeyboard extends Vue
   private mouseIsDown = false;
   private playerOctaveOffset = 48;
   private playerTransposeOffset = 0;
+  // private chordTrigger = [0, 10, 14, 15];
+  private chordTrigger = [0];
   private noteKeyCodes = [
     "KeyA",
     "KeyW",
@@ -263,34 +265,40 @@ export default class PianoKeyboard extends Vue
   private keySlideOn(e: Event, keyNum: number) {
     e.stopPropagation();
     if (this.mouseIsDown) {
-      const n = keyNum - this.playerOctaveOffset - this.playerTransposeOffset;
-      if (!this.keysPressed[n]) {
-        this.keysPressed[n] = true;
-        Draw.schedule(() => {
-          this.displayKeyDown(keyNum);
-        }, immediate());
-        this.sendMidi({
-          midiFunction: MidiFunction.noteon,
-          noteNumber: keyNum,
-          noteVelocity: 67
-        });
-      }
+      this.chordTrigger.forEach(offset => {
+        const note = keyNum + offset;
+        const n = note - this.playerOctaveOffset - this.playerTransposeOffset;
+        if (!this.keysPressed[n]) {
+          this.keysPressed[n] = true;
+          Draw.schedule(() => {
+            this.displayKeyDown(note);
+          }, immediate());
+          this.sendMidi({
+            midiFunction: MidiFunction.noteon,
+            noteNumber: note,
+            noteVelocity: 67
+          });
+        }
+      });
     }
   }
 
   private keySlideOff(e: Event, keyNum: number) {
     e.stopPropagation();
     if (this.mouseIsDown) {
-      const n = keyNum - this.playerOctaveOffset - this.playerTransposeOffset;
-      this.keysPressed[n] = false;
-      // todo: doesn't release if you change octave or transpose while holding a key
-      Draw.schedule(() => {
-        this.displayKeyUp(keyNum);
-      }, immediate());
-      this.sendMidi({
-        midiFunction: MidiFunction.noteoff,
-        noteNumber: keyNum,
-        noteVelocity: 67
+      this.chordTrigger.forEach(offset => {
+        const note = keyNum + offset;
+        const n = note - this.playerOctaveOffset - this.playerTransposeOffset;
+        this.keysPressed[n] = false;
+        // todo: doesn't release if you change octave or transpose while holding a key
+        Draw.schedule(() => {
+          this.displayKeyUp(note);
+        }, immediate());
+        this.sendMidi({
+          midiFunction: MidiFunction.noteoff,
+          noteNumber: note,
+          noteVelocity: 67
+        });
       });
     }
   }
@@ -298,70 +306,84 @@ export default class PianoKeyboard extends Vue
   private keyMouseDown(e: Event, keyNum: number) {
     e.stopPropagation();
     this.mouseIsDown = true;
-    const n = keyNum - this.playerOctaveOffset - this.playerTransposeOffset;
-    if (!this.keysPressed[n]) {
-      this.keysPressed[n] = true;
-      Draw.schedule(() => {
-        this.displayKeyDown(keyNum);
-      }, immediate());
-      this.sendMidi({
-        midiFunction: MidiFunction.noteon,
-        noteNumber: keyNum,
-        noteVelocity: 67
-      });
-    }
+    this.chordTrigger.forEach(offset => {
+      const note = keyNum + offset;
+      const n = note - this.playerOctaveOffset - this.playerTransposeOffset;
+      if (!this.keysPressed[n]) {
+        this.keysPressed[n] = true;
+        Draw.schedule(() => {
+          this.displayKeyDown(note);
+        }, immediate());
+        this.sendMidi({
+          midiFunction: MidiFunction.noteon,
+          noteNumber: note,
+          noteVelocity: 67
+        });
+      }
+    });
   }
 
   private keyMouseUp(e: Event, keyNum: number) {
     e.stopPropagation();
     this.mouseIsDown = false;
-    const n = keyNum - this.playerOctaveOffset - this.playerTransposeOffset;
-    this.keysPressed[n] = false;
-    // todo: doesn't release if you change octave or transpose while holding a key
-    Draw.schedule(() => {
-      this.displayKeyUp(keyNum);
-    }, immediate());
-    this.sendMidi({
-      midiFunction: MidiFunction.noteoff,
-      noteNumber: keyNum,
-      noteVelocity: 67
+    this.chordTrigger.forEach(offset => {
+      const note = keyNum + offset;
+      const n = note - this.playerOctaveOffset - this.playerTransposeOffset;
+      this.keysPressed[n] = false;
+      // todo: doesn't release if you change octave or transpose while holding a key
+      Draw.schedule(() => {
+        this.displayKeyUp(note);
+      }, immediate());
+      this.sendMidi({
+        midiFunction: MidiFunction.noteoff,
+        noteNumber: note,
+        noteVelocity: 67
+      });
     });
   }
 
   private userKeyPressed(e: KeyboardEvent) {
-    let n = this.noteKeyCodes.findIndex(c => {
+    const n = this.noteKeyCodes.findIndex(c => {
       return c === e.code;
     });
     // this.keysPressed needed to stop keydown from firing multiple times
-    if (n > -1 && !this.keysPressed[n]) {
-      this.keysPressed[n] = true;
-      n += this.playerOctaveOffset + this.playerTransposeOffset;
-      Draw.schedule(() => {
-        this.displayKeyDown(n);
-      }, immediate());
-      this.sendMidi({
-        midiFunction: MidiFunction.noteon,
-        noteNumber: n,
-        noteVelocity: 67
+    if (n > -1) {
+      this.chordTrigger.forEach(offset => {
+        if (!this.keysPressed[n + offset]) {
+          this.keysPressed[n + offset] = true;
+          const note =
+            n + offset + this.playerOctaveOffset + this.playerTransposeOffset;
+          Draw.schedule(() => {
+            this.displayKeyDown(note);
+          }, immediate());
+          this.sendMidi({
+            midiFunction: MidiFunction.noteon,
+            noteNumber: note,
+            noteVelocity: 67
+          });
+        }
       });
     }
   }
 
   private userKeyReleased(e: KeyboardEvent) {
-    let n = this.noteKeyCodes.findIndex(c => {
+    const n = this.noteKeyCodes.findIndex(c => {
       return c === e.code;
     });
     if (n > -1) {
-      this.keysPressed[n] = false;
-      // todo: doesn't release if you change octave or transpose while holding a key
-      n += this.playerOctaveOffset + this.playerTransposeOffset;
-      Draw.schedule(() => {
-        this.displayKeyUp(n);
-      }, immediate());
-      this.sendMidi({
-        midiFunction: MidiFunction.noteoff,
-        noteNumber: n,
-        noteVelocity: 67
+      this.chordTrigger.forEach(offset => {
+        this.keysPressed[n + offset] = false;
+        // todo: doesn't release if you change octave or transpose while holding a key
+        const note =
+          n + offset + this.playerOctaveOffset + this.playerTransposeOffset;
+        Draw.schedule(() => {
+          this.displayKeyUp(note);
+        }, immediate());
+        this.sendMidi({
+          midiFunction: MidiFunction.noteoff,
+          noteNumber: note,
+          noteVelocity: 67
+        });
       });
     } else if (e.code === "KeyZ") {
       // go down an octave
