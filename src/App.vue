@@ -73,7 +73,7 @@ export default Vue.extend({
   },
 
   data: () => ({
-    showQuickStart: false,
+    showQuickStart: true,
     showPresets: false,
     showDisplaySettings: false,
     showMidiSettings: false
