@@ -10,4 +10,9 @@ export class LinearCurvedRange extends BaseCurvedRange {
     this.validateInput(value);
     return value;
   }
+
+  getLinearValue(value: number): number {
+    this.validateInput(value);
+    return value;
+  }
 }

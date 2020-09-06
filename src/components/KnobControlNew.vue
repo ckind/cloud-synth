@@ -29,6 +29,7 @@ import {
 export default class KnobControlNew extends Vue {
   private curvedValue: number;
   private linearValue: number;
+  private unsteppedValue: number;
   private rotationMax = (3 * Math.PI) / 4;
   private dragRange = 70;
   private prevY = -1;
@@ -51,7 +52,7 @@ export default class KnobControlNew extends Vue {
   @Prop({ required: false, default: "linear" })
   public scale!: CurvedRangeType;
 
-  @Prop({ required: false, default: 1 })
+  @Prop({ required: false, default: 0 })
   public step!: number;
 
   @Prop({ required: false, default: "" })
@@ -64,7 +65,7 @@ export default class KnobControlNew extends Vue {
   public size!: number;
 
   @Prop({ required: false })
-  public default?: string;
+  public default?: number;
 
   public constructor() {
     super();
@@ -75,6 +76,7 @@ export default class KnobControlNew extends Vue {
     );
     this.linearValue = this.value;
     this.curvedValue = this.valueCurve.getCurvedValue(this.value);
+    this.unsteppedValue = this.curvedValue;
   }
 
   private onKnobMouseDown(e: MouseEvent) {
@@ -90,23 +92,41 @@ export default class KnobControlNew extends Vue {
   }
 
   private onKnobDblClick() {
-    const val =
+    const value =
       typeof this.default === "undefined" ? this.midValue : this.default;
-    this.$emit("input", val);
+    this.unsteppedValue = value;
+    this.$emit("input", value);
+  }
+
+  private roundToStep(x: number) {
+    if (this.step === 0) {
+      throw "step is zero or undefined";
+    }
+    const roundedValue = Math.round(x / this.step) * this.step;
+    return roundedValue < this.minValue
+      ? this.minValue
+      : roundedValue > this.maxValue
+      ? this.maxValue
+      : roundedValue;
   }
 
   private onKnobDrag(e: MouseEvent) {
     if (this.prevY >= 0) {
       const diffY = this.prevY - e.pageY;
-      let calcValue =
-        this.linearValue + (diffY / this.dragRange) * (this.valueRange / 2);
-      calcValue =
-        calcValue > this.maxValue
+      let knobValue =
+        this.unsteppedValue + (diffY / this.dragRange) * (this.valueRange / 2);
+      knobValue =
+        knobValue > this.maxValue
           ? this.maxValue
-          : calcValue < this.minValue
+          : knobValue < this.minValue
           ? this.minValue
-          : calcValue;
-      this.$emit("input", this.valueCurve.getCurvedValue(calcValue));
+          : knobValue;
+      this.unsteppedValue = knobValue;
+      const steppedValue =
+        this.step === 0
+          ? this.unsteppedValue
+          : this.roundToStep(this.unsteppedValue);
+      this.$emit("input", this.valueCurve.getCurvedValue(steppedValue));
     }
     this.prevY = e.pageY;
   }
@@ -123,10 +143,6 @@ export default class KnobControlNew extends Vue {
   get valueRange() {
     return this.maxValue - this.minValue;
   }
-
-  // private roundToStep(x: number) {
-  //   return -1; // implement
-  // }
 
   @Watch("value")
   onValueChanged(value: number) {

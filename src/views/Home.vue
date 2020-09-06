@@ -4,7 +4,7 @@
       <v-col cols="4">
         <v-row v-for="(o, i) in synth.oscillators" :key="i">
           <v-col cols="4">
-            <knob-control
+            <knob-control-new
               v-model="oscillatorTunings[i][0]"
               :minValue="-1200"
               :maxValue="1200"
@@ -18,10 +18,10 @@
                 }
               "
               size="70"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
           <v-col cols="4">
-            <knob-control
+            <knob-control-new
               v-model="oscillatorTunings[i][1]"
               :minValue="-50"
               :maxValue="50"
@@ -34,7 +34,7 @@
                 }
               "
               size="70"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
           <v-col cols="4" class="waveform-select-container">
             <select class="waveform-select" v-model="synth.oscillators[i].type">
@@ -51,15 +51,14 @@
         <v-row>
           <v-col cols="4" />
           <v-col cols="4">
-            <knob-control
-              v-model="oscillatorTunings[0][0]"
-              :minValue="-1200"
-              :maxValue="1200"
-              :step="100"
+            <knob-control-new
+              v-model="noiseVolume"
+              :minValue="-60"
+              :maxValue="0"
               id="noiseLevelKnob"
               label="Noise Level"
               size="70"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
           <v-col cols="4" class="waveform-select-container">
             <select class="waveform-select" v-model="noiseTypeIndex">
@@ -88,34 +87,34 @@
                 ></knob-control-new>
               </v-col>
               <v-col cols="3">
-                <knob-control
+                <knob-control-new
                   v-model="synth.filterQ"
                   :minValue="0"
                   :maxValue="10"
                   id="filterQKnob"
                   label="Q"
                   size="70"
-                ></knob-control>
+                ></knob-control-new>
               </v-col>
               <v-col cols="3">
-                <knob-control
+                <knob-control-new
                   v-model="synth.filterEnvelopeAmount"
                   :minValue="0"
                   :maxValue="1"
                   id="envAmtKnob"
                   label="Env Amt"
                   size="70"
-                ></knob-control>
+                ></knob-control-new>
               </v-col>
               <v-col cols="3">
-                <knob-control
+                <knob-control-new
                   v-model="filterTypeIndex"
                   :minValue="0"
                   :maxValue="2"
                   id="filterTypeKnob"
                   label="Type"
                   size="70"
-                ></knob-control>
+                ></knob-control-new>
               </v-col>
             </v-row>
           </v-col>
@@ -123,22 +122,22 @@
         </v-row>
         <v-row>
           <v-col cols="6">
-            <knob-control
+            <knob-control-new
               v-model="filterLFOAmt"
               :minValue="0"
               :maxValue="1"
               id="filterModKnob"
               label="Filter Mod"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
           <v-col cols="6">
-            <knob-control
+            <knob-control-new
               v-model="filterLFORate"
               :minValue="0"
               :maxValue="10"
               id="filterModRateKnob"
               label="Mod Rate"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
         </v-row>
       </v-col>
@@ -147,54 +146,54 @@
         <!--
         <v-row>
           <v-col cols="6">
-            <knob-control
+            <knob-control-new
               v-model="ampLFOAmt"
               :minValue="0"
               :maxValue="1"
               id="ampModKnob"
               label="Amp Mod"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
           <v-col cols="6">
-            <knob-control
+            <knob-control-new
               v-model="ampLFORate"
               :minValue="0"
               :maxValue="10"
               id="ampModRateKnob"
               label="Mod Rate"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
         </v-row>
         -->
         <v-row>
           <v-col cols="6">
-            <knob-control
+            <knob-control-new
               v-model="pitchLFOAmt"
               :minValue="0"
               :maxValue="0.1"
               id="pitchModKnob"
               label="Pitch Mod"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
           <v-col cols="6">
-            <knob-control
+            <knob-control-new
               v-model="pitchLFORate"
               :minValue="0"
               :maxValue="10"
               id="pitchModRateKnob"
               label="Mod Rate"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12">
-            <knob-control
+            <knob-control-new
               v-model="volumeLevel"
               :minValue="-60"
               :maxValue="0"
               id="volumeLevelKnob"
               label="Volume"
-            ></knob-control>
+            ></knob-control-new>
           </v-col>
         </v-row>
       </v-col>
@@ -210,7 +209,6 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import PianoKeyboard from "@/components/PianoKeyboard.vue";
 import ParamControl from "@/components/ParamControl.vue";
 import AdsrGraph from "@/components/AdsrGraph.vue";
-import KnobControl from "@/components/KnobControl.vue";
 import KnobControlNew from "@/components/KnobControlNew.vue";
 import { VAPolySynth } from "@/shared/classes/synth/VAPolySynth";
 import * as Tone from "tone";
@@ -223,7 +221,6 @@ import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
     PianoKeyboard,
     ParamControl,
     AdsrGraph,
-    KnobControl,
     KnobControlNew
   }
 })
@@ -246,6 +243,7 @@ export default class Home extends Vue {
   private waveforms: Array<Tone.ToneOscillatorType>;
   private noiseTypes: Array<string>;
   private noiseTypeIndex: number;
+  private noiseVolume = 0;
   private filterTypes: Array<BiquadFilterType>;
   private filterTypeIndex: number;
   private ampEnv: Record<string, number>;
