@@ -1,31 +1,40 @@
 import { BaseCurvedRange } from "./BaseCurvedRange";
 
 export class ExponentialCurvedRange extends BaseCurvedRange {
-  private readonly valueRange: number;
-  private readonly scaledRange: number;
-  private readonly scaledMin: number;
-  private readonly scaledMax: number;
+  private readonly range: number;
+  private readonly logMin: number;
+  private readonly logMax: number;
+  private readonly logRange: number;
 
   constructor(min: number, max: number) {
     super(min, max);
-    this.valueRange = max - min;
-    this.scaledMin = this.scaleInput(min);
-    this.scaledMax = this.scaleInput(max);
-    this.scaledRange = this.scaledMax - this.scaledMin;
+    this.range = max - min;
+    this.logMin = this.log2(min);
+    this.logMax = this.log2(max);
+    this.logRange = this.logMax - this.logMin;
   }
 
-  private scaleInput(x: number) {
+  private log2(x: number) {
     return Math.log(x) / Math.log(2);
   }
 
-  private scaleOutput(x: number) {
+  private exp2(x: number) {
     return Math.pow(2, x);
   }
 
-  getCurvedValue(value: number): number { // todo: debug
+  getCurvedValue(value: number): number {
     this.validateInput(value);
-    const t = (this.scaleInput(value) - this.scaledMin) / this.scaledRange;
-    const val = (t * this.valueRange + this.min);
+    const t = (value - this.min) / this.range;
+    const val = this.exp2(t * this.logRange + this.logMin);
+    console.log(`curved ${val}`);
+    return val;
+  }
+
+  getLinearValue(value: number): number {
+    this.validateInput(value);
+    const t = (this.log2(value) - this.logMin) / this.logRange;
+    const val = t * this.range + this.min;
+    console.log(`linear ${val}`);
     return val;
   }
 }

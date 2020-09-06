@@ -82,7 +82,7 @@
                   :maxValue="20000"
                   id="filterFrequencyKnob"
                   label="Cutoff"
-                  scale="quadratic bezier"
+                  scale="exponential"
                   size="70"
                 ></knob-control-new>
               </v-col>
@@ -110,7 +110,8 @@
                 <knob-control-new
                   v-model="filterTypeIndex"
                   :minValue="0"
-                  :maxValue="2"
+                  :maxValue="1"
+                  :step="1"
                   id="filterTypeKnob"
                   label="Type"
                   size="70"
@@ -280,9 +281,6 @@ export default class Home extends Vue {
     this.volume = new Tone.Volume(this.volumeLevel);
     this.synth.output.chain(this.volume, Tone.Master);
 
-    this.noise = new VANoiseSynth("white");
-    // this.noise.output.chain(this.volume, Tone.Master);
-
     this.LFORateCurve = new QuadBezierCurvedRange(0, 10);
     this.LFOAmtCurve = new QuadBezierCurvedRange(0, 1);
 
@@ -313,11 +311,12 @@ export default class Home extends Vue {
     this.noiseTypes[1] = "pink";
     this.noiseTypes[2] = "brown";
     this.noiseTypeIndex = 0;
+    this.noise = new VANoiseSynth("white");
+    // this.noise.output.chain(this.volume, Tone.Master);
 
     this.filterTypes = new Array<BiquadFilterType>(3);
     this.filterTypes[0] = "lowpass";
-    this.filterTypes[1] = "bandpass";
-    this.filterTypes[2] = "highpass";
+    this.filterTypes[1] = "highpass";
     this.filterTypeIndex = 0;
     this.synth.filterType = this.filterTypes[this.filterTypeIndex];
 
@@ -367,6 +366,11 @@ export default class Home extends Vue {
   }
 
   // Watches
+
+  @Watch("filterTypeIndex")
+  private onfilterTypeIndexChanged(value: number) {
+    this.synth.filterType = this.filterTypes[value];
+  }
 
   @Watch("volumeLevel")
   private onVolumeLevelChanged(value: number) {
