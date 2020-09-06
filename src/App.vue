@@ -32,13 +32,13 @@
         <span class="menu-option" @click="showQuickStart = true">Help</span>
       </h3>
 
+      <h3 class="menu-link">
+        <span class="menu-option" @click="showChangeLog = true">Change Log</span>
+      </h3>
+
       <v-spacer></v-spacer>
 
-      <v-btn
-        href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-        target="_blank"
-        text
-      >
+      <v-btn href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" text>
         <span class="mr-2">More Info</span>
         <v-icon>mdi-open-in-new</v-icon>
       </v-btn>
@@ -48,6 +48,7 @@
     <display-settings v-model="showDisplaySettings" />
     <presets v-model="showPresets" />
     <midi-settings v-model="showMidiSettings" />
+    <change-log v-model="showChangeLog" />
 
     <v-main>
       <router-view></router-view>
@@ -61,6 +62,7 @@ import QuickStart from "./components/modal content/QuickStart.vue";
 import DisplaySettings from "./components/modal content/DisplaySettings.vue";
 import Presets from "./components/modal content/Presets.vue";
 import MidiSettings from "./components/modal content/MidiSettings.vue";
+import ChangeLog from "./components/modal content/ChangeLog.vue";
 
 export default Vue.extend({
   name: "App",
@@ -69,14 +71,16 @@ export default Vue.extend({
     QuickStart,
     DisplaySettings,
     Presets,
-    MidiSettings
+    MidiSettings,
+    ChangeLog
   },
 
   data: () => ({
-    showQuickStart: true,
+    showQuickStart: false,
     showPresets: false,
     showDisplaySettings: false,
-    showMidiSettings: false
+    showMidiSettings: false,
+    showChangeLog: true
   })
 });
 </script>
