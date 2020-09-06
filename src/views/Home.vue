@@ -277,7 +277,7 @@ export default class Home extends Vue {
     const numOscillators = 3;
 
     this.synth = new VAPolySynth(6, numOscillators, "square");
-    this.volumeLevel = -30;
+    this.volumeLevel = -18;
     this.volume = new Tone.Volume(this.volumeLevel);
     this.synth.output.chain(this.volume, Tone.Master);
 

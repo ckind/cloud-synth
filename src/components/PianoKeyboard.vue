@@ -152,7 +152,7 @@
       </li>
       <li id="key67" class="key"
       @mousedown="e => { keyMouseDown(e, 67) }" @mouseup="e => { keyMouseUp(e, 67) }"
-      @mouseover="e => { keySlideOn(e, 27) }" @mouseout="e => { keySlideOff(e, 27) }">
+      @mouseover="e => { keySlideOn(e, 67) }" @mouseout="e => { keySlideOff(e, 67) }">
         <div id="key68" class="black-key"
         @mousedown="e => { keyMouseDown(e, 68) }" @mouseup="e => { keyMouseUp(e, 68) }"
         @mouseover="e => { keySlideOn(e, 68) }" @mouseout="e => { keySlideOff(e, 68) }"></div>
