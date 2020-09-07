@@ -192,6 +192,7 @@ export default class PianoKeyboard extends Vue
   private playerOctaveOffset = 48;
   private playerTransposeOffset = 0;
   // private chordTrigger = [0, 10, 14, 15];
+  // private chordTrigger = [0, 3, 7];
   private chordTrigger = [0];
   private noteKeyCodes = [
     "KeyA",

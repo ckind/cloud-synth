@@ -49,7 +49,16 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="4" />
+          <v-col cols="4">
+            <knob-control-new
+              v-model="synth.oscillatorSpread"
+              :minValue="0"
+              :maxValue="1"
+              id="oscillatorSpreadKnob"
+              label="Osc Spread"
+              size="70"
+            ></knob-control-new>
+          </v-col>
           <v-col cols="4">
             <knob-control-new
               v-model="noiseVolume"

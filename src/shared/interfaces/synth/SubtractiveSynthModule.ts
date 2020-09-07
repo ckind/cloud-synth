@@ -1,8 +1,8 @@
 import { ToneAudioNode } from "tone";
-import { RackModule } from "../RackModule";
+import { AudioModule } from "../AudioModule";
 import { MidiReceiver } from "../midi/MidiReceiver";
 
-export interface SubtractiveSynthModule extends RackModule, MidiReceiver {
+export interface SubtractiveSynthModule extends AudioModule, MidiReceiver {
 
   ampAttack: number;
 

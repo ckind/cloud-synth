@@ -1,5 +1,5 @@
 import { SubtractiveSynthModule } from "./SubtractiveSynthModule";
-import { SynthOscillator } from "./SynthOscillator";
+import { OscillatorChannel } from "./OscillatorChannel";
 import { ToneAudioNode } from "tone";
 
 export interface AnalogSynthModule extends SubtractiveSynthModule {
@@ -8,6 +8,8 @@ export interface AnalogSynthModule extends SubtractiveSynthModule {
 
   pitchModulationMix: number;
 
-  readonly oscillators: Array<SynthOscillator>;
+  readonly oscillators: Array<OscillatorChannel>;
+
+  oscillatorSpread: number; // todo: refactor into separate interface?
 
 }

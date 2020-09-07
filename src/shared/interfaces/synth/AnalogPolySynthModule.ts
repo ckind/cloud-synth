@@ -1,3 +1,5 @@
 import { AnalogSynthModule } from "./AnalogSynthModule";
 
-export type AnalogPolySynthModule = AnalogSynthModule;
+export interface AnalogPolySynthModule extends AnalogSynthModule {
+
+};

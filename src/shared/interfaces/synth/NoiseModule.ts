@@ -1,8 +1,8 @@
-import { RackModule } from '../RackModule';
+import { AudioModule } from '../AudioModule';
 
 export type NoiseType = "white" | "pink" | "brown";
 
-export interface NoiseModule extends RackModule {
+export interface NoiseModule extends AudioModule {
 
   type: NoiseType; 
 

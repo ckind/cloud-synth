@@ -1,18 +1,17 @@
-import { Gain, ScaleExp, ToneOscillatorType } from "tone";
+import { Gain, ToneOscillatorType } from "tone";
 import { MidiMessage, MidiFunction } from "../../interfaces/midi/MidiMessage";
 import { VASynthVoice } from "../polyphonic/VASynthVoice";
 import { BasicVoiceAssigner } from "../polyphonic/BasicVoiceAssigner";
-import { PolyOscillator } from "./PolyOscillator";
+import { PolyOscillator } from "./VAPolyOscillatorChannel";
 import { AnalogSynthVoice } from "../../interfaces/polyphonic/AnalogSynthVoice";
 import { VoiceAssigner } from "../../interfaces/polyphonic/VoiceAssigner";
-import { SynthOscillator } from "../../interfaces/synth/SynthOscillator";
-import { AnalogMonoSynthModule } from "../../interfaces/synth/AnalogMonoSynthModule";
+import { OscillatorChannel } from "../../interfaces/synth/OscillatorChannel";
 import { AnalogPolySynthModule } from "../../interfaces/synth/AnalogPolySynthModule";
 import { VAMonoSynth } from './VAMonoSynth';
 
 const defaults = {
   ampAttack: 0.1,
-  ampDecay: 0.1,
+  ampDecay: 0.3,
   ampSustain: 0.5,
   ampRelease: 0.3,
   filterFrequency: 20,
@@ -26,7 +25,7 @@ const defaults = {
 
 export class VAPolySynth implements AnalogPolySynthModule {
   readonly output: Gain;
-  readonly oscillators: Array<SynthOscillator>;
+  readonly oscillators: Array<OscillatorChannel>;
   readonly ampModulation: Gain;
   readonly filterFrequencyModulation: Gain;
   readonly filterQModulation: Gain;
@@ -51,7 +50,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
   ) {
     this.output = new Gain(1);
     this.voices = new Array<AnalogSynthVoice>(numVoices);
-    this.oscillators = new Array<SynthOscillator>(numOscillators);
+    this.oscillators = new Array<OscillatorChannel>(numOscillators);
     this.pitchModulation = new Gain(1); // will be scaled by synthVoice
     this.ampModulation = new Gain(1); // will be scaled by synthVoice
     this.filterFrequencyModulation = new Gain(1); // will be scaled by synthVoice
@@ -76,13 +75,24 @@ export class VAPolySynth implements AnalogPolySynthModule {
     this.filterFrequency = defaults.filterFrequency;
     this._filterType = defaults.filterType as BiquadFilterType;
     this.filterEnvelopeAmount = defaults.filterEnvAmt;
-    const oscGroup = new Array<SynthOscillator>(numVoices);
+    const oscGroup = new Array<OscillatorChannel>(numVoices);
     for (let i = 0; i < this.voices[0].synth.oscillators.length; i++) {
       this.voices.forEach((v, index) => {
         oscGroup[index] = v.synth.oscillators[i];
       });
       this.oscillators[i] = new PolyOscillator(oscGroup);
     } 
+  }
+
+  // oscillatorSpread
+  get oscillatorSpread() {
+    return this.voices[0].synth.oscillatorSpread;
+  }
+
+  set oscillatorSpread(s: number) {
+    this.voices.forEach(v => {
+      v.synth.oscillatorSpread = s;
+    });
   }
 
   // pitchModulationMix
