@@ -15,7 +15,7 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
 
   constructor(type: ToneOscillatorType) {
     this._type = type;
-    this._channel = new Channel();
+    this._channel = new Channel(-12);
     this.detune = new Signal(0, "cents");
     this.frequency = new Signal(0, "frequency");
     this.output = new Gain(1);

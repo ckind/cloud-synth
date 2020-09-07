@@ -55,18 +55,12 @@ export class VAMonoSynth extends VABaseSynth implements AnalogMonoSynthModule {
       throw `given spread value ${s} is out of range (0, 1)`;
     }
     this._oscillatorSpread = s;
-    // todo: come up with more general formula
-    this.oscillators[0].pan = -1 * s;
-    this.oscillators[1].pan = 0;
-    this.oscillators[2].pan = 1 * s;
-
-    // const oscCount = this.oscillators.length;
-    // let spreadAmt = 2/(oscCount - 1);
-    // let panAmt = -1;
-    // this.oscillators.forEach(o => {
-    //   o.pan = panAmt + spreadAmt;
-    //   panAmt += panAmt;
-    // }); 
+    const spacing = 2 / (this.oscillators.length - 1);
+    let p = -1;
+    this.oscillators.forEach(o => {
+      o.pan = p * s;
+      p += spacing;
+    });
   }
 
   // pitchModulationMix

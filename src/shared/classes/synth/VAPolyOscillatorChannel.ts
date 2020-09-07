@@ -1,4 +1,4 @@
-import { ToneOscillatorType, Signal, Param, Volume } from "tone";
+import { ToneOscillatorType, Signal } from "tone";
 import { OscillatorChannel } from "../../interfaces/synth/OscillatorChannel";
 
 export class PolyOscillator implements OscillatorChannel {
@@ -48,6 +48,7 @@ export class PolyOscillator implements OscillatorChannel {
   }
 
   set volume(v: number) {
+    this._volume = v;
     this.oscGroup.forEach(o => {
       o.volume = v;
     });
@@ -58,6 +59,7 @@ export class PolyOscillator implements OscillatorChannel {
   }
 
   set pan(p: number) {
+    this._pan = p;
     this.oscGroup.forEach(o => {
       o.pan = p;
     });

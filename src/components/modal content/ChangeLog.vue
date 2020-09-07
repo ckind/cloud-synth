@@ -4,7 +4,7 @@
       <v-card-title class="headline">Change Log</v-card-title>
 
       <v-card-text>
-        <ul>
+        <ul class="change-list">
           <li v-for="(message, index) in commitMessages" :key="index">{{ message }}</li>
         </ul>
         <a href="https://github.com/ckind/JvaSynth">view source</a>
@@ -53,3 +53,10 @@ export default class ChangeLog extends Vue {
   }
 }
 </script>
+
+<style scoped>
+.change-list {
+  overflow-y: scroll;
+  max-height: 50vh;
+}
+</style>

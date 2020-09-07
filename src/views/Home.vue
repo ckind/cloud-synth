@@ -3,14 +3,14 @@
     <v-row>
       <v-col cols="4">
         <v-row v-for="(o, i) in synth.oscillators" :key="i">
-          <v-col cols="4">
+          <v-col cols="3">
             <knob-control-new
               v-model="oscillatorTunings[i][0]"
               :minValue="-1200"
               :maxValue="1200"
               :step="100"
               :id="`oscillator${i + 1}TransposeControl`"
-              :label="`Osc ${i + 1} Transpose`"
+              :label="`Osc ${i + 1} Trans`"
               @input="
                 v => {
                   oscillatorTunings[i][0] = v;
@@ -20,7 +20,7 @@
               size="70"
             ></knob-control-new>
           </v-col>
-          <v-col cols="4">
+          <v-col cols="3">
             <knob-control-new
               v-model="oscillatorTunings[i][1]"
               :minValue="-50"
@@ -36,7 +36,18 @@
               size="70"
             ></knob-control-new>
           </v-col>
-          <v-col cols="4" class="waveform-select-container">
+          <!-- todo: fix -->
+          <v-col cols="3">
+            <knob-control-new
+              v-model="oscillatorVolumes[i]"
+              :minValue="-60"
+              :maxValue="0"
+              :id="`oscillator${i + 1}Volume`"
+              :label="`Volume`"
+              size="70"
+            ></knob-control-new>
+          </v-col>
+          <v-col cols="3" class="waveform-select-container">
             <select class="waveform-select" v-model="synth.oscillators[i].type">
               <option
                 v-for="(waveform, j) in waveforms"
@@ -237,6 +248,7 @@ import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 export default class Home extends Vue {
   private synth: VAPolySynth;
   private oscillatorTunings: Array<Array<number>>;
+  private oscillatorVolumes: Array<number>;
   private volume: Tone.Volume;
   private volumeLevel: number;
   private LFORateCurve: QuadBezierCurvedRange;
@@ -329,11 +341,14 @@ export default class Home extends Vue {
     this.filterTypeIndex = 0;
     this.synth.filterType = this.filterTypes[this.filterTypeIndex];
 
+    // todo: figure out better solution for this since v-model doesn't play nice with arrays
     this.oscillatorTunings = new Array<Array<number>>(numOscillators);
+    this.oscillatorVolumes = new Array<number>(numOscillators);
     for (let i = 0; i < numOscillators; i++) {
       this.oscillatorTunings[i] = new Array<number>(2);
       this.oscillatorTunings[i][0] = 0;
       this.oscillatorTunings[i][1] = 0;
+      this.oscillatorVolumes[i] = -12;
     }
 
     this.ampEnv = {
@@ -365,6 +380,7 @@ export default class Home extends Vue {
   }
 
   private oscillatorDetuneControlChange() {
+    // todo: this loop could be problematic for phase
     this.synth.oscillators.forEach((o, i) => {
       o.detune.setValueAtTime(
         this.oscillatorTunings[i][0] + this.oscillatorTunings[i][1],
@@ -373,6 +389,13 @@ export default class Home extends Vue {
     });
     this.$forceUpdate();
   }
+
+  // todo: fix this
+  // private oscillatorVolumeControlChange() {
+  //   this.synth.oscillators.forEach((o, i) => {
+  //     o.volume = this.oscillatorVolumes[i];
+  //   });
+  // }
 
   // Watches
 

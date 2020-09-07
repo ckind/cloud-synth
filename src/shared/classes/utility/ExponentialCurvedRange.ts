@@ -26,7 +26,6 @@ export class ExponentialCurvedRange extends BaseCurvedRange {
     this.validateInput(value);
     const t = (value - this.min) / this.range;
     const val = this.exp2(t * this.logRange + this.logMin);
-    console.log(`curved ${val}`);
     return val;
   }
 
@@ -34,7 +33,6 @@ export class ExponentialCurvedRange extends BaseCurvedRange {
     this.validateInput(value);
     const t = (this.log2(value) - this.logMin) / this.logRange;
     const val = t * this.range + this.min;
-    console.log(`linear ${val}`);
     return val;
   }
 }
