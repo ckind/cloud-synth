@@ -172,7 +172,7 @@
             <v-row>
               <v-col cols="3">
                 <knob-control
-                  v-model="synth.filter.frequency"
+                  v-model="settings.filter.frequency"
                   :minValue="20"
                   :maxValue="20000"
                   id="filterFrequencyKnob"
@@ -183,7 +183,7 @@
               </v-col>
               <v-col cols="3">
                 <knob-control
-                  v-model="settings.filter.Q"
+                  v-model="settings.filter.q"
                   :minValue="0"
                   :maxValue="10"
                   id="filterQKnob"
@@ -285,7 +285,7 @@
         <v-row>
           <v-col cols="12">
             <knob-control
-              v-model="this.settings.volume"
+              v-model="settings.volume"
               :minValue="-60"
               :maxValue="0"
               id="volumeLevelKnob"
@@ -308,8 +308,7 @@ import AdsrGraph from "@/components/AdsrGraph.vue";
 import KnobControl from "@/components/KnobControl.vue";
 import { VAPolySynth } from "@/shared/classes/synth/VAPolySynth";
 import * as Tone from "tone";
-import { ToneOscillatorType } from "tone";
-import { QuadBezierCurvedRange } from "@/shared/classes/utility/QuadBezierCurvedRange";
+import { NoiseType, ToneOscillatorType } from "tone";
 import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 import { JvaSettings } from "@/JvaSettings";
 
@@ -334,6 +333,7 @@ export default class Home extends Vue {
   private filterTypeIndex: number;
   private verb: Tone.Reverb;
   private noise: VANoiseSynth;
+  private noiseVolume: Tone.Volume;
 
   $refs!: {
     pianoKeyboard: PianoKeyboard;
@@ -414,23 +414,16 @@ export default class Home extends Vue {
       }
     });
 
-    this.settings = this.getDefaultSettings(); // settings interface for vue reactivity
+    this.synth = new VAPolySynth(6, 3, "sine");
 
-    this.synth = new VAPolySynth(6, 3, this.settings.oscillator1.type);
-    this.volume = new Tone.Volume(this.settings.volume);
-    this.synth.output.chain(this.volume, Tone.Master);
-
-    this.filterLFO = new Tone.LFO(this.settings.filter.modulationRate);
+    this.filterLFO = new Tone.LFO();
     this.filterLFO.start().connect(this.synth.filterFrequencyModulation);
-    this.synth.filterFrequencyModulationMix = this.settings.filter.modulationAmount;
 
-    this.ampLFO = new Tone.LFO(this.settings.amp.modulationRate);
+    this.ampLFO = new Tone.LFO();
     this.ampLFO.start().connect(this.synth.ampModulation);
-    this.synth.ampModulationMix = this.settings.amp.modulationAmount;
 
-    this.pitchLFO = new Tone.LFO(this.settings.pitch.modulationRate);
+    this.pitchLFO = new Tone.LFO();
     this.pitchLFO.start().connect(this.synth.pitchModulation);
-    this.synth.pitchModulationMix = this.settings.pitch.modulationAmount;
 
     this.waveforms = new Array<Tone.ToneOscillatorType>(4);
     this.waveforms[0] = "sine";
@@ -444,13 +437,18 @@ export default class Home extends Vue {
     this.noiseTypes[2] = "brown";
     this.noiseTypeIndex = 0;
     this.noise = new VANoiseSynth("white");
-    // this.noise.output.chain(this.volume, Tone.Master);
+    this.noiseVolume = new Tone.Volume(-24);
 
-    this.filterTypes = new Array<BiquadFilterType>(3);
+    this.filterTypes = new Array<BiquadFilterType>(2);
     this.filterTypes[0] = "lowpass";
     this.filterTypes[1] = "highpass";
     this.filterTypeIndex = 0;
-    this.synth.filterType = this.filterTypes[this.filterTypeIndex];
+
+    this.volume = new Tone.Volume();
+    this.noise.output.chain(this.noiseVolume, this.volume, Tone.Master);
+    this.synth.output.chain(this.volume, Tone.Master);
+
+    this.settings = this.getDefaultSettings();
   }
 
   mounted() {
@@ -462,50 +460,102 @@ export default class Home extends Vue {
 
   // Methods
 
-  private oscillatorWaveformChange(e: HTMLInputElement, i: number) {
-    this.synth.oscillators[i].type = this.waveforms[parseInt(e.value)];
-  }
-
-  private oscillatorVolumeChange(v: number, i: number) {
-    this.synth.oscillators[i].volume = v;
-  }
-
-  private oscillatorTransposeChange(v: number, i: number) {
-    this.synth.oscillators[i].transpose = v;
-  }
-
-  private oscillatorDetuneChange(v: number, i: number) {
-    this.synth.oscillators[i].detune = v;
-  }
-
   // Watches
+
+  @Watch("settings.oscillator1.transpose")
+  private onOscillator1TranposeChanged(value: number) {
+    this.synth.oscillators[0].transpose = value;
+  }
+  @Watch("settings.oscillator1.detune")
+  private onOscillator1DetuneChanged(value: number) {
+    this.synth.oscillators[0].detune = value;
+  }
+  @Watch("settings.oscillator1.volume")
+  private onOscillator1VolumeChanged(value: number) {
+    this.synth.oscillators[0].volume = value;
+  }
+  @Watch("settings.oscillator1.type")
+  private onOscillator1TypeChanged(value: ToneOscillatorType) {
+    this.synth.oscillators[0].type = value;
+  }
+
+  @Watch("settings.oscillator2.transpose")
+  private onOscillator2TranposeChanged(value: number) {
+    this.synth.oscillators[1].transpose = value;
+  }
+  @Watch("settings.oscillator2.detune")
+  private onOscillator2DetuneChanged(value: number) {
+    this.synth.oscillators[1].detune = value;
+  }
+  @Watch("settings.oscillator2.volume")
+  private onOscillator2VolumeChanged(value: number) {
+    this.synth.oscillators[1].volume = value;
+  }
+  @Watch("settings.oscillator2.type")
+  private onOscillator2TypeChanged(value: ToneOscillatorType) {
+    this.synth.oscillators[1].type = value;
+  }
+
+  @Watch("settings.oscillator3.transpose")
+  private onOscillator3TranposeChanged(value: number) {
+    this.synth.oscillators[2].transpose = value;
+  }
+  @Watch("settings.oscillator3.detune")
+  private onOscillator3DetuneChanged(value: number) {
+    this.synth.oscillators[2].detune = value;
+  }
+  @Watch("settings.oscillator3.volume")
+  private onOscillator3VolumeChanged(value: number) {
+    this.synth.oscillators[2].volume = value;
+  }
+  @Watch("settings.oscillator3.type")
+  private onOscillator3TypeChanged(value: ToneOscillatorType) {
+    this.synth.oscillators[2].type = value;
+  }
 
   @Watch("filterTypeIndex")
   private onfilterTypeIndexChanged(value: number) {
     this.synth.filterType = this.filterTypes[value];
+    this.noise.filterType = this.filterTypes[value];
   }
-
-  @Watch("this.settings.volume")
-  private onVolumeLevelChanged(value: number) {
-    this.volume.volume.setValueAtTime(value, Tone.immediate());
+  @Watch("settings.filter.frequency")
+  private onFilterFrequencyChange(value: number) {
+    this.synth.filterFrequency = value;
+    this.noise.filterFrequency = value;
   }
-
+  @Watch("settings.filter.q")
+  private onFilterQChange(value: number) {
+    this.synth.filterQ = value;
+    this.noise.filterQ = value;
+  }
+  @Watch("settings.filter.envelope.attack")
+  private onfilterEnvelopeAttackChange(value: number) {
+    this.synth.filterAttack = value;
+    this.noise.filterAttack = value;
+  }
+  @Watch("settings.filter.envelope.decay")
+  private onfilterEnvelopeDecayChange(value: number) {
+    this.synth.filterDecay = value;
+    this.noise.filterAttack = value;
+  }
+  @Watch("settings.filter.envelope.sustain")
+  private onfilterEnvelopeSustainChange(value: number) {
+    this.synth.filterSustain = value;
+    this.noise.filterSustain = value;
+  }
+  @Watch("settings.filter.envelope.release")
+  private onfilterEnvelopeReleaseChange(value: number) {
+    this.synth.filterRelease = value;
+    this.noise.filterRelease = value;
+  }
   @Watch("settings.filter.modulationAmount")
   private onFilterLFOAmtChanged(value: number) {
     this.synth.filterFrequencyModulationMix = value;
+    this.noise.filterFrequencyModulationMix = value;
   }
   @Watch("settings.filter.modulationRate")
   private onFilterLFORateChanged(value: number) {
     this.filterLFO.frequency.setValueAtTime(value, Tone.immediate());
-  }
-
-  @Watch("settings.amp.modulationAmount")
-  private onAmpLFOAmtChanged(value: number) {
-    this.synth.ampModulationMix = value;
-  }
-  @Watch("settings.amp.modulationRate")
-  private onAmpLFORateChange(value: number) {
-    this.ampLFO.frequency.setValueAtTime(value, Tone.immediate());
   }
 
   @Watch("settings.pitch.modulationAmount")
@@ -537,26 +587,28 @@ export default class Home extends Vue {
     this.synth.ampRelease = value;
     this.noise.ampRelease = value;
   }
+  @Watch("settings.amp.modulationAmount")
+  private onAmpLFOAmtChanged(value: number) {
+    this.synth.ampModulationMix = value;
+    this.noise.ampModulationMix = value;
+  }
+  @Watch("settings.amp.modulationRate")
+  private onAmpLFORateChange(value: number) {
+    this.ampLFO.frequency.setValueAtTime(value, Tone.immediate());
+  }
 
-  @Watch("settings.filter.envelope.attack")
-  private onfilterEnvelopeAttackChange(value: number) {
-    this.synth.filterAttack = value;
-    this.noise.filterAttack = value;
+  @Watch("settings.noise.volume")
+  private onNoiseVolumeChange(value: number) {
+    this.noiseVolume.volume.setValueAtTime(value, Tone.immediate());
   }
-  @Watch("settings.filter.envelope.decay")
-  private onfilterEnvelopeDecayChange(value: number) {
-    this.synth.filterDecay = value;
-    this.noise.filterAttack = value;
+  @Watch("settings.noise.type")
+  private onNoiseTypehange(value: NoiseType) {
+    this.noise.noiseType = value;
   }
-  @Watch("settings.filter.envelope.sustain")
-  private onfilterEnvelopeSustainChange(value: number) {
-    this.synth.filterSustain = value;
-    this.noise.filterSustain = value;
-  }
-  @Watch("settings.filter.envelope.release")
-  private onfilterEnvelopeReleaseChange(value: number) {
-    this.synth.filterRelease = value;
-    this.noise.filterRelease = value;
+
+  @Watch("settings.volume")
+  private onVolumeLevelChanged(value: number) {
+    this.volume.volume.setValueAtTime(value, Tone.immediate());
   }
 }
 </script>
