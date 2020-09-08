@@ -29,6 +29,7 @@
               v-model="settings.oscillator1.volume"
               :minValue="-60"
               :maxValue="0"
+              :default="-12"
               :id="`oscillator1Volume`"
               :label="`Volume`"
               size="70"
@@ -73,6 +74,7 @@
               v-model="settings.oscillator2.volume"
               :minValue="-60"
               :maxValue="0"
+              :default="-12"
               :id="`oscillator2Volume`"
               :label="`Volume`"
               size="70"
@@ -117,6 +119,7 @@
               v-model="settings.oscillator3.volume"
               :minValue="-60"
               :maxValue="0"
+              :default="-12"
               :id="`oscillator3Volume`"
               :label="`Volume`"
               size="70"
@@ -311,6 +314,7 @@ import * as Tone from "tone";
 import { NoiseType, ToneOscillatorType } from "tone";
 import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 import { JvaSettings } from "@/JvaSettings";
+import { VAMonoSynth } from '@/shared/classes/synth/VAMonoSynth';
 
 @Component({
   components: {
@@ -414,7 +418,7 @@ export default class Home extends Vue {
       }
     });
 
-    this.synth = new VAPolySynth(6, 3, "sine");
+    this.synth = new VAPolySynth(6, 3, "sawtooth");
 
     this.filterLFO = new Tone.LFO();
     this.filterLFO.start().connect(this.synth.filterFrequencyModulation);
@@ -513,6 +517,11 @@ export default class Home extends Vue {
     this.synth.oscillators[2].type = value;
   }
 
+  @Watch("settings.oscillatorSpread")
+  private onOscillatorSpreadChanged(value: number) {
+    this.synth.oscillatorSpread = value;
+  }
+
   @Watch("filterTypeIndex")
   private onfilterTypeIndexChanged(value: number) {
     this.synth.filterType = this.filterTypes[value];
@@ -536,7 +545,7 @@ export default class Home extends Vue {
   @Watch("settings.filter.envelope.decay")
   private onfilterEnvelopeDecayChange(value: number) {
     this.synth.filterDecay = value;
-    this.noise.filterAttack = value;
+    this.noise.filterDecay = value;
   }
   @Watch("settings.filter.envelope.sustain")
   private onfilterEnvelopeSustainChange(value: number) {
@@ -547,6 +556,11 @@ export default class Home extends Vue {
   private onfilterEnvelopeReleaseChange(value: number) {
     this.synth.filterRelease = value;
     this.noise.filterRelease = value;
+  }
+  @Watch("settings.filter.envelopeAmount")
+  private onFilterEnvelopeAmountChanged(value: number) {
+    this.synth.filterEnvelopeAmount = value;
+    this.noise.filterEnvelopeAmount = value;
   }
   @Watch("settings.filter.modulationAmount")
   private onFilterLFOAmtChanged(value: number) {

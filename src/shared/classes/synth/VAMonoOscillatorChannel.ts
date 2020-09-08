@@ -1,13 +1,10 @@
 import { AudioModule } from '@/shared/interfaces/AudioModule';
 import { Disposable } from '@/shared/interfaces/utility/Disposable';
-import { DryWet } from '@/shared/interfaces/utility/DryWet';
-import { ToneOscillatorType, Signal, Channel, Gain, Oscillator, immediate } from "tone";
+import { ToneOscillatorType, Signal, PanVol, Gain, Oscillator, immediate } from "tone";
 import { OscillatorChannel } from "../../interfaces/synth/OscillatorChannel";
-import { DryWetMixer } from '../utility/DryWetMixer';
 
 // a free running digital oscillator
 export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, AudioModule {
-  
   readonly frequency: Signal<"frequency">;
   readonly output: Gain;
   
@@ -17,11 +14,11 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
   private _detune: number;
   private _type: ToneOscillatorType;
   private _toneOscillator!: Oscillator; // intialized in function call
-  private readonly _channel: Channel;
+  private readonly _channel: PanVol;
 
   constructor(type: ToneOscillatorType) {
     this._type = type;
-    this._channel = new Channel(-12);
+    this._channel = new PanVol();
     this._transpose = 0;
     this._detune = 0;
     this._transposeSignal = new Signal<"cents">(this._transpose * 100);
@@ -29,6 +26,7 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
     this.frequency = new Signal(0, "frequency");
     this.output = new Gain(1);
     this.initOscillator();
+    this._channel.connect(this.output);
   }
 
   reset() {
@@ -59,7 +57,7 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
     this._transposeSignal.connect(this._toneOscillator.detune);
     this._detuneSignal.connect(this._toneOscillator.detune);
     this.frequency.connect(this._toneOscillator.frequency);
-    this._toneOscillator.chain(this._channel, this.output);
+    this._toneOscillator.connect(this._channel);
   }
 
   get detune() {
@@ -79,17 +77,17 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
   }
 
   get volume() {
-    return this._channel.volume.value;
+    return this._channel.volume.getValueAtTime(immediate());
   }
   set volume(v: number) {
-    this._channel.volume.value = v;
+    this._channel.volume.setValueAtTime(v, immediate());
   }
 
   get pan() {
-    return this._channel.pan.value
+    return this._channel.pan.getValueAtTime(immediate());
   }
   set pan(p: number) {
-    this._channel.pan.value = p;
+    this._channel.pan.setValueAtTime(p, immediate());
   }
 
   get type() {

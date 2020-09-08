@@ -15,16 +15,18 @@ export class PolyOscillator implements OscillatorChannel {
     this._type = oscGroup[0].type;
     this._transpose = 0;
     this._detune = 0;
+    this._volume = 0;
+    this._pan = 0;
     this.frequency = new Signal(0, "frequency");
     this.oscGroup = oscGroup;
     this.oscGroup.forEach(o => {
       o.type = this._type;
       o.transpose = this._transpose;
       o.detune = this._detune;
+      o.volume = this._volume;
+      o.pan = this._pan;
       this.frequency.connect(o.frequency);
     });
-    this._volume = this.oscGroup[0].volume;
-    this._pan = this.oscGroup[0].pan;
   }
 
   reset() {
@@ -50,7 +52,7 @@ export class PolyOscillator implements OscillatorChannel {
   }
   set detune(d: number) {
     this._detune = d;
-    // todo: will this affect osciallator phase?
+    // todo: will this affect oscillator phase?
     this.oscGroup.forEach(o => {
       o.detune = d;
     });

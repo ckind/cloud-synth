@@ -25,7 +25,7 @@ const defaults = {
 
 export class VAPolySynth implements AnalogPolySynthModule {
   readonly output: Gain;
-  readonly oscillators: Array<OscillatorChannel>;
+  readonly oscillators: Array<PolyOscillator>;
   readonly ampModulation: Gain;
   readonly filterFrequencyModulation: Gain;
   readonly filterQModulation: Gain;
@@ -50,7 +50,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
   ) {
     this.output = new Gain(1);
     this.voices = new Array<AnalogSynthVoice>(numVoices);
-    this.oscillators = new Array<OscillatorChannel>(numOscillators);
+    this.oscillators = new Array<PolyOscillator>(numOscillators);
     this.pitchModulation = new Gain(1); // will be scaled by synthVoice
     this.ampModulation = new Gain(1); // will be scaled by synthVoice
     this.filterFrequencyModulation = new Gain(1); // will be scaled by synthVoice
@@ -75,13 +75,14 @@ export class VAPolySynth implements AnalogPolySynthModule {
     this.filterFrequency = defaults.filterFrequency;
     this._filterType = defaults.filterType as BiquadFilterType;
     this.filterEnvelopeAmount = defaults.filterEnvAmt;
-    const oscGroup = new Array<OscillatorChannel>(numVoices);
-    for (let i = 0; i < this.voices[0].synth.oscillators.length; i++) {
-      this.voices.forEach((v, index) => {
-        oscGroup[index] = v.synth.oscillators[i];
+    // assume all synth voices have the same number of oscillators
+    this.voices[0].synth.oscillators.forEach((o, oscIndex) => {
+      const oscGroup: Array<OscillatorChannel> = [];
+      this.voices.forEach((v, voiceIndex) => {
+        oscGroup.push(v.synth.oscillators[oscIndex]);
       });
-      this.oscillators[i] = new PolyOscillator(oscGroup);
-    } 
+      this.oscillators[oscIndex] = new PolyOscillator(oscGroup);
+    });
   }
 
   // oscillatorSpread

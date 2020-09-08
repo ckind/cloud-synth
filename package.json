@@ -11,6 +11,7 @@
     "@octokit/rest": "^18.0.5",
     "core-js": "^3.6.5",
     "tone": "^14.7.39",
+    "uuid": "^8.3.0",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.2",
