@@ -2,53 +2,128 @@
   <div class="home">
     <v-row>
       <v-col cols="4">
-        <v-row v-for="(o, i) in synth.oscillators" :key="i">
+        <v-row>
           <v-col cols="3">
-            <knob-control-new
-              v-model="oscillatorTunings[i][0]"
-              :minValue="-1200"
-              :maxValue="1200"
-              :step="100"
-              :id="`oscillator${i + 1}TransposeControl`"
-              :label="`Osc ${i + 1} Trans`"
-              @input="
-                v => {
-                  oscillatorTunings[i][0] = v;
-                  oscillatorDetuneControlChange();
-                }
-              "
+            <knob-control
+              v-model="settings.oscillator1.transpose"
+              :minValue="-12"
+              :maxValue="12"
+              :step="1"
+              :id="`oscillator1TransposeControl`"
+              :label="`Osc 1 Trans`"
               size="70"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
           <v-col cols="3">
-            <knob-control-new
-              v-model="oscillatorTunings[i][1]"
+            <knob-control
+              v-model="settings.oscillator1.detune"
               :minValue="-50"
               :maxValue="50"
-              :id="`oscillator${i + 1}FineTuningControl`"
+              :id="`oscillator1FineTuningControl`"
               :label="`Fine Tune`"
-              @input="
-                v => {
-                  oscillatorTunings[i][1] = v;
-                  oscillatorDetuneControlChange();
-                }
-              "
               size="70"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
-          <!-- todo: fix -->
           <v-col cols="3">
-            <knob-control-new
-              v-model="oscillatorVolumes[i]"
+            <knob-control
+              v-model="settings.oscillator1.volume"
               :minValue="-60"
               :maxValue="0"
-              :id="`oscillator${i + 1}Volume`"
+              :id="`oscillator1Volume`"
               :label="`Volume`"
               size="70"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
           <v-col cols="3" class="waveform-select-container">
-            <select class="waveform-select" v-model="synth.oscillators[i].type">
+            <select class="waveform-select" v-model="settings.oscillator1.type">
+              <option
+                v-for="(waveform, j) in waveforms"
+                :key="j"
+                :value="waveform"
+              >
+                {{ waveform }}
+              </option>
+            </select>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="3">
+            <knob-control
+              v-model="settings.oscillator2.transpose"
+              :minValue="-12"
+              :maxValue="12"
+              :step="1"
+              :id="`oscillator2TransposeControl`"
+              :label="`Osc 2 Trans`"
+              size="70"
+            ></knob-control>
+          </v-col>
+          <v-col cols="3">
+            <knob-control
+              v-model="settings.oscillator2.detune"
+              :minValue="-50"
+              :maxValue="50"
+              :id="`oscillator2FineTuningControl`"
+              :label="`Fine Tune`"
+              size="70"
+            ></knob-control>
+          </v-col>
+          <v-col cols="3">
+            <knob-control
+              v-model="settings.oscillator2.volume"
+              :minValue="-60"
+              :maxValue="0"
+              :id="`oscillator2Volume`"
+              :label="`Volume`"
+              size="70"
+            ></knob-control>
+          </v-col>
+          <v-col cols="3" class="waveform-select-container">
+            <select class="waveform-select" v-model="settings.oscillator2.type">
+              <option
+                v-for="(waveform, j) in waveforms"
+                :key="j"
+                :value="waveform"
+              >
+                {{ waveform }}
+              </option>
+            </select>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="3">
+            <knob-control
+              v-model="settings.oscillator3.transpose"
+              :minValue="-12"
+              :maxValue="12"
+              :step="1"
+              :id="`oscillator3TransposeControl`"
+              :label="`Osc 3 Trans`"
+              size="70"
+            ></knob-control>
+          </v-col>
+          <v-col cols="3">
+            <knob-control
+              v-model="settings.oscillator3.detune"
+              :minValue="-50"
+              :maxValue="50"
+              :id="`oscillator1FineTuningControl`"
+              :label="`Fine Tune`"
+              size="70"
+            ></knob-control>
+          </v-col>
+          <v-col cols="3">
+            <knob-control
+              v-model="settings.oscillator3.volume"
+              :minValue="-60"
+              :maxValue="0"
+              :id="`oscillator3Volume`"
+              :label="`Volume`"
+              size="70"
+            ></knob-control>
+          </v-col>
+          <v-col cols="3" class="waveform-select-container">
+            <select class="waveform-select" v-model="settings.oscillator3.type">
               <option
                 v-for="(waveform, j) in waveforms"
                 :key="j"
@@ -61,28 +136,28 @@
         </v-row>
         <v-row>
           <v-col cols="4">
-            <knob-control-new
-              v-model="synth.oscillatorSpread"
+            <knob-control
+              v-model="settings.oscillatorSpread"
               :minValue="0"
               :maxValue="1"
               id="oscillatorSpreadKnob"
               label="Osc Spread"
               size="70"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
           <v-col cols="4">
-            <knob-control-new
-              v-model="noiseVolume"
+            <knob-control
+              v-model="settings.noise.volume"
               :minValue="-60"
               :maxValue="0"
               id="noiseLevelKnob"
               label="Noise Level"
               size="70"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
           <v-col cols="4" class="waveform-select-container">
-            <select class="waveform-select" v-model="noiseTypeIndex">
-              <option v-for="(noiseType, j) in noiseTypes" :key="j" :value="j">
+            <select class="waveform-select" v-model="settings.noise.type">
+              <option v-for="(noiseType, j) in noiseTypes" :key="j" :value="noiseType">
                 {{ noiseType }}
               </option>
             </select>
@@ -90,44 +165,44 @@
         </v-row>
       </v-col>
       <v-col cols="4">
-        <adsr-graph class="adsr" v-model="filterEnv" :width="300" />
+        <adsr-graph class="adsr" v-model="settings.filter.envelope" :width="300" />
         <v-row>
           <v-col cols="1" />
           <v-col cols="10">
             <v-row>
               <v-col cols="3">
-                <knob-control-new
-                  v-model="synth.filterFrequency"
+                <knob-control
+                  v-model="synth.filter.frequency"
                   :minValue="20"
                   :maxValue="20000"
                   id="filterFrequencyKnob"
                   label="Cutoff"
                   scale="exponential"
                   size="70"
-                ></knob-control-new>
+                ></knob-control>
               </v-col>
               <v-col cols="3">
-                <knob-control-new
-                  v-model="synth.filterQ"
+                <knob-control
+                  v-model="settings.filter.Q"
                   :minValue="0"
                   :maxValue="10"
                   id="filterQKnob"
                   label="Q"
                   size="70"
-                ></knob-control-new>
+                ></knob-control>
               </v-col>
               <v-col cols="3">
-                <knob-control-new
-                  v-model="synth.filterEnvelopeAmount"
+                <knob-control
+                  v-model="settings.filter.envelopeAmount"
                   :minValue="0"
                   :maxValue="1"
                   id="envAmtKnob"
                   label="Env Amt"
                   size="70"
-                ></knob-control-new>
+                ></knob-control>
               </v-col>
               <v-col cols="3">
-                <knob-control-new
+                <knob-control
                   v-model="filterTypeIndex"
                   :minValue="0"
                   :maxValue="1"
@@ -135,7 +210,7 @@
                   id="filterTypeKnob"
                   label="Type"
                   size="70"
-                ></knob-control-new>
+                ></knob-control>
               </v-col>
             </v-row>
           </v-col>
@@ -143,78 +218,79 @@
         </v-row>
         <v-row>
           <v-col cols="6">
-            <knob-control-new
-              v-model="filterLFOAmt"
+            <knob-control
+              v-model="settings.filter.modulationAmount"
               :minValue="0"
               :maxValue="1"
+              scale="quadratic bezier"
               id="filterModKnob"
               label="Filter Mod"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
           <v-col cols="6">
-            <knob-control-new
-              v-model="filterLFORate"
+            <knob-control
+              v-model="settings.filter.modulationRate"
               :minValue="0"
               :maxValue="10"
               id="filterModRateKnob"
               label="Mod Rate"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
         </v-row>
       </v-col>
       <v-col cols="4">
-        <adsr-graph class="adsr" v-model="ampEnv" :width="300" />
+        <adsr-graph class="adsr" v-model="settings.amp.envelope" :width="300" />
         <!--
         <v-row>
           <v-col cols="6">
-            <knob-control-new
+            <knob-control
               v-model="ampLFOAmt"
               :minValue="0"
               :maxValue="1"
               id="ampModKnob"
               label="Amp Mod"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
           <v-col cols="6">
-            <knob-control-new
+            <knob-control
               v-model="ampLFORate"
               :minValue="0"
               :maxValue="10"
               id="ampModRateKnob"
               label="Mod Rate"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
         </v-row>
         -->
         <v-row>
           <v-col cols="6">
-            <knob-control-new
-              v-model="pitchLFOAmt"
+            <knob-control
+              v-model="settings.pitch.modulationAmount"
               :minValue="0"
               :maxValue="0.1"
               id="pitchModKnob"
               label="Pitch Mod"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
           <v-col cols="6">
-            <knob-control-new
-              v-model="pitchLFORate"
+            <knob-control
+              v-model="settings.pitch.modulationRate"
               :minValue="0"
               :maxValue="10"
               id="pitchModRateKnob"
               label="Mod Rate"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12">
-            <knob-control-new
-              v-model="volumeLevel"
+            <knob-control
+              v-model="this.settings.volume"
               :minValue="-60"
               :maxValue="0"
               id="volumeLevelKnob"
               label="Volume"
-            ></knob-control-new>
+            ></knob-control>
           </v-col>
         </v-row>
       </v-col>
@@ -228,54 +304,97 @@
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
 import PianoKeyboard from "@/components/PianoKeyboard.vue";
-import ParamControl from "@/components/ParamControl.vue";
 import AdsrGraph from "@/components/AdsrGraph.vue";
-import KnobControlNew from "@/components/KnobControlNew.vue";
+import KnobControl from "@/components/KnobControl.vue";
 import { VAPolySynth } from "@/shared/classes/synth/VAPolySynth";
 import * as Tone from "tone";
 import { ToneOscillatorType } from "tone";
 import { QuadBezierCurvedRange } from "@/shared/classes/utility/QuadBezierCurvedRange";
 import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
+import { JvaSettings } from "@/JvaSettings";
 
 @Component({
   components: {
     PianoKeyboard,
-    ParamControl,
     AdsrGraph,
-    KnobControlNew
+    KnobControl
   }
 })
 export default class Home extends Vue {
+  private settings: JvaSettings;
   private synth: VAPolySynth;
-  private oscillatorTunings: Array<Array<number>>;
-  private oscillatorVolumes: Array<number>;
   private volume: Tone.Volume;
-  private volumeLevel: number;
-  private LFORateCurve: QuadBezierCurvedRange;
-  private LFOAmtCurve: QuadBezierCurvedRange;
-  private filterLFORate: number;
-  private filterLFOAmt: number;
   private filterLFO: Tone.LFO;
-  private ampLFORate: number;
-  private ampLFOAmt: number;
   private ampLFO: Tone.LFO;
-  private pitchLFORate: number;
-  private pitchLFOAmt: number;
   private pitchLFO: Tone.LFO;
   private waveforms: Array<Tone.ToneOscillatorType>;
   private noiseTypes: Array<string>;
   private noiseTypeIndex: number;
-  private noiseVolume = 0;
   private filterTypes: Array<BiquadFilterType>;
   private filterTypeIndex: number;
-  private ampEnv: Record<string, number>;
-  private filterEnv: Record<string, number>;
   private verb: Tone.Reverb;
   private noise: VANoiseSynth;
 
   $refs!: {
     pianoKeyboard: PianoKeyboard;
   };
+
+  private getDefaultSettings(): JvaSettings {
+    return {
+      oscillator1: {
+        volume: -12,
+        transpose: 0,
+        detune: 0,
+        type: "sawtooth"
+      },
+      oscillator2: {
+        volume: -12,
+        transpose: 0,
+        detune: 0,
+        type: "sawtooth"
+      },
+      oscillator3: {
+        volume: -12,
+        transpose: 0,
+        detune: 0,
+        type: "sawtooth"
+      },
+      oscillatorSpread: 0,
+      amp: {
+        envelope: {
+          attack: 0,
+          decay: 0.2,
+          sustain: 0.8,
+          release: 0.2
+        },
+        modulationAmount: 0,
+        modulationRate: 4
+      },
+      filter: {
+        envelope: {
+          attack: 0,
+          decay: 0.2,
+          sustain: 0.8,
+          release: 0.2
+        },
+        envelopeAmount: 0.7,
+        frequency: 500,
+        q: 3,
+        type: "lowpass",
+        modulationAmount: 0,
+        modulationRate: 4
+      },
+      pitch: {
+        modulationAmount: 0,
+        modulationRate: 8
+      },
+      noise: {
+        type: "white",
+        volume: -60
+      },
+      volume: -12
+    };
+  }
 
   public constructor() {
     super();
@@ -295,31 +414,23 @@ export default class Home extends Vue {
       }
     });
 
-    const numOscillators = 3;
+    this.settings = this.getDefaultSettings(); // settings interface for vue reactivity
 
-    this.synth = new VAPolySynth(6, numOscillators, "square");
-    this.volumeLevel = -18;
-    this.volume = new Tone.Volume(this.volumeLevel);
+    this.synth = new VAPolySynth(6, 3, this.settings.oscillator1.type);
+    this.volume = new Tone.Volume(this.settings.volume);
     this.synth.output.chain(this.volume, Tone.Master);
 
-    this.LFORateCurve = new QuadBezierCurvedRange(0, 10);
-    this.LFOAmtCurve = new QuadBezierCurvedRange(0, 1);
-
-    this.filterLFORate = 4;
-    this.filterLFOAmt = 0;
-    this.filterLFO = new Tone.LFO(this.filterLFORate);
-
-    this.ampLFORate = 4;
-    this.ampLFOAmt = 0;
-    this.ampLFO = new Tone.LFO(this.ampLFORate);
-
-    this.pitchLFORate = 4;
-    this.pitchLFOAmt = 0;
-    this.pitchLFO = new Tone.LFO(this.pitchLFORate);
-
+    this.filterLFO = new Tone.LFO(this.settings.filter.modulationRate);
     this.filterLFO.start().connect(this.synth.filterFrequencyModulation);
+    this.synth.filterFrequencyModulationMix = this.settings.filter.modulationAmount;
+
+    this.ampLFO = new Tone.LFO(this.settings.amp.modulationRate);
     this.ampLFO.start().connect(this.synth.ampModulation);
+    this.synth.ampModulationMix = this.settings.amp.modulationAmount;
+
+    this.pitchLFO = new Tone.LFO(this.settings.pitch.modulationRate);
     this.pitchLFO.start().connect(this.synth.pitchModulation);
+    this.synth.pitchModulationMix = this.settings.pitch.modulationAmount;
 
     this.waveforms = new Array<Tone.ToneOscillatorType>(4);
     this.waveforms[0] = "sine";
@@ -340,30 +451,6 @@ export default class Home extends Vue {
     this.filterTypes[1] = "highpass";
     this.filterTypeIndex = 0;
     this.synth.filterType = this.filterTypes[this.filterTypeIndex];
-
-    // todo: figure out better solution for this since v-model doesn't play nice with arrays
-    this.oscillatorTunings = new Array<Array<number>>(numOscillators);
-    this.oscillatorVolumes = new Array<number>(numOscillators);
-    for (let i = 0; i < numOscillators; i++) {
-      this.oscillatorTunings[i] = new Array<number>(2);
-      this.oscillatorTunings[i][0] = 0;
-      this.oscillatorTunings[i][1] = 0;
-      this.oscillatorVolumes[i] = -12;
-    }
-
-    this.ampEnv = {
-      attack: this.synth.ampAttack,
-      decay: this.synth.ampDecay,
-      sustain: this.synth.ampSustain,
-      release: this.synth.ampRelease
-    };
-
-    this.filterEnv = {
-      attack: this.synth.filterAttack,
-      decay: this.synth.filterDecay,
-      sustain: this.synth.filterSustain,
-      release: this.synth.filterRelease
-    };
   }
 
   mounted() {
@@ -375,27 +462,21 @@ export default class Home extends Vue {
 
   // Methods
 
-  private waveformSelectChange(e: HTMLInputElement, i: number) {
+  private oscillatorWaveformChange(e: HTMLInputElement, i: number) {
     this.synth.oscillators[i].type = this.waveforms[parseInt(e.value)];
   }
 
-  private oscillatorDetuneControlChange() {
-    // todo: this loop could be problematic for phase
-    this.synth.oscillators.forEach((o, i) => {
-      o.detune.setValueAtTime(
-        this.oscillatorTunings[i][0] + this.oscillatorTunings[i][1],
-        Tone.immediate()
-      );
-    });
-    this.$forceUpdate();
+  private oscillatorVolumeChange(v: number, i: number) {
+    this.synth.oscillators[i].volume = v;
   }
 
-  // todo: fix this
-  // private oscillatorVolumeControlChange() {
-  //   this.synth.oscillators.forEach((o, i) => {
-  //     o.volume = this.oscillatorVolumes[i];
-  //   });
-  // }
+  private oscillatorTransposeChange(v: number, i: number) {
+    this.synth.oscillators[i].transpose = v;
+  }
+
+  private oscillatorDetuneChange(v: number, i: number) {
+    this.synth.oscillators[i].detune = v;
+  }
 
   // Watches
 
@@ -404,95 +485,78 @@ export default class Home extends Vue {
     this.synth.filterType = this.filterTypes[value];
   }
 
-  @Watch("volumeLevel")
+  @Watch("this.settings.volume")
   private onVolumeLevelChanged(value: number) {
     this.volume.volume.setValueAtTime(value, Tone.immediate());
   }
 
-  @Watch("filterLFOAmt")
+  @Watch("settings.filter.modulationAmount")
   private onFilterLFOAmtChanged(value: number) {
-    this.synth.filterFrequencyModulationMix = this.LFOAmtCurve.getCurvedValue(
-      value
-    );
+    this.synth.filterFrequencyModulationMix = value;
   }
-  @Watch("filterLFORate")
+  @Watch("settings.filter.modulationRate")
   private onFilterLFORateChanged(value: number) {
-    this.filterLFO.frequency.setValueAtTime(
-      this.LFORateCurve.getCurvedValue(value),
-      Tone.immediate()
-    );
+    this.filterLFO.frequency.setValueAtTime(value, Tone.immediate());
   }
 
-  @Watch("ampLFOAmt")
+  @Watch("settings.amp.modulationAmount")
   private onAmpLFOAmtChanged(value: number) {
-    this.synth.ampModulationMix = this.LFOAmtCurve.getCurvedValue(value);
+    this.synth.ampModulationMix = value;
   }
-  @Watch("ampLFORate")
+  @Watch("settings.amp.modulationRate")
   private onAmpLFORateChange(value: number) {
     this.ampLFO.frequency.setValueAtTime(value, Tone.immediate());
   }
 
-  @Watch("pitchLFOAmt")
+  @Watch("settings.pitch.modulationAmount")
   private onPitchLFOAmtChanged(value: number) {
-    this.synth.pitchModulationMix = this.LFOAmtCurve.getCurvedValue(value);
+    this.synth.pitchModulationMix = value;
   }
-  @Watch("pitchLFORate")
+  @Watch("settings.pitch.modulationRate")
   private onPitchLFORateChange(value: number) {
-    this.pitchLFO.frequency.setValueAtTime(
-      this.LFORateCurve.getCurvedValue(value),
-      Tone.immediate()
-    );
+    this.pitchLFO.frequency.setValueAtTime(value, Tone.immediate());
   }
 
-  @Watch("ampEnv.attack")
-  private onAmpEnvAttackChange(value: number) {
+  @Watch("settings.amp.envelope.attack")
+  private onAmpEnvelopeAttackChange(value: number) {
     this.synth.ampAttack = value;
     this.noise.ampAttack = value;
-    // forceUpdate is needed because vue won't detect changes in the getter for ampAttack
-    this.$forceUpdate();
   }
-  @Watch("ampEnv.decay")
-  private onAmpEnvDecayChange(value: number) {
+  @Watch("settings.amp.envelope.decay")
+  private onAmpEnvelopeDecayChange(value: number) {
     this.synth.ampDecay = value;
     this.noise.ampDecay = value;
-    this.$forceUpdate();
   }
-  @Watch("ampEnv.sustain")
-  private onAmpEnvSustainChange(value: number) {
+  @Watch("settings.amp.envelope.sustain")
+  private onAmpEnvelopeSustainChange(value: number) {
     this.synth.ampSustain = value;
     this.noise.ampSustain = value;
-    this.$forceUpdate();
   }
-  @Watch("ampEnv.release")
-  private onAmpEnvReleaseChange(value: number) {
+  @Watch("settings.amp.envelope.release")
+  private onAmpEnvelopeReleaseChange(value: number) {
     this.synth.ampRelease = value;
     this.noise.ampRelease = value;
-    this.$forceUpdate();
   }
 
-  @Watch("filterEnv.attack")
-  private onfilterEnvAttackChange(value: number) {
+  @Watch("settings.filter.envelope.attack")
+  private onfilterEnvelopeAttackChange(value: number) {
     this.synth.filterAttack = value;
     this.noise.filterAttack = value;
-    this.$forceUpdate();
   }
-  @Watch("filterEnv.decay")
-  private onfilterEnvDecayChange(value: number) {
+  @Watch("settings.filter.envelope.decay")
+  private onfilterEnvelopeDecayChange(value: number) {
     this.synth.filterDecay = value;
     this.noise.filterAttack = value;
-    this.$forceUpdate();
   }
-  @Watch("filterEnv.sustain")
-  private onfilterEnvSustainChange(value: number) {
+  @Watch("settings.filter.envelope.sustain")
+  private onfilterEnvelopeSustainChange(value: number) {
     this.synth.filterSustain = value;
     this.noise.filterSustain = value;
-    this.$forceUpdate();
   }
-  @Watch("filterEnv.release")
-  private onfilterEnvReleaseChange(value: number) {
+  @Watch("settings.filter.envelope.release")
+  private onfilterEnvelopeReleaseChange(value: number) {
     this.synth.filterRelease = value;
     this.noise.filterRelease = value;
-    this.$forceUpdate();
   }
 }
 </script>

@@ -25,7 +25,7 @@ export class GainMixer implements SignalMixer {
   }
 
   public removeInput(n: number) {
-    // todo: implement
+    throw "removeInput not implemented!";
   }
 
   public channel(n: number) {

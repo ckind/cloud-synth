@@ -2,21 +2,25 @@ import { ToneOscillatorType, Signal } from "tone";
 import { OscillatorChannel } from "../../interfaces/synth/OscillatorChannel";
 
 export class PolyOscillator implements OscillatorChannel {
-  readonly detune: Signal<"cents">;
   readonly frequency: Signal<"frequency">;
+
   private readonly oscGroup: Array<OscillatorChannel>;
+  private _detune: number;
   private _type: ToneOscillatorType;
   private _volume: number;
   private _pan: number;
+  private _transpose: number;
 
   constructor(oscGroup: Array<OscillatorChannel>) {
     this._type = oscGroup[0].type;
-    this.detune = new Signal(0, "cents");
+    this._transpose = 0;
+    this._detune = 0;
     this.frequency = new Signal(0, "frequency");
     this.oscGroup = oscGroup;
     this.oscGroup.forEach(o => {
       o.type = this._type;
-      this.detune.connect(o.detune);
+      o.transpose = this._transpose;
+      o.detune = this._detune;
       this.frequency.connect(o.frequency);
     });
     this._volume = this.oscGroup[0].volume;
@@ -25,28 +29,47 @@ export class PolyOscillator implements OscillatorChannel {
 
   reset() {
     this.oscGroup.forEach(o => {
-      this.detune.disconnect(o.detune);
       this.frequency.disconnect(o.frequency);
       o.reset();
-      this.detune.connect(o.detune);
       this.frequency.connect(o.frequency);
+      o.transpose = this._transpose;
+      o.detune = this._detune;
     });
   }
 
   dispose() {
     this.oscGroup.forEach(o => {
-      this.detune.disconnect(o.detune);
       this.frequency.disconnect(o.frequency);
       o.dispose();
     });
-    this.detune.dispose();
     this.frequency.dispose();
+  }
+
+  get detune() {
+    return this._detune;
+  }
+  set detune(d: number) {
+    this._detune = d;
+    // todo: will this affect osciallator phase?
+    this.oscGroup.forEach(o => {
+      o.detune = d;
+    });
+  }
+
+  get transpose() {
+    return this._transpose;
+  }
+  set transpose(t: number) {
+    this._transpose = t;
+    // todo: phase?
+    this.oscGroup.forEach(o => {
+      o.transpose = t;
+    });
   }
 
   get volume() {
     return this._volume;
   }
-
   set volume(v: number) {
     this._volume = v;
     this.oscGroup.forEach(o => {
@@ -57,7 +80,6 @@ export class PolyOscillator implements OscillatorChannel {
   get pan() {
     return this._pan;
   }
-
   set pan(p: number) {
     this._pan = p;
     this.oscGroup.forEach(o => {
@@ -68,7 +90,6 @@ export class PolyOscillator implements OscillatorChannel {
   get type() {
     return this._type;
   }
-
   set type(t: ToneOscillatorType) {
     this._type = t;
     this.oscGroup.forEach(o => {

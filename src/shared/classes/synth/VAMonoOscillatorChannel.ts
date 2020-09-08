@@ -1,14 +1,20 @@
 import { AudioModule } from '@/shared/interfaces/AudioModule';
 import { Disposable } from '@/shared/interfaces/utility/Disposable';
-import { ToneOscillatorType, Signal, Channel, Gain, Oscillator } from "tone";
+import { DryWet } from '@/shared/interfaces/utility/DryWet';
+import { ToneOscillatorType, Signal, Channel, Gain, Oscillator, immediate } from "tone";
 import { OscillatorChannel } from "../../interfaces/synth/OscillatorChannel";
+import { DryWetMixer } from '../utility/DryWetMixer';
 
 // a free running digital oscillator
 export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, AudioModule {
-  readonly detune: Signal<"cents">;
+  
   readonly frequency: Signal<"frequency">;
   readonly output: Gain;
   
+  private readonly _transposeSignal: Signal<"cents">;
+  private readonly _detuneSignal: Signal<"cents">;
+  private _transpose: number;
+  private _detune: number;
   private _type: ToneOscillatorType;
   private _toneOscillator!: Oscillator; // intialized in function call
   private readonly _channel: Channel;
@@ -16,7 +22,10 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
   constructor(type: ToneOscillatorType) {
     this._type = type;
     this._channel = new Channel(-12);
-    this.detune = new Signal(0, "cents");
+    this._transpose = 0;
+    this._detune = 0;
+    this._transposeSignal = new Signal<"cents">(this._transpose * 100);
+    this._detuneSignal = new Signal(this._detune, "cents");
     this.frequency = new Signal(0, "frequency");
     this.output = new Gain(1);
     this.initOscillator();
@@ -29,7 +38,8 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
 
   dispose() {
     this.disposeOscillator();
-    this.detune.dispose();
+    this._transposeSignal.dispose();
+    this._detuneSignal.dispose();
     this.frequency.dispose();
     this._channel.disconnect(this.output);
     this._channel.dispose();
@@ -37,7 +47,8 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
   }
 
   private disposeOscillator() {
-    this.detune.disconnect(this._toneOscillator.detune);
+    this._transposeSignal.disconnect(this._toneOscillator.detune);
+    this._detuneSignal.disconnect(this._toneOscillator.detune);
     this.frequency.disconnect(this._toneOscillator.frequency);
     this._toneOscillator.disconnect(this._channel);
     this._toneOscillator.stop().dispose();
@@ -45,15 +56,31 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
 
   private initOscillator() {
     this._toneOscillator = new Oscillator(0, this._type).start();
-    this.detune.connect(this._toneOscillator.detune);
+    this._transposeSignal.connect(this._toneOscillator.detune);
+    this._detuneSignal.connect(this._toneOscillator.detune);
     this.frequency.connect(this._toneOscillator.frequency);
     this._toneOscillator.chain(this._channel, this.output);
+  }
+
+  get detune() {
+    return this._detune;
+  }
+  set detune(d: number) {
+    this._detune = d;
+    this._detuneSignal.setValueAtTime(d, immediate());
+  }
+
+  get transpose() {
+    return this._transpose;
+  }
+  set transpose(t: number) {
+    this._transpose = t;
+    this._transposeSignal.setValueAtTime(t * 100, immediate());
   }
 
   get volume() {
     return this._channel.volume.value;
   }
-
   set volume(v: number) {
     this._channel.volume.value = v;
   }
@@ -61,7 +88,6 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
   get pan() {
     return this._channel.pan.value
   }
-
   set pan(p: number) {
     this._channel.pan.value = p;
   }
@@ -69,7 +95,6 @@ export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, A
   get type() {
     return this._type;
   }
-
   set type(t: ToneOscillatorType) {
     this._type = t;
     this._toneOscillator.type = t;
