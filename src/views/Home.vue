@@ -314,7 +314,6 @@ import * as Tone from "tone";
 import { NoiseType, ToneOscillatorType } from "tone";
 import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 import { JvaSettings } from "@/JvaSettings";
-import { VAMonoSynth } from '@/shared/classes/synth/VAMonoSynth';
 
 @Component({
   components: {
