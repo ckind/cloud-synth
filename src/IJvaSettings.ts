@@ -1,32 +1,32 @@
 import { ToneOscillatorType } from "tone";
 
-export interface JvaSettings {
-  oscillator1: JvaOscillatorSettings;
-  oscillator2: JvaOscillatorSettings;
-  oscillator3: JvaOscillatorSettings;
+export interface IJvaSettings {
+  oscillator1: IJvaOscillatorSettings;
+  oscillator2: IJvaOscillatorSettings;
+  oscillator3: IJvaOscillatorSettings;
   oscillatorSpread: number;
-  amp: JvaAmpSettings;
-  filter: JvaFilterSettings;
-  pitch: JvaPitchSettings;
-  noise: JVANoiseSettings;
+  amp: IJvaAmpSettings;
+  filter: IJvaFilterSettings;
+  pitch: IJvaPitchSettings;
+  noise: IJVANoiseSettings;
   volume: number;
 }
 
-interface JvaOscillatorSettings {
+interface IJvaOscillatorSettings {
   volume: number;
   transpose: number;
   detune: number;
   type: ToneOscillatorType;
 }
 
-interface JvaAmpSettings {
-  envelope: JvaEnvelopeSettings;
+interface IJvaAmpSettings {
+  envelope: IJvaEnvelopeSettings;
   modulationAmount: number;
   modulationRate: number;
 }
 
-interface JvaFilterSettings {
-  envelope: JvaEnvelopeSettings;
+interface IJvaFilterSettings {
+  envelope: IJvaEnvelopeSettings;
   envelopeAmount: number;
   frequency: number;
   q: number;
@@ -35,17 +35,17 @@ interface JvaFilterSettings {
   modulationRate: number;
 }
 
-interface JvaPitchSettings {
+interface IJvaPitchSettings {
   modulationAmount: number;
   modulationRate: number;
 }
 
-interface JVANoiseSettings {
+interface IJVANoiseSettings {
   type: string;
   volume: number;
 }
 
-interface JvaEnvelopeSettings {
+interface IJvaEnvelopeSettings {
   attack: number;
   decay: number;
   sustain: number;

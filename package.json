@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@octokit/rest": "^18.0.5",
+    "axios": "^0.20.0",
     "core-js": "^3.6.5",
     "tone": "^14.7.39",
     "uuid": "^8.3.0",
