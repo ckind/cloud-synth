@@ -316,7 +316,7 @@ import {
   Gain as ToneGain
 } from "tone";
 import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
-import { IJvaSettings } from "@/IJvaSettings";
+import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
 import { IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
 import { IVueInstrumentDevice } from "@/shared/interfaces/devices/IVueInstrumentDevice";
 
@@ -344,6 +344,7 @@ export default class JvaSynth extends Vue implements IVueInstrumentDevice {
   private noise: VANoiseSynth;
   private noiseVolume: ToneVolume;
 
+  // non-required to supress warnings, but this should always be set by instrument container
   @Prop({ required: false })
   public settings!: IJvaSettings;
 

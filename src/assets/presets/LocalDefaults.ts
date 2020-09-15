@@ -1,7 +1,8 @@
 import { IPresetBank } from "@/shared/interfaces/presets/IPresetBank";
-import { IJvaSettings } from "../../IJvaSettings";
+import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
+import { ArpeggioMode, IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
 
-export const getDefaultJvaSettings = function(): IJvaSettings {
+const getDefaultJvaSettings = function(): IJvaSettings {
   return {
     oscillator1: {
       volume: -12,
@@ -58,6 +59,17 @@ export const getDefaultJvaSettings = function(): IJvaSettings {
   };
 };
 
+const getDefaultComputerMidiKeyboardSettings = function(): IComputerMidiKeyboardSettings {
+  return {
+    arpOn: false,
+    arpMode: ArpeggioMode.UP,
+    arpNodeRepeat: 1,
+    chordTrigger: [0],
+    octaveOffset: 48,
+    transposeOffset: 0
+  };
+}
+
 export const getDefaultJvaBank = function(): IPresetBank {
   return {
     _id: "0",
@@ -68,6 +80,21 @@ export const getDefaultJvaBank = function(): IPresetBank {
         version: 0,
         private: false,
         settings: getDefaultJvaSettings()
+      }]
+    }]
+  }
+}
+
+export const getDefaultComputerMidiKeyboardBank = function(): IPresetBank {
+  return {
+    _id: "0",
+    categories: [{
+      category: "local",
+      presets: [{
+        name: "default",
+        version: 0,
+        private: false,
+        settings: getDefaultComputerMidiKeyboardSettings()
       }]
     }]
   }

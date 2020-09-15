@@ -2,35 +2,52 @@
   <div>
     <instrument-container
       :device="currentInstrument"
-      :presetService="jvaPresets"
+      :presetService="instrumentPresets"
     >
     </instrument-container>
+    <midi-device-container
+      :device="currentMidiDevice"
+      :presetService="midiDevicePresets"
+    >
+    </midi-device-container>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { context as ToneContext } from "tone";
 import { JvaPresetService } from "@/services/JvaPresetService";
+import { ComputerMidiKeyboardPresetService } from "@/services/ComputerMidiKeyboardPresetService";
 import { IPresetService } from "@/shared/interfaces/presets/IPresetService";
 import { IVueInstrumentDevice } from "@/shared/interfaces/devices/IVueInstrumentDevice";
+import { IVueMidiDevice } from "@/shared/interfaces/devices/IVueMidiDevice";
 import InstrumentContainer from "@/components/InstrumentContainer.vue";
+import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
 import JvaSynth from "@/components/JvaSynth.vue";
+import ComputerMidiKeyboard from "@/components/ComputerMidiKeyboard.vue";
 
 @Component({
   components: {
     InstrumentContainer,
-    JvaSynth
+    MidiDeviceContainer,
+    JvaSynth,
+    ComputerMidiKeyboard
   }
 })
 export default class Session extends Vue {
-  private jvaPresets: IPresetService;
+  private instrumentPresets: IPresetService;
+  private midiDevicePresets: IPresetService;
   private currentInstrument: IVueInstrumentDevice;
+  private currentMidiDevice: IVueMidiDevice;
 
   public constructor() {
     super();
-    this.jvaPresets = new JvaPresetService();
     this.currentInstrument = new JvaSynth();
+    this.currentMidiDevice = new ComputerMidiKeyboard();
+    this.instrumentPresets = new JvaPresetService();
+    this.midiDevicePresets = new ComputerMidiKeyboardPresetService();
+
+    this.currentMidiDevice.connect(this.currentInstrument);
 
     // hack for making sure audio context starts right away
     document.documentElement.addEventListener("mousedown", function() {
@@ -39,10 +56,6 @@ export default class Session extends Vue {
         console.log("context resumed!");
       }
     });
-
-    // todo: how do we assign currentInstrument to the component instance? might need to rethink this bit...
-    // read this - https://forum.vuejs.org/t/how-to-pass-and-use-component-as-a-prop/58475
-    // actually you need this - https://stackoverflow.com/questions/42992579/is-it-possible-to-pass-a-component-as-props-and-use-it-in-a-child-component-in-v
   }
 
   // Lifecycle Hooks

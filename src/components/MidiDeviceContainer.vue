@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="device-window">
     <v-row class="device-header">
       <v-col cols="12">
         <h4>{{ currentPreset.name }}</h4>
@@ -16,8 +16,7 @@ import { IVueMidiDevice } from "../shared/interfaces/devices/IVueMidiDevice";
 import { IPreset } from "../shared/interfaces/presets/IPreset";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
-import { getDefaultJvaBank } from "../assets/presets/LocalDefaults";
-import { MidiFunction } from "../shared/interfaces/midi/IMidiMessage";
+import { getDefaultComputerMidiKeyboardBank } from "../assets/presets/LocalDefaults";
 import JvaSynth from "./JvaSynth.vue";
 
 @Component({
@@ -41,7 +40,7 @@ export default class MidiDeviceContainer extends Vue
 
   public constructor() {
     super();
-    this.currentBank = getDefaultJvaBank(); // todo: need default bank for midi device
+    this.currentBank = getDefaultComputerMidiKeyboardBank(); // todo: need default bank for midi device
     this.currentPreset = this.currentBank.categories[0].presets[0];
     this.device.settings = this.currentPreset.settings;
     // this.device.connect() -- todo: how to connect this to the instrument?
@@ -71,5 +70,9 @@ export default class MidiDeviceContainer extends Vue
 .device-header {
   background-color: black;
   color: white;
+}
+.device-window {
+  border: 12px solid black;
+  border-radius: 12px;
 }
 </style>

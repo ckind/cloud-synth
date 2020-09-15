@@ -13,24 +13,16 @@
       </div>
 
       <h2 class="menu-link">
-        <span class="nav-link" to="/">JVA Synth</span>
+        <span class="nav-link" to="/">CloudSynth.io</span>
       </h2>
 
-      <h3 class="menu-link">
-        <span class="menu-option" @click="showMidiSettings = true">Midi</span>
-      </h3>
+      <h4 class="menu-link">
+        <span class="menu-option" @click="showQuickStart = true">Quick Start</span>
+      </h4>
 
-      <h3 class="menu-link">
-        <span class="menu-option" @click="showPresets = true">Presets</span>
-      </h3>
-
-      <h3 class="menu-link">
-        <span class="menu-option" @click="showQuickStart = true">Help</span>
-      </h3>
-
-      <h3 class="menu-link">
+      <h4 class="menu-link">
         <span class="menu-option" @click="showChangeLog = true">Change Log</span>
-      </h3>
+      </h4>
 
       <v-spacer></v-spacer>
 
@@ -54,8 +46,6 @@
 <script lang="ts">
 import Vue from "vue";
 import QuickStart from "./components/modal content/QuickStart.vue";
-import Presets from "./components/modal content/Presets.vue";
-import MidiSettings from "./components/modal content/MidiSettings.vue";
 import ChangeLog from "./components/modal content/ChangeLog.vue";
 
 export default Vue.extend({
@@ -63,17 +53,12 @@ export default Vue.extend({
 
   components: {
     QuickStart,
-    Presets,
-    MidiSettings,
     ChangeLog
   },
 
   data: () => ({
-    showQuickStart: false,
-    showPresets: false,
-    showDisplaySettings: false,
-    showMidiSettings: false,
-    showChangeLog: true
+    showQuickStart: true,
+    showChangeLog: false
   })
 });
 </script>

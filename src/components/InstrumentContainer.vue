@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="device-window">
     <v-row class="device-header">
       <v-col cols="12">
         <h4>{{ currentPreset.name }}</h4>
@@ -18,7 +18,6 @@ import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
 import { getDefaultJvaBank } from "../assets/presets/LocalDefaults";
 import { Master as ToneMaster } from "tone";
-import { MidiFunction } from "../shared/interfaces/midi/IMidiMessage";
 import JvaSynth from "./JvaSynth.vue";
 
 @Component({
@@ -46,11 +45,6 @@ export default class InstrumentContainer extends Vue
     this.currentPreset = this.currentBank.categories[0].presets[0];
     this.device.settings = this.currentPreset.settings;
     this.device.output.connect(ToneMaster);
-    // this.device.receiveMidi({
-    //   midiFunction: MidiFunction.noteon,
-    //   noteNumber: 54,
-    //   noteVelocity: 67
-    // });
   }
 
   // Lifecycle Hooks
@@ -77,5 +71,9 @@ export default class InstrumentContainer extends Vue
 .device-header {
   background-color: black;
   color: white;
+}
+.device-window {
+  border: 12px solid black;
+  border-radius: 12px;
 }
 </style>

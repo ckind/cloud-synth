@@ -12,10 +12,6 @@
           Use the Z and X keys to change octave and the C and V keys to
           transpose (default is Key A = C3).
         </p>
-        <p>
-          If you're unfamiliar with the controls try browsing the
-          <a>presets</a> to discover new sounds.
-        </p>
       </v-card-text>
 
       <v-card-actions>

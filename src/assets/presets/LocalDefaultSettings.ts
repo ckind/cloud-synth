@@ -1,4 +1,4 @@
-import { IJvaSettings } from "../../IJvaSettings";
+import { IJvaSettings } from "../../shared/interfaces/presets/IJvaSettings";
 
 export const getLocalDefaultSettings = (): IJvaSettings => {
   return {

@@ -1,4 +1,4 @@
-import { IJvaSettings } from "@/IJvaSettings";
+import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
 import axios from "axios";
 
 export interface IJvaPresetServiceClient {
