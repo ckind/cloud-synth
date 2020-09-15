@@ -46,11 +46,11 @@ export default class InstrumentContainer extends Vue
     this.currentPreset = this.currentBank.categories[0].presets[0];
     this.device.settings = this.currentPreset.settings;
     this.device.output.connect(ToneMaster);
-    this.device.receiveMidi({
-      midiFunction: MidiFunction.noteon,
-      noteNumber: 54,
-      noteVelocity: 67
-    });
+    // this.device.receiveMidi({
+    //   midiFunction: MidiFunction.noteon,
+    //   noteNumber: 54,
+    //   noteVelocity: 67
+    // });
   }
 
   // Lifecycle Hooks
