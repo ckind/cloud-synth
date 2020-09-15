@@ -1,6 +1,6 @@
 import { ToneAudioNode } from "tone";
 
-export interface AudioModule {
+export interface IAudioModule {
 
   readonly output: ToneAudioNode;
 

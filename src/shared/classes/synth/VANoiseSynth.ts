@@ -1,10 +1,10 @@
 import { NoiseType } from "../../interfaces/synth/NoiseModule";
-import { MidiReceiver } from "../../interfaces/midi/MidiReceiver";
-import { MidiMessage, MidiFunction } from "../../interfaces/midi/MidiMessage";
+import { IMidiReceiver } from "../../interfaces/midi/IMidiReceiver";
+import { IMidiMessage, MidiFunction } from "../../interfaces/midi/IMidiMessage";
 import { Noise, immediate, Time } from "tone";
 import { VABaseSynth } from "./VABaseSynth";
 
-export class VANoiseSynth extends VABaseSynth implements MidiReceiver {
+export class VANoiseSynth extends VABaseSynth implements IMidiReceiver {
   private readonly noiseSource: Noise;
   private _noiseType: NoiseType;
 
@@ -14,7 +14,7 @@ export class VANoiseSynth extends VABaseSynth implements MidiReceiver {
     this.noiseSource = new Noise(type).start().connect(this.filter);
   }
 
-  public receiveMidi(message: MidiMessage) {
+  public receiveMidi(message: IMidiMessage) {
     switch (message.midiFunction) {
       case MidiFunction.noteon:
         this.triggerAttack();

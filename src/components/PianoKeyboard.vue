@@ -174,19 +174,19 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { Draw, immediate } from "tone";
-import { MidiSender } from "@/shared/interfaces/midi/MidiSender";
-import { MidiReceiver } from "@/shared/interfaces/midi/MidiReceiver";
+import { IMidiSender } from "@/shared/interfaces/midi/IMidiSender";
+import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
 import {
   MidiFunction,
-  MidiMessage
-} from "@/shared/interfaces/midi/MidiMessage";
+  IMidiMessage
+} from "@/shared/interfaces/midi/IMidiMessage";
 
 @Component({})
 export default class PianoKeyboard extends Vue
-  implements MidiSender, MidiReceiver {
+  implements IMidiSender, IMidiReceiver {
   private readonly keyPressedColor = "#ff2929";
   private readonly blackKeys = [1, 3, 6, 8, 10];
-  private connections: Array<MidiReceiver>;
+  private connections: Array<IMidiReceiver>;
   private keysPressed: Array<boolean>;
   private mouseIsDown = false;
   private playerOctaveOffset = 48;
@@ -226,11 +226,11 @@ export default class PianoKeyboard extends Vue
     };
   }
 
-  connect(receiver: MidiReceiver) {
+  connect(receiver: IMidiReceiver) {
     this.connections.push(receiver);
   }
 
-  disconnect(receiver: MidiReceiver) {
+  disconnect(receiver: IMidiReceiver) {
     const i = this.connections.indexOf(receiver);
     if (i > -1) {
       this.connections.splice(i, 1);
@@ -239,13 +239,13 @@ export default class PianoKeyboard extends Vue
     }
   }
 
-  sendMidi(message: MidiMessage) {
+  sendMidi(message: IMidiMessage) {
     this.connections.forEach(r => {
       r.receiveMidi(message);
     });
   }
 
-  receiveMidi(message: MidiMessage) {
+  receiveMidi(message: IMidiMessage) {
     switch (message.midiFunction) {
       case MidiFunction.noteon:
         Draw.schedule(() => {

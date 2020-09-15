@@ -6,7 +6,7 @@ import {
   immediate,
   Midi
 } from "tone";
-import { MidiMessage, MidiFunction } from "../../interfaces/midi/MidiMessage";
+import { IMidiMessage, MidiFunction } from "../../interfaces/midi/IMidiMessage";
 import { DryWetMixer } from "../utility/DryWetMixer";
 import { VAMonoOscillatorChannel } from "../synth/VAMonoOscillatorChannel";
 import { AnalogMonoSynthModule } from "../../interfaces/synth/AnalogMonoSynthModule";
@@ -71,7 +71,7 @@ export class VAMonoSynth extends VABaseSynth implements AnalogMonoSynthModule {
     this.pitchModulationMixer.wetness = w;
   }
 
-  receiveMidi(message: MidiMessage) {
+  receiveMidi(message: IMidiMessage) {
     switch (message.midiFunction) {
       case MidiFunction.noteon:
         this.triggerAttack(message.noteNumber);

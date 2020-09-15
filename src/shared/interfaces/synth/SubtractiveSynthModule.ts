@@ -1,8 +1,8 @@
 import { ToneAudioNode } from "tone";
-import { AudioModule } from "../AudioModule";
-import { MidiReceiver } from "../midi/MidiReceiver";
+import { IAudioModule } from "./IAudioModule";
+import { IMidiReceiver } from "../midi/IMidiReceiver";
 
-export interface SubtractiveSynthModule extends AudioModule, MidiReceiver {
+export interface SubtractiveSynthModule extends IAudioModule, IMidiReceiver {
 
   ampAttack: number;
 
@@ -12,10 +12,12 @@ export interface SubtractiveSynthModule extends AudioModule, MidiReceiver {
 
   ampRelease: number;
 
+  // todo: break these out into other interfaces? -- IAmplitudeModulatable
   readonly ampModulation: ToneAudioNode;
 
   ampModulationMix: number;
-
+  //
+  
   filterAttack: number;
 
   filterDecay: number;

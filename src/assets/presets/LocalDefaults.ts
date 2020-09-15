@@ -1,6 +1,7 @@
+import { IPresetBank } from "@/shared/interfaces/presets/IPresetBank";
 import { IJvaSettings } from "../../IJvaSettings";
 
-export const getLocalDefaultSettings = (): IJvaSettings => {
+export const getDefaultJvaSettings = function(): IJvaSettings {
   return {
     oscillator1: {
       volume: -12,
@@ -51,8 +52,24 @@ export const getLocalDefaultSettings = (): IJvaSettings => {
     },
     noise: {
       type: "white",
-      volume: -12
+      volume: -24
     },
     volume: -12
   };
 };
+
+export const getDefaultJvaBank = function(): IPresetBank {
+  return {
+    _id: "0",
+    categories: [{
+      category: "local",
+      presets: [{
+        name: "default",
+        version: 0,
+        private: false,
+        settings: getDefaultJvaSettings()
+      }]
+    }]
+  }
+}
+

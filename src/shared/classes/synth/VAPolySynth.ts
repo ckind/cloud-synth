@@ -1,5 +1,5 @@
 import { Gain, ToneOscillatorType } from "tone";
-import { MidiMessage, MidiFunction } from "../../interfaces/midi/MidiMessage";
+import { IMidiMessage, MidiFunction } from "../../interfaces/midi/IMidiMessage";
 import { VASynthVoice } from "../polyphonic/VASynthVoice";
 import { BasicVoiceAssigner } from "../polyphonic/BasicVoiceAssigner";
 import { PolyOscillator } from "./VAPolyOscillatorChannel";
@@ -265,7 +265,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
     });
   }
 
-  receiveMidi(message: MidiMessage) {
+  receiveMidi(message: IMidiMessage) {
     let voiceNum: number;
     switch (message.midiFunction) {
       case MidiFunction.noteon:

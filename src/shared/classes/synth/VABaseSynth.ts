@@ -2,7 +2,7 @@ import { SubtractiveSynthModule } from "../../interfaces/synth/SubtractiveSynthM
 import { FilterEnvelope } from "../utility/FilterEnvelope";
 import { DryWetMixer } from "../utility/DryWetMixer";
 import { Envelope, Filter, ScaleExp, Scale, Gain, Signal, immediate, Time, Frequency } from "tone";
-import { MidiMessage } from '@/shared/interfaces/midi/MidiMessage';
+import { IMidiMessage } from '@/shared/interfaces/midi/IMidiMessage';
 
 export abstract class VABaseSynth implements SubtractiveSynthModule {
   readonly output: Gain;
@@ -174,7 +174,7 @@ export abstract class VABaseSynth implements SubtractiveSynthModule {
     this.filter.type = type;
   }
 
-  receiveMidi(message: MidiMessage) {
+  receiveMidi(message: IMidiMessage) {
     throw "receiveMidi midi must be overriden in child class";
   }
 

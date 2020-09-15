@@ -14,9 +14,7 @@ env2.sustain = 1.0;
 env2.release = 1.0;
 
 const g = new Tone.Gain(200);
-g;
 const s = new Tone.Scale(50, 500);
-s;
 
 const filter = new Tone.Filter();
 filter.type = "lowpass";
@@ -27,7 +25,6 @@ filter.frequency.value = 50;
 const amp = new Tone.Gain(0);
 
 const dist = new Tone.Distortion(0.4);
-dist;
 
 const osc = new Tone.Oscillator(50, "square").chain(filter, amp, Tone.Master);
 filter.chain(dist, amp, Tone.Master);

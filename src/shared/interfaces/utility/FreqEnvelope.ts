@@ -1,5 +1,3 @@
-import { TimeClass } from "tone";
-
 export interface FreqEnvelope {
 
   attack: number;
