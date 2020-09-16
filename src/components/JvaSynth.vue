@@ -270,7 +270,7 @@
             <knob-control
               v-model="settings.pitch.modulationAmount"
               :minValue="0"
-              :maxValue="0.1"
+              :maxValue="0.01"
               id="pitchModKnob"
               label="Pitch Mod"
             ></knob-control>
