@@ -7,22 +7,22 @@ const getDefaultJvaSettings = function(): IJvaSettings {
     oscillator1: {
       volume: -12,
       transpose: 0,
-      detune: 0,
-      type: "sine"
+      detune: -5,
+      type: "sawtooth"
     },
     oscillator2: {
       volume: -12,
       transpose: -12,
       detune: 0,
-      type: "sawtooth"
+      type: "triangle"
     },
     oscillator3: {
       volume: -12,
       transpose: 0,
-      detune: 0,
+      detune: 7,
       type: "sawtooth"
     },
-    oscillatorSpread: 0,
+    oscillatorSpread: 0.4,
     amp: {
       envelope: {
         attack: 0,
