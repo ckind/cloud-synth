@@ -12,6 +12,9 @@
           Use the Z and X keys to change octave and the C and V keys to
           transpose (default is Key A = C3).
         </p>
+        <p>
+          Click and drag the Knobs and Envelope Anchors to discover new sounds!
+        </p>
       </v-card-text>
 
       <v-card-actions>
