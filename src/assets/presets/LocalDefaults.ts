@@ -25,7 +25,7 @@ const getDefaultJvaSettings = function(): IJvaSettings {
     oscillatorSpread: 0.4,
     amp: {
       envelope: {
-        attack: 0,
+        attack: 14,
         decay: 400,
         sustain: 0.8,
         release: 200
