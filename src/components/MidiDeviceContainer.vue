@@ -1,8 +1,33 @@
 <template>
   <div class="device-window">
     <v-row class="device-header">
-      <v-col cols="12">
-        <h4>{{ currentPreset.name }}</h4>
+      <v-col cols="2">
+        <v-menu :close-on-content-click="false" dark bottom offset-y>
+          <template v-slot:activator="{ on }">
+            <v-btn dark v-on="on">
+              Midi Device
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item v-for="item in items" :key="item.title" link>
+              {{ item.title }}
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-col>
+      <v-col cols="2">
+        <v-menu :close-on-content-click="false" dark bottom offset-y>
+          <template v-slot:activator="{ on }">
+            <v-btn dark v-on="on">
+              Presets
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item v-for="item in items" :key="item.title" link>
+              {{ item.title }}
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-col>
     </v-row>
     <div ref="deviceContainer" />
@@ -28,6 +53,7 @@ export default class MidiDeviceContainer extends Vue
   implements IVueMidiDeviceContainer {
   currentPreset: IPreset;
   currentBank: IPresetBank;
+  items: any;
 
   $refs!: {
     deviceContainer: Element;
@@ -43,7 +69,23 @@ export default class MidiDeviceContainer extends Vue
     this.currentBank = getDefaultComputerMidiKeyboardBank(); // todo: need default bank for midi device
     this.currentPreset = this.currentBank.categories[0].presets[0];
     this.device.settings = this.currentPreset.settings;
-    // this.device.connect() -- todo: how to connect this to the instrument?
+    this.items = [
+      {
+        title: "item 1",
+        active: false,
+        items: []
+      },
+      {
+        title: "item 2",
+        active: false,
+        items: []
+      },
+      {
+        title: "item 3",
+        active: false,
+        items: []
+      }
+    ];
   }
 
   // Lifecycle Hooks

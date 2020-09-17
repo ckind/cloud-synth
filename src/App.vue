@@ -33,8 +33,6 @@
     </v-app-bar>
 
     <quick-start v-model="showQuickStart" />
-    <presets v-model="showPresets" />
-    <midi-settings v-model="showMidiSettings" />
     <change-log v-model="showChangeLog" />
 
     <v-main>
