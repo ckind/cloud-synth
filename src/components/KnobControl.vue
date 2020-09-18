@@ -95,7 +95,7 @@ export default class KnobControl extends Vue {
     const value =
       typeof this.default === "undefined" ? this.midValue : this.default;
     this.unsteppedValue = value;
-    this.$emit("input", value);
+    this.$emit("input", this.valueCurve.getCurvedValue(value));
   }
 
   private roundToStep(x: number) {

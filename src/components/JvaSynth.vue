@@ -235,6 +235,7 @@
               v-model="settings.filter.modulationRate"
               :minValue="0"
               :maxValue="10"
+              scale="quadratic bezier"
               id="filterModRateKnob"
               label="Mod Rate"
             ></knob-control>

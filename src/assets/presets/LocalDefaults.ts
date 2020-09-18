@@ -53,7 +53,7 @@ const getDefaultJvaSettings = function(): IJvaSettings {
     },
     noise: {
       type: "white",
-      volume: -24
+      volume: -36
     },
     volume: -12
   };
@@ -71,17 +71,66 @@ const getDefaultComputerMidiKeyboardSettings = function(): IComputerMidiKeyboard
 }
 
 export const getDefaultJvaBank = function(): IPresetBank {
-  return {
+  return { // todo: actually design presets -- this is all dummy data
     _id: "0",
-    categories: [{
-      category: "local",
-      presets: [{
-        name: "default",
-        version: 0,
-        private: false,
-        settings: getDefaultJvaSettings()
-      }]
-    }]
+    categories: [
+      {
+        category: "Lead",
+        presets: [
+          {
+            name: "Synth Flute",
+            version: 0,
+            private: false,
+            settings: getDefaultJvaSettings()
+          },
+          {
+            name: "Super Saw",
+            version: 0,
+            private: false,
+            settings: getDefaultJvaSettings()
+          },
+          {
+            name: "West Coast Sine",
+            version: 0,
+            private: false,
+            settings: getDefaultJvaSettings()
+          },
+          {
+            name: "String Pluck",
+            version: 0,
+            private: false,
+            settings: getDefaultJvaSettings()
+          }
+        ],
+      },
+      {
+        category: "Bass",
+        presets: [{
+          name: "default",
+          version: 0,
+          private: false,
+          settings: getDefaultJvaSettings()
+        }],
+      },
+      {
+        category: "Pad",
+        presets: [{
+          name: "default",
+          version: 0,
+          private: false,
+          settings: getDefaultJvaSettings()
+        }],
+      },
+      {
+        category: "Percussion",
+        presets: [{
+          name: "default",
+          version: 0,
+          private: false,
+          settings: getDefaultJvaSettings()
+        }],
+      },
+    ]
   }
 }
 
@@ -89,9 +138,9 @@ export const getDefaultComputerMidiKeyboardBank = function(): IPresetBank {
   return {
     _id: "0",
     categories: [{
-      category: "local",
+      category: "Basic",
       presets: [{
-        name: "default",
+        name: "Standard",
         version: 0,
         private: false,
         settings: getDefaultComputerMidiKeyboardSettings()

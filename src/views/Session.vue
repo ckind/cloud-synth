@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="session-container">
     <instrument-container
       :device="currentInstrument"
       :presetService="instrumentPresets"
@@ -64,4 +64,8 @@ export default class Session extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.session-container {
+  padding: 10px;
+}
+</style>
