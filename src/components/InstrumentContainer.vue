@@ -26,7 +26,7 @@
               </v-icon>
             </div>
           </template>
-          <span>Save Current Settings</span>
+          <span>Export Current Settings</span>
         </v-tooltip>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -36,7 +36,7 @@
               </v-icon>
             </div>
           </template>
-          <span>Upload Custom Settings</span>
+          <span>Import Custom Settings</span>
         </v-tooltip>
         <input
           @change="applyCustomSettings"

@@ -1,5 +1,5 @@
 <template>
-  <div class="row component-container">
+  <div class="component-container">
     <div
       :class="['graph-container', this.activeAnchorId !== '' ? 'dragging' : '']"
       @mousemove="onMouseMove"
@@ -392,5 +392,6 @@ svg {
 }
 .component-container {
   justify-content: center;
+  display: flex;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="control-container">
-    <div class="row knob-row">
+    <div class="knob-row">
       <img
         :src="require(`../assets/knob-2.svg`)"
         :width="size"
@@ -9,7 +9,7 @@
         @dblclick="onKnobDblClick"
       />
     </div>
-    <div class="row label-row">
+    <div class="label-row">
       <div>
         <span v-if="label != ''"> {{ label }} </span>
       </div>
@@ -155,8 +155,10 @@ export default class KnobControl extends Vue {
 <style scoped>
 .label-row {
   justify-content: center;
+  display: flex;
 }
 .knob-row {
   justify-content: center;
+  display: flex;
 }
 </style>
