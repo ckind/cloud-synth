@@ -186,6 +186,8 @@ import { IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComp
 
 @Component({})
 export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
+  name = "Computer Keyboard";
+
   private readonly keyPressedColor = "#ff2929";
   private readonly blackKeys = [1, 3, 6, 8, 10];
   private connections: Array<IMidiReceiver>;
@@ -226,6 +228,11 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     document.onkeyup = e => {
       this.userKeyReleased(e);
     };
+  }
+
+  applySettings(settings: IComputerMidiKeyboardSettings) {
+    this.settings = settings;
+    // this.updateSynthWatches(); updates watches?
   }
 
   connect(receiver: IMidiReceiver) {

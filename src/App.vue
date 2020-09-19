@@ -1,15 +1,15 @@
 <template>
-  <v-app>
-    <v-app-bar app color="primary" dark>
+  <v-app class="cloudSynth-app">
+    <v-app-bar class="cloudSynth-app-bar" app color="black" dark>
       <div class="d-flex align-center">
-        <v-img
+        <!-- <v-img
           alt="Vuetify Logo"
           class="shrink mr-2"
           contain
           src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
           transition="scale-transition"
           width="40"
-        />
+        /> -->
       </div>
 
       <h2 class="menu-link">
@@ -76,5 +76,11 @@ export default Vue.extend({
 }
 .menu-option:active {
   opacity: 0.7;
+}
+.cloudSynth-app-bar {
+  font-family: "Courier";
+}
+.cloudSynth-app {
+  /* global styles here */
 }
 </style>

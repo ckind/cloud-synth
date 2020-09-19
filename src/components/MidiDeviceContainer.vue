@@ -2,48 +2,20 @@
   <div class="device-window">
     <v-row class="device-header">
       <v-col cols="2">
-        <!-- todo: move this to DeviceDropdown.vue -->
-        <v-menu :close-on-content-click="false" dark bottom offset-y nudge-top="12">
-          <template v-slot:activator="{ on }">
-            <v-text-field dense dark v-on="on" readonly value="Keypad" label="midi device" />
-          </template>
-          <v-list>
-            <v-divider></v-divider>
-            <span v-for="midiDevice in availableMidiDevices" :key="midiDevice">
-              <v-list-item link>
-                {{ midiDevice }}
-              </v-list-item>
-              <v-divider></v-divider>
-            </span>
-          </v-list>
-        </v-menu>
+        <device-dropdown
+          @deviceSelected="deviceSelected"
+          :devices="availableMidiDevices"
+          :selectedDeviceName="currentDeviceName"
+          label="midi devices"
+        />
       </v-col>
       <v-col cols="2">
-        <!-- todo: move this to PresetDropdown.vue -->
-        <v-menu :close-on-content-click="false" dark bottom offset-y nudge-top="10">
-          <!-- confusing syntax -- check this thread https://github.com/vuetifyjs/vuetify/issues/6866 -->
-          <template v-slot:activator="{ on }">
-            <v-text-field dense dark v-on="on" readonly value="Default" label="preset" />
-          </template>
-          <v-list>
-            <v-divider></v-divider>
-            <span v-for="category in currentBank.categories" :key="category.category">
-              <v-list-item link>
-                <v-menu :close-on-content-click="false" dark bottom offset-x open-on-hover nudge-top="12">
-                  <template v-slot:activator="{ on }">
-                    <v-list-item v-on="on"> {{ category.category }} </v-list-item>
-                  </template>
-                  <v-list>
-                    <v-list-item v-for="preset in category.presets" :key="preset.name" link>
-                      {{ preset.name }}
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </v-list-item>
-              <v-divider></v-divider>
-            </span>
-          </v-list>
-        </v-menu>
+        <preset-dropdown
+          @presetSelected="presetSelected"
+          :bank="currentBank"
+          :selectedPreset="currentPreset"
+          label="presets"
+        />
       </v-col>
     </v-row>
     <div ref="deviceContainer" />
@@ -57,18 +29,23 @@ import { IVueMidiDevice } from "../shared/interfaces/devices/IVueMidiDevice";
 import { IPreset } from "../shared/interfaces/presets/IPreset";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
-import { getDefaultComputerMidiKeyboardBank } from "../assets/presets/LocalDefaults";
+import { getDefaultComputerMidiKeyboardBank } from "@/services/LocalDefaults";
 import JvaSynth from "./JvaSynth.vue";
+import PresetDropdown from "./PresetDropdown.vue";
+import DeviceDropdown from "./DeviceDropdown.vue";
 
 @Component({
   components: {
-    JvaSynth
+    JvaSynth,
+    PresetDropdown,
+    DeviceDropdown
   }
 })
 export default class MidiDeviceContainer extends Vue
   implements IVueMidiDeviceContainer {
   currentPreset: IPreset;
   currentBank: IPresetBank;
+  currentDeviceName: string;
   availableMidiDevices: string[];
 
   $refs!: {
@@ -86,6 +63,7 @@ export default class MidiDeviceContainer extends Vue
     this.currentPreset = this.currentBank.categories[0].presets[0];
     this.device.settings = this.currentPreset.settings;
     this.availableMidiDevices = ["Keypad", "Step Sequencer", "External"];
+    this.currentDeviceName = this.availableMidiDevices[0];
   }
 
   // Lifecycle Hooks
@@ -104,6 +82,15 @@ export default class MidiDeviceContainer extends Vue
     this.currentBank = await this.presetService.getFactoryBank();
     this.currentPreset = this.currentBank.categories[0].presets[0];
     this.device.settings = this.currentPreset.settings;
+  }
+
+  presetSelected(p: IPreset) {
+    // todo: apply settings to midi device
+  }
+
+  deviceSelected(deviceName: string) {
+    this.currentDeviceName = deviceName;
+    // todo: actually change device
   }
 }
 </script>

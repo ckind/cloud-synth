@@ -329,7 +329,7 @@ import { IVueInstrumentDevice } from "@/shared/interfaces/devices/IVueInstrument
   }
 })
 export default class JvaSynth extends Vue implements IVueInstrumentDevice {
-  elTag = "jva-synth";
+  name = "Jva Poly";
   output: ToneGain;
 
   private synth: VAPolySynth;
@@ -398,12 +398,13 @@ export default class JvaSynth extends Vue implements IVueInstrumentDevice {
   // Methods
 
   receiveMidi(message: IMidiMessage) {
-    this.synth.receiveMidi(message);
+    this.synth.receiveMidi(message); // todo: don't release noise if keys are still down
     this.noise.receiveMidi(message);
   }
 
   applySettings(settings: IJvaSettings) {
-    this.settings = settings;
+    // create a deep copy so we don't mutate the preset
+    this.settings = JSON.parse(JSON.stringify(settings));
     this.updateSynthWatches();
   }
 

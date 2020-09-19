@@ -1,6 +1,7 @@
 import { IPresetBank } from "@/shared/interfaces/presets/IPresetBank";
 import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
 import { ArpeggioMode, IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
+import defaultBank from "@/assets/presets/OfflineDefaultBank.json";
 
 const getDefaultJvaSettings = function(): IJvaSettings {
   return {
@@ -71,67 +72,7 @@ const getDefaultComputerMidiKeyboardSettings = function(): IComputerMidiKeyboard
 }
 
 export const getDefaultJvaBank = function(): IPresetBank {
-  return { // todo: actually design presets -- this is all dummy data
-    _id: "0",
-    categories: [
-      {
-        category: "Lead",
-        presets: [
-          {
-            name: "Synth Flute",
-            version: 0,
-            private: false,
-            settings: getDefaultJvaSettings()
-          },
-          {
-            name: "Super Saw",
-            version: 0,
-            private: false,
-            settings: getDefaultJvaSettings()
-          },
-          {
-            name: "West Coast Sine",
-            version: 0,
-            private: false,
-            settings: getDefaultJvaSettings()
-          },
-          {
-            name: "String Pluck",
-            version: 0,
-            private: false,
-            settings: getDefaultJvaSettings()
-          }
-        ],
-      },
-      {
-        category: "Bass",
-        presets: [{
-          name: "default",
-          version: 0,
-          private: false,
-          settings: getDefaultJvaSettings()
-        }],
-      },
-      {
-        category: "Pad",
-        presets: [{
-          name: "default",
-          version: 0,
-          private: false,
-          settings: getDefaultJvaSettings()
-        }],
-      },
-      {
-        category: "Percussion",
-        presets: [{
-          name: "default",
-          version: 0,
-          private: false,
-          settings: getDefaultJvaSettings()
-        }],
-      },
-    ]
-  }
+  return defaultBank;
 }
 
 export const getDefaultComputerMidiKeyboardBank = function(): IPresetBank {

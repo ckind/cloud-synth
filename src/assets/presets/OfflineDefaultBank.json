@@ -1,0 +1,438 @@
+{
+    "_id": "0",
+    "categories": [
+        {
+            "category": "Bass",
+            "presets": [
+                {
+                    "name": "D Bass",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": -9.285714285714285,
+                            "type": "sawtooth"
+                        },
+                        "oscillator2": {
+                            "volume": -12,
+                            "transpose": -12,
+                            "detune": 0,
+                            "type": "triangle"
+                        },
+                        "oscillator3": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": 5.714285714285714,
+                            "type": "square"
+                        },
+                        "oscillatorSpread": 0,
+                        "amp": {
+                            "envelope": {
+                                "attack": 14,
+                                "decay": 542.8571428571429,
+                                "sustain": 0.43000000000000016,
+                                "release": 414.28571428571416
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 2.842170943040401e-14,
+                                "decay": 425.0000000000001,
+                                "sustain": 0.1699999999999998,
+                                "release": 628.5714285714286
+                            },
+                            "envelopeAmount": 0.6499999999999999,
+                            "frequency": 62.21385870397209,
+                            "q": 3,
+                            "type": "lowpass",
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "pitch": {
+                            "modulationAmount": 0,
+                            "modulationRate": 8
+                        },
+                        "noise": {
+                            "type": "pink",
+                            "volume": -21.857142857142875
+                        },
+                        "volume": -8.57142857142857
+                    }
+                },
+                {
+                    "name": "808 Sub Bass",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -9.857142857142858,
+                            "transpose": 12,
+                            "detune": 0,
+                            "type": "square"
+                        },
+                        "oscillator2": {
+                            "volume": 0,
+                            "transpose": 0,
+                            "detune": 0,
+                            "type": "square"
+                        },
+                        "oscillator3": {
+                            "volume": -41.142857142857146,
+                            "transpose": 0,
+                            "detune": 0,
+                            "type": "sine"
+                        },
+                        "oscillatorSpread": 0,
+                        "amp": {
+                            "envelope": {
+                                "attack": 14.000000000000057,
+                                "decay": 819.6428571428573,
+                                "sustain": 0.1999999999999999,
+                                "release": 642.8571428571429
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 7.105427357601002e-15,
+                                "decay": 282.14285714285757,
+                                "sustain": 0.15999999999999986,
+                                "release": 200
+                            },
+                            "envelopeAmount": 0.0285714285714286,
+                            "frequency": 79.62143411069947,
+                            "q": 10,
+                            "type": "lowpass",
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "pitch": {
+                            "modulationAmount": 0,
+                            "modulationRate": 0
+                        },
+                        "noise": {
+                            "type": "white",
+                            "volume": -60
+                        },
+                        "volume": -14.571428571428571
+                    }
+                }
+            ]
+        },
+        {
+            "category": "Pad",
+            "presets": [
+                {
+                    "name": "Wide Fifths",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -12,
+                            "transpose": 7,
+                            "detune": 10.714285714285717,
+                            "type": "square"
+                        },
+                        "oscillator2": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": 0,
+                            "type": "square"
+                        },
+                        "oscillator3": {
+                            "volume": -12,
+                            "transpose": 7,
+                            "detune": -5.714285714285714,
+                            "type": "square"
+                        },
+                        "oscillatorSpread": 0.7214285714285703,
+                        "amp": {
+                            "envelope": {
+                                "attack": 13.999999999999972,
+                                "decay": 400,
+                                "sustain": 0.8,
+                                "release": 200
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 71.42857142857142,
+                                "decay": 639.2857142857147,
+                                "sustain": 0.81,
+                                "release": 200
+                            },
+                            "envelopeAmount": 0.10714285714285768,
+                            "frequency": 494.1822455971194,
+                            "q": 3.0000000000000013,
+                            "type": "lowpass",
+                            "modulationAmount": 0.07760204081632663,
+                            "modulationRate": 0.212326530612245
+                        },
+                        "pitch": {
+                            "modulationAmount": 0,
+                            "modulationRate": 4.642857142857151
+                        },
+                        "noise": {
+                            "type": "white",
+                            "volume": -41.14285714285715
+                        },
+                        "volume": -12
+                    }
+                },
+                { 
+                    "name": "Crowley Pad",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": -5,
+                            "type": "sawtooth"
+                        },
+                        "oscillator2": {
+                            "volume": -14,
+                            "transpose": -12,
+                            "detune": 0,
+                            "type": "triangle"
+                        },
+                        "oscillator3": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": 7,
+                            "type": "sawtooth"
+                        },
+                        "oscillatorSpread": 0.4,
+                        "amp": {
+                            "envelope": {
+                                "attack": 14,
+                                "decay": 400,
+                                "sustain": 0.8,
+                                "release": 200
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 300,
+                                "decay": 300,
+                                "sustain": 0.8,
+                                "release": 200
+                            },
+                            "envelopeAmount": 0.7,
+                            "frequency": 5000,
+                            "q": 3,
+                            "type": "lowpass",
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "pitch": {
+                            "modulationAmount": 0,
+                            "modulationRate": 8
+                        },
+                        "noise": {
+                            "type": "white",
+                            "volume": -36
+                        },
+                        "volume": -12
+                    }
+                }
+            ]
+        },
+        {
+            "category": "Lead",
+            "presets": [
+                {
+                    "name": "Warble Lead",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": -5,
+                            "type": "triangle"
+                        },
+                        "oscillator2": {
+                            "volume": -21.428571428571416,
+                            "transpose": 7,
+                            "detune": 0,
+                            "type": "square"
+                        },
+                        "oscillator3": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": 4.285714285714286,
+                            "type": "triangle"
+                        },
+                        "oscillatorSpread": 0,
+                        "amp": {
+                            "envelope": {
+                                "attack": 113.99999999999999,
+                                "decay": 855.357142857143,
+                                "sustain": 0.7700000000000001,
+                                "release": 457.142857142857
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 28.57142857142899,
+                                "decay": 558.9285714285722,
+                                "sustain": 0.11999999999999966,
+                                "release": 271.4285714285714
+                            },
+                            "envelopeAmount": 0.7857142857142864,
+                            "frequency": 1143.449535125182,
+                            "q": 2.499999999999999,
+                            "type": "lowpass",
+                            "modulationAmount": 0,
+                            "modulationRate": 1.098448979591837
+                        },
+                        "pitch": {
+                            "modulationAmount": 0.00032142857142857125,
+                            "modulationRate": 3.857142857142861
+                        },
+                        "noise": {
+                            "type": "white",
+                            "volume": -60
+                        },
+                        "volume": -10
+                    }
+                }
+            ]
+        },
+        {
+            "category": "Percussion",
+            "presets": [
+                {
+                    "name": "Shaker",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -60,
+                            "transpose": 0,
+                            "detune": -5,
+                            "type": "sawtooth"
+                        },
+                        "oscillator2": {
+                            "volume": -60,
+                            "transpose": -12,
+                            "detune": 0,
+                            "type": "triangle"
+                        },
+                        "oscillator3": {
+                            "volume": -60,
+                            "transpose": 0,
+                            "detune": 7,
+                            "type": "sawtooth"
+                        },
+                        "oscillatorSpread": 0,
+                        "amp": {
+                            "envelope": {
+                                "attack": 71.14285714285711,
+                                "decay": 149.99999999999997,
+                                "sustain": 0.009999999999999879,
+                                "release": 200
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 14.285714285714299,
+                                "decay": 94.6428571428572,
+                                "sustain": 0.009999999999999844,
+                                "release": 200
+                            },
+                            "envelopeAmount": 0.328571428571429,
+                            "frequency": 3067.2154375400205,
+                            "q": 0,
+                            "type": "highpass",
+                            "modulationAmount": 0,
+                            "modulationRate": 0
+                        },
+                        "pitch": {
+                            "modulationAmount": 0,
+                            "modulationRate": 8
+                        },
+                        "noise": {
+                            "type": "pink",
+                            "volume": 0
+                        },
+                        "volume": -6.857142857142855
+                    }
+                },
+                {
+                    "name": "Hihat",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -60,
+                            "transpose": 0,
+                            "detune": -5,
+                            "type": "sawtooth"
+                        },
+                        "oscillator2": {
+                            "volume": -60,
+                            "transpose": -12,
+                            "detune": 0,
+                            "type": "triangle"
+                        },
+                        "oscillator3": {
+                            "volume": -60,
+                            "transpose": 0,
+                            "detune": 7,
+                            "type": "sawtooth"
+                        },
+                        "oscillatorSpread": 0,
+                        "amp": {
+                            "envelope": {
+                                "attack": 14.285714285714192,
+                                "decay": 141.0714285714287,
+                                "sustain": 0.009999999999999879,
+                                "release": 200
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 1.4210854715202004e-14,
+                                "decay": 85.71428571428578,
+                                "sustain": 0.009999999999999794,
+                                "release": 200
+                            },
+                            "envelopeAmount": 0,
+                            "frequency": 6754.627817581993,
+                            "q": 1.4285714285714284,
+                            "type": "highpass",
+                            "modulationAmount": 0,
+                            "modulationRate": 0
+                        },
+                        "pitch": {
+                            "modulationAmount": 0,
+                            "modulationRate": 8
+                        },
+                        "noise": {
+                            "type": "white",
+                            "volume": 0
+                        },
+                        "volume": -6.857142857142855
+                    }
+                }
+            ]
+        }
+    ]
+}
