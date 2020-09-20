@@ -1,10 +1,17 @@
-import { IAudioModule } from '@/shared/interfaces/synth/IAudioModule';
-import { Disposable } from '@/shared/interfaces/utility/Disposable';
-import { ToneOscillatorType, Signal, PanVol, Gain, Oscillator, immediate } from "tone";
+import { IAudioModule } from "@/shared/interfaces/synth/IAudioModule";
+import { IDisposable } from "@/shared/interfaces/utility/IDisposable";
+import {
+  ToneOscillatorType,
+  Signal,
+  PanVol,
+  Gain,
+  Oscillator,
+  immediate
+} from "tone";
 import { OscillatorChannel } from "../../interfaces/synth/OscillatorChannel";
 
 // a free running digital oscillator
-export class VAMonoOscillatorChannel implements OscillatorChannel, Disposable, IAudioModule {
+export class VAMonoOscillatorChannel implements OscillatorChannel, IDisposable, IAudioModule {
   readonly frequency: Signal<"frequency">;
   readonly output: Gain;
   

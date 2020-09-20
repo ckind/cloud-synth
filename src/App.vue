@@ -13,7 +13,7 @@
       </div>
 
       <h2 class="menu-link">
-        <span class="nav-link" to="/">CloudSynth.io</span>
+        <span class="nav-link" to="/">CloudSynth</span>
       </h2>
 
       <h4 class="menu-link">
@@ -22,6 +22,10 @@
 
       <h4 class="menu-link">
         <span class="menu-option" @click="showChangeLog = true">Change Log</span>
+      </h4>
+
+      <h4 class="menu-link">
+        <span class="menu-option">Tutorials</span>
       </h4>
 
       <v-spacer></v-spacer>

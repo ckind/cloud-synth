@@ -308,6 +308,65 @@
                         },
                         "volume": -4
                     }
+                },
+                {
+                    "name": "Dr. Who's Next",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": -9.285714285714285,
+                            "type": "sawtooth"
+                        },
+                        "oscillator2": {
+                            "volume": -12,
+                            "transpose": 12,
+                            "detune": 0,
+                            "type": "triangle"
+                        },
+                        "oscillator3": {
+                            "volume": -12,
+                            "transpose": 6,
+                            "detune": 5.714285714285714,
+                            "type": "square"
+                        },
+                        "oscillatorSpread": 0,
+                        "amp": {
+                            "envelope": {
+                                "attack": 614.0000000000001,
+                                "decay": 917.8571428571431,
+                                "sustain": 0.6000000000000003,
+                                "release": 999.9999999999998
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 957.142857142857,
+                                "decay": 871.4285714285717,
+                                "sustain": 0.6299999999999999,
+                                "release": 628.5714285714286
+                            },
+                            "envelopeAmount": 0.8571428571428571,
+                            "frequency": 36.159049204562905,
+                            "q": 4.714285714285714,
+                            "type": "lowpass",
+                            "modulationAmount": 0.3347448979591836,
+                            "modulationRate": 0.2040816326530612
+                        },
+                        "pitch": {
+                            "modulationAmount": 0.00007142857142857133,
+                            "modulationRate": 8
+                        },
+                        "noise": {
+                            "type": "brown",
+                            "volume": -21.857142857142875
+                        },
+                        "volume": -8.57142857142857
+                    }
                 }
             ]
         },

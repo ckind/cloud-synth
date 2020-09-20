@@ -26,7 +26,11 @@
               </v-icon>
             </div>
           </template>
-          <span>Export Current Settings</span>
+          <p>Export Current Settings</p>
+          <p>
+            Please note that CloudSynth is under active development and there is
+            no guaranteed support for legacy presets at this time.
+          </p>
         </v-tooltip>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -114,8 +118,10 @@ export default class InstrumentContainer extends Vue
   }
 
   instrumentSelected(instrumentName: string) {
-    this.currentInstrumentName = instrumentName;
-    // todo: actually change instruments
+    if (instrumentName != this.currentInstrumentName) {
+      this.currentInstrumentName = instrumentName;
+      this.$emit("deviceChanged", instrumentName);
+    }
   }
 
   downloadCurrentSettings() {

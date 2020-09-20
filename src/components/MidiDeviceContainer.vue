@@ -18,62 +18,96 @@
         />
       </v-col>
     </v-row>
-    <div ref="deviceContainer" />
+    <div>
+      <computer-midi-keyboard
+        ref="keypad"
+        :settings="currentPreset.settings"
+        @deviceMounted="newDeviceMounted"
+        v-if="currentDeviceName === 'Keypad'"
+      />
+      <external-midi-device
+        ref="external"
+        :settings="currentPreset.settings"
+        @deviceMounted="newDeviceMounted"
+        v-if="currentDeviceName === 'External'"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { IVueMidiDeviceContainer } from "../shared/interfaces/containers/IVueMidiDeviceContainer";
-import { IVueMidiDevice } from "../shared/interfaces/devices/IVueMidiDevice";
+import { IMidiDeviceContainer } from "../shared/interfaces/containers/IMidiDeviceContainer";
 import { IPreset } from "../shared/interfaces/presets/IPreset";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
-import { getDefaultComputerMidiKeyboardBank } from "@/services/LocalDefaults";
-import JvaSynth from "./JvaSynth.vue";
+import { getDefaultKeypadBank } from "@/services/LocalDefaults";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
+import ComputerMidiKeyboard from "./ComputerMidiKeyboard.vue";
+import ExternalMidiDevice from "./ExternalMidiDevice.vue";
+import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
+import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 
 @Component({
   components: {
-    JvaSynth,
     PresetDropdown,
-    DeviceDropdown
+    DeviceDropdown,
+    ComputerMidiKeyboard,
+    ExternalMidiDevice
   }
 })
 export default class MidiDeviceContainer extends Vue
-  implements IVueMidiDeviceContainer {
-  currentPreset: IPreset;
-  currentBank: IPresetBank;
-  currentDeviceName: string;
-  availableMidiDevices: string[];
+  implements IMidiDeviceContainer {
+  private presetService: IPresetService;
+  private currentPreset: IPreset;
+  private currentBank: IPresetBank;
+  private currentDeviceName: string;
+  private availableMidiDevices = ["Keypad", "External"];
+  // private availableMidiDevices = ["Keypad", "Step Sequencer", "External"]; // todo: build step sequencer
 
   $refs!: {
-    deviceContainer: Element;
+    keypad: ComputerMidiKeyboard;
+    external: ExternalMidiDevice;
   };
-  @Prop({ required: true })
-  public device!: IVueMidiDevice;
-
-  @Prop({ required: true })
-  public presetService!: IPresetService;
 
   public constructor() {
     super();
-    this.currentBank = getDefaultComputerMidiKeyboardBank(); // todo: need default bank for midi device
-    this.currentPreset = this.currentBank.categories[0].presets[0];
-    this.device.settings = this.currentPreset.settings;
-    this.availableMidiDevices = ["Keypad", "Step Sequencer", "External"];
     this.currentDeviceName = this.availableMidiDevices[0];
+    this.presetService = PresetServiceFactory.getPresetService(
+      this.currentDeviceName
+    );
+    this.currentBank = getDefaultKeypadBank(); // todo: load from local json file
+    this.currentPreset = this.currentBank.categories[0].presets[0];
   }
 
   // Lifecycle Hooks
 
   mounted() {
-    // todo: this goes against the standard lifecycle (children mount before parent) - maybe rethink design?
-    this.device.$mount(this.$refs.deviceContainer);
     this.loadFactoryPresets().then(() => {
       console.log(`loaded preset bank ${this.currentBank._id}`);
     });
+  }
+
+  // Computed
+
+  get device() {
+    // todo: better implementation than switch?
+    let currentDevice: IMidiDevice;
+    switch (this.currentDeviceName) {
+      case "Keypad":
+        currentDevice = this.$refs.keypad;
+        break;
+      case "Step Sequencer":
+        currentDevice = this.$refs.keypad; // todo: create step sequencer component
+        break;
+      case "External":
+        currentDevice = this.$refs.external;
+        break;
+      default:
+        throw `Invalid Device Name ${this.currentDeviceName}`;
+    }
+    return currentDevice;
   }
 
   // Methods
@@ -81,7 +115,6 @@ export default class MidiDeviceContainer extends Vue
   async loadFactoryPresets() {
     this.currentBank = await this.presetService.getFactoryBank();
     this.currentPreset = this.currentBank.categories[0].presets[0];
-    this.device.settings = this.currentPreset.settings;
   }
 
   presetSelected(p: IPreset) {
@@ -89,8 +122,13 @@ export default class MidiDeviceContainer extends Vue
   }
 
   deviceSelected(deviceName: string) {
-    this.currentDeviceName = deviceName;
-    // todo: actually change device
+    if (this.currentDeviceName != deviceName) {
+      this.currentDeviceName = deviceName;
+    }
+  }
+
+  newDeviceMounted() {
+    this.$emit("newDeviceMounted");
   }
 }
 </script>

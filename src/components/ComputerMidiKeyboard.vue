@@ -1,7 +1,7 @@
 <template>
   <!-- todo: this is kind of messy...should generate keys in a loop -->
   <!-- prettier-ignore -->
-  <v-row class="row keyboard-container">
+  <v-row class="keyboard-container">
     <!-- <v-col cols="12"> -->
       <ul class="keyboard">
         <li id="key24" class="key"
@@ -183,6 +183,7 @@ import {
   IMidiMessage
 } from "@/shared/interfaces/midi/IMidiMessage";
 import { IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
+import webmidi from "webmidi";
 
 @Component({})
 export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
@@ -211,8 +212,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     "KeyL"
   ];
 
-  // non-required to supress warnings, but this should always be set by midi device container
-  @Prop({ required: false })
+  @Prop({ required: true })
   public settings!: IComputerMidiKeyboardSettings;
 
   public constructor() {
@@ -221,14 +221,21 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     this.keysPressed = new Array<boolean>(127);
     this.keysPressed.fill(false);
 
-    // todo: implement Disposable and cleanup handlers
-    document.onkeydown = e => {
-      this.userKeyPressed(e);
-    };
-    document.onkeyup = e => {
-      this.userKeyReleased(e);
-    };
+    document.addEventListener("keydown", this.userKeyPressed);
+    document.addEventListener("keyup", this.userKeyReleased);
   }
+
+  // Lifecycle Hooks
+
+  mounted() {
+    this.$emit("deviceMounted");
+  }
+
+  beforeDestroy() {
+    this.dispose();
+  }
+
+  // Methods
 
   applySettings(settings: IComputerMidiKeyboardSettings) {
     this.settings = settings;
@@ -246,6 +253,12 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     } else {
       throw `no existing connection to given midi receiver`;
     }
+  }
+
+  dispose() {
+    this.connections.length = 0;
+    document.removeEventListener("keydown", this.userKeyPressed);
+    document.removeEventListener("keyup", this.userKeyReleased);
   }
 
   sendMidi(message: IMidiMessage) {

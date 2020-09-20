@@ -60,7 +60,7 @@ const getDefaultJvaSettings = function(): IJvaSettings {
   };
 };
 
-const getDefaultComputerMidiKeyboardSettings = function(): IComputerMidiKeyboardSettings {
+const getDefaultKeypadSettings = function(): IComputerMidiKeyboardSettings {
   return {
     arpOn: false,
     arpMode: ArpeggioMode.UP,
@@ -75,7 +75,7 @@ export const getDefaultJvaBank = function(): IPresetBank {
   return defaultBank;
 }
 
-export const getDefaultComputerMidiKeyboardBank = function(): IPresetBank {
+export const getDefaultKeypadBank = function(): IPresetBank {
   return {
     _id: "0",
     categories: [{
@@ -84,7 +84,7 @@ export const getDefaultComputerMidiKeyboardBank = function(): IPresetBank {
         name: "Standard",
         version: 0,
         private: false,
-        settings: getDefaultComputerMidiKeyboardSettings()
+        settings: getDefaultKeypadSettings()
       }]
     }]
   }

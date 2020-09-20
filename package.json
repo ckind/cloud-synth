@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@octokit/rest": "^18.0.5",
+    "@types/webmidi": "^2.0.4",
     "axios": "^0.20.0",
     "core-js": "^3.6.5",
     "tone": "^14.7.39",

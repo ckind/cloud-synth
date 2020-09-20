@@ -1,7 +1,7 @@
 import { ToneOscillatorType, Signal, Param } from "tone";
-import { Disposable } from "../utility/Disposable";
+import { IDisposable } from "../utility/IDisposable";
 
-export interface OscillatorChannel extends Disposable {
+export interface OscillatorChannel extends IDisposable {
 
   type: ToneOscillatorType;
 

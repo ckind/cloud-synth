@@ -1,8 +1,8 @@
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
-import { getDefaultComputerMidiKeyboardBank } from "./LocalDefaults";
+import { getDefaultKeypadBank } from "./LocalDefaults";
 
-export class ComputerMidiKeyboardPresetService implements IPresetService {
+export class ExternalPresetService implements IPresetService {
 
   constructor() {
     //
@@ -10,6 +10,6 @@ export class ComputerMidiKeyboardPresetService implements IPresetService {
 
   // todo: replace with api call
   getFactoryBank(): Promise<IPresetBank> {
-    return Promise.resolve(getDefaultComputerMidiKeyboardBank());
+    return Promise.resolve(getDefaultKeypadBank());
   }
 }

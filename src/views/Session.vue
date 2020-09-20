@@ -1,53 +1,50 @@
 <template>
   <div class="session-container">
     <instrument-container
+      ref="instrumentContainer"
       :device="currentInstrument"
       :presetService="instrumentPresets"
+      @deviceChanged="onInstrumentDeviceChanged"
     >
     </instrument-container>
     <midi-device-container
-      :device="currentMidiDevice"
-      :presetService="midiDevicePresets"
-    >
-    </midi-device-container>
+      ref="midiDeviceContainer"
+      @newDeviceMounted="newMidiDeviceMounted"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { context as ToneContext } from "tone";
-import { JvaPresetService } from "@/services/JvaPresetService";
-import { ComputerMidiKeyboardPresetService } from "@/services/ComputerMidiKeyboardPresetService";
 import { IPresetService } from "@/shared/interfaces/presets/IPresetService";
 import { IVueInstrumentDevice } from "@/shared/interfaces/devices/IVueInstrumentDevice";
-import { IVueMidiDevice } from "@/shared/interfaces/devices/IVueMidiDevice";
+import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
+import { VueInstrumentDeviceFactory } from "@/shared/factories/VueInstrumentDeviceFactory";
 import InstrumentContainer from "@/components/InstrumentContainer.vue";
 import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
-import JvaSynth from "@/components/JvaSynth.vue";
-import ComputerMidiKeyboard from "@/components/ComputerMidiKeyboard.vue";
 
 @Component({
   components: {
     InstrumentContainer,
-    MidiDeviceContainer,
-    JvaSynth,
-    ComputerMidiKeyboard
+    MidiDeviceContainer
   }
 })
 export default class Session extends Vue {
+  private currentInstrument: IVueInstrumentDevice;
   private instrumentPresets: IPresetService;
   private midiDevicePresets: IPresetService;
-  private currentInstrument: IVueInstrumentDevice;
-  private currentMidiDevice: IVueMidiDevice;
+
+  $refs!: {
+    midiDeviceContainer: MidiDeviceContainer;
+    instrumentContainer: InstrumentContainer;
+  };
 
   public constructor() {
     super();
-    this.currentInstrument = new JvaSynth();
-    this.currentMidiDevice = new ComputerMidiKeyboard();
-    this.instrumentPresets = new JvaPresetService();
-    this.midiDevicePresets = new ComputerMidiKeyboardPresetService();
-
-    this.currentMidiDevice.connect(this.currentInstrument);
+    this.currentInstrument = VueInstrumentDeviceFactory.getInstrumentDevice("Jva Poly");
+    this.instrumentPresets = PresetServiceFactory.getPresetService("Jva Poly");
+    this.midiDevicePresets = PresetServiceFactory.getPresetService("External");
 
     // hack for making sure audio context starts right away
     document.documentElement.addEventListener("mousedown", function() {
@@ -58,9 +55,16 @@ export default class Session extends Vue {
     });
   }
 
-  // Lifecycle Hooks
+  // Methods
 
-  // Computed
+  onInstrumentDeviceChanged(deviceName: string) {
+    console.log(deviceName);
+  }
+
+  newMidiDeviceMounted() {
+    this.$refs.midiDeviceContainer.device.connect(this.currentInstrument);
+    // don't worry about disconnect - this is cleaned up in the beforeDestroy hook for midi devices
+  }
 }
 </script>
 
