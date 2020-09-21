@@ -2,9 +2,7 @@
   <div class="session-container">
     <instrument-container
       ref="instrumentContainer"
-      :device="currentInstrument"
-      :presetService="instrumentPresets"
-      @deviceChanged="onInstrumentDeviceChanged"
+      @newDeviceMounted="newInstrumentDeviceMounted"
     >
     </instrument-container>
     <midi-device-container
@@ -16,11 +14,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { context as ToneContext } from "tone";
-import { IPresetService } from "@/shared/interfaces/presets/IPresetService";
-import { IVueInstrumentDevice } from "@/shared/interfaces/devices/IVueInstrumentDevice";
-import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
-import { VueInstrumentDeviceFactory } from "@/shared/factories/VueInstrumentDeviceFactory";
+import { context as ToneContext, Master as ToneMaster } from "tone";
 import InstrumentContainer from "@/components/InstrumentContainer.vue";
 import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
 
@@ -31,10 +25,6 @@ import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
   }
 })
 export default class Session extends Vue {
-  private currentInstrument: IVueInstrumentDevice;
-  private instrumentPresets: IPresetService;
-  private midiDevicePresets: IPresetService;
-
   $refs!: {
     midiDeviceContainer: MidiDeviceContainer;
     instrumentContainer: InstrumentContainer;
@@ -42,9 +32,6 @@ export default class Session extends Vue {
 
   public constructor() {
     super();
-    this.currentInstrument = VueInstrumentDeviceFactory.getInstrumentDevice("Jva Poly");
-    this.instrumentPresets = PresetServiceFactory.getPresetService("Jva Poly");
-    this.midiDevicePresets = PresetServiceFactory.getPresetService("External");
 
     // hack for making sure audio context starts right away
     document.documentElement.addEventListener("mousedown", function() {
@@ -57,12 +44,15 @@ export default class Session extends Vue {
 
   // Methods
 
-  onInstrumentDeviceChanged(deviceName: string) {
-    console.log(deviceName);
+  newInstrumentDeviceMounted() {
+    this.$refs.instrumentContainer.device.output.connect(ToneMaster);
+    // todo: disconnect?
   }
 
   newMidiDeviceMounted() {
-    this.$refs.midiDeviceContainer.device.connect(this.currentInstrument);
+    this.$refs.midiDeviceContainer.device.connect(
+      this.$refs.instrumentContainer.device
+    );
     // don't worry about disconnect - this is cleaned up in the beforeDestroy hook for midi devices
   }
 }

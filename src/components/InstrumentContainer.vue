@@ -3,9 +3,9 @@
     <v-row class="device-header">
       <v-col cols="2">
         <device-dropdown
-          @deviceSelected="instrumentSelected"
-          :selectedDeviceName="currentInstrumentName"
-          :devices="availableInstruments"
+          @deviceSelected="deviceSelected"
+          :selectedDeviceName="currentDeviceName"
+          :devices="availableDevices"
           label="instruments"
         />
       </v-col>
@@ -50,19 +50,25 @@
         />
       </v-col>
     </v-row>
-    <div ref="deviceContainer" />
+    <div>
+      <jva-synth
+        ref="jvaPoly"
+        :settings="currentPreset.settings"
+        @deviceMounted="newDeviceMounted"
+        v-if="currentDeviceName === 'Jva Poly'"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { IVueInstrumentContainer } from "../shared/interfaces/containers/IVueInstrumentContainer";
-import { IVueInstrumentDevice } from "../shared/interfaces/devices/IVueInstrumentDevice";
+import { IInstrumentContainer } from "../shared/interfaces/containers/IInstrumentContainer";
+import { IInstrumentDevice } from "../shared/interfaces/devices/IInstrumentDevice";
 import { IPreset } from "../shared/interfaces/presets/IPreset";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
-import { getDefaultJvaBank } from "@/services/LocalDefaults";
-import { Master as ToneMaster } from "tone";
+import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import JvaSynth from "./JvaSynth.vue";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
@@ -75,38 +81,53 @@ import DeviceDropdown from "./DeviceDropdown.vue";
   }
 })
 export default class InstrumentContainer extends Vue
-  implements IVueInstrumentContainer {
+  implements IInstrumentContainer {
   currentPreset: IPreset;
   currentBank: IPresetBank;
-  availableInstruments: string[];
-  currentInstrumentName: string;
+  presetService: IPresetService;
+  availableDevices: string[];
+  currentDeviceName: string;
 
   $refs!: {
-    deviceContainer: Element;
+    jvaPoly: JvaSynth;
   };
-  @Prop({ required: true })
-  public device!: IVueInstrumentDevice;
-
-  @Prop({ required: true })
-  public presetService!: IPresetService;
 
   public constructor() {
     super();
-    this.availableInstruments = ["Jva Poly", "Jva Drummachine"];
-    this.currentInstrumentName = this.availableInstruments[0];
-    this.currentBank = getDefaultJvaBank();
+    this.availableDevices = ["Jva Poly", "External"];
+    this.currentDeviceName = this.availableDevices[0];
+    this.presetService = PresetServiceFactory.getPresetService(
+      this.currentDeviceName
+    );
+    this.currentBank = this.presetService.getLocalBank();
     this.currentPreset = this.currentBank.categories[0].presets[0];
-    this.device.applySettings(this.currentPreset.settings);
-    this.device.output.connect(ToneMaster);
   }
 
   // Lifecycle Hooks
 
   mounted() {
-    this.device.$mount(this.$refs.deviceContainer);
+    this.device.applySettings(this.currentPreset.settings);
     this.loadFactoryPresets().then(() => {
       console.log(`loaded preset bank ${this.currentBank._id}`);
     });
+  }
+
+  // Computed
+
+  get device() {
+    // todo: better implementation than switch?
+    let currentDevice: IInstrumentDevice;
+    switch (this.currentDeviceName) {
+      case "Jva Poly":
+        currentDevice = this.$refs.jvaPoly;
+        break;
+      case "External":
+        currentDevice = this.$refs.jvaPoly; // todo: create external instrument component
+        break;
+      default:
+        throw `Invalid Device Name ${this.currentDeviceName}`;
+    }
+    return currentDevice;
   }
 
   // Methods
@@ -117,11 +138,22 @@ export default class InstrumentContainer extends Vue
     this.device.applySettings(this.currentPreset.settings);
   }
 
-  instrumentSelected(instrumentName: string) {
-    if (instrumentName != this.currentInstrumentName) {
-      this.currentInstrumentName = instrumentName;
-      this.$emit("deviceChanged", instrumentName);
+  deviceSelected(deviceName: string) {
+    if (this.currentDeviceName != deviceName) {
+      this.currentDeviceName = deviceName;
+      this.presetService = PresetServiceFactory.getPresetService(
+        this.currentDeviceName
+      );
+      this.currentBank = this.presetService.getLocalBank();
+      this.currentPreset = this.currentBank.categories[0].presets[0];
     }
+  }
+
+  newDeviceMounted() {
+    this.loadFactoryPresets().then(() => {
+      console.log(`loaded preset bank ${this.currentBank._id}`);
+    });
+    this.$emit("newDeviceMounted");
   }
 
   downloadCurrentSettings() {

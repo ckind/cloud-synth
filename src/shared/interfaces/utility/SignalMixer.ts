@@ -1,6 +1,7 @@
 import { ToneAudioNode } from "tone";
+import { IDisposable } from "./IDisposable";
 
-export interface SignalMixer {
+export interface SignalMixer extends IDisposable {
   readonly output: ToneAudioNode;
 
   addInput(n: number, input: ToneAudioNode): void;
@@ -10,4 +11,5 @@ export interface SignalMixer {
   channel(n: number): ToneAudioNode;
 
   balance(): void;
+
 }

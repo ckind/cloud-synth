@@ -2,7 +2,7 @@ import { Gain, ToneOscillatorType } from "tone";
 import { IMidiMessage, MidiFunction } from "../../interfaces/midi/IMidiMessage";
 import { VASynthVoice } from "../polyphonic/VASynthVoice";
 import { BasicVoiceAssigner } from "../polyphonic/BasicVoiceAssigner";
-import { PolyOscillator } from "./VAPolyOscillatorChannel";
+import { VAPolyOscillatorChannel } from "./VAPolyOscillatorChannel";
 import { AnalogSynthVoice } from "../../interfaces/polyphonic/AnalogSynthVoice";
 import { VoiceAssigner } from "../../interfaces/polyphonic/VoiceAssigner";
 import { OscillatorChannel } from "../../interfaces/synth/OscillatorChannel";
@@ -25,7 +25,7 @@ const defaults = {
 
 export class VAPolySynth implements AnalogPolySynthModule {
   readonly output: Gain;
-  readonly oscillators: Array<PolyOscillator>;
+  readonly oscillators: Array<VAPolyOscillatorChannel>;
   readonly ampModulation: Gain;
   readonly filterFrequencyModulation: Gain;
   readonly filterQModulation: Gain;
@@ -50,7 +50,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
   ) {
     this.output = new Gain(1);
     this.voices = new Array<AnalogSynthVoice>(numVoices);
-    this.oscillators = new Array<PolyOscillator>(numOscillators);
+    this.oscillators = new Array<VAPolyOscillatorChannel>(numOscillators);
     this.pitchModulation = new Gain(1); // will be scaled by synthVoice
     this.ampModulation = new Gain(1); // will be scaled by synthVoice
     this.filterFrequencyModulation = new Gain(1); // will be scaled by synthVoice
@@ -81,8 +81,27 @@ export class VAPolySynth implements AnalogPolySynthModule {
       this.voices.forEach((v, voiceIndex) => {
         oscGroup.push(v.synth.oscillators[oscIndex]);
       });
-      this.oscillators[oscIndex] = new PolyOscillator(oscGroup);
+      this.oscillators[oscIndex] = new VAPolyOscillatorChannel(oscGroup);
     });
+  }
+
+  dispose() {
+    this.oscillators.forEach(osc => {
+      osc.dispose();
+    });
+    this.voices.forEach(voice => {
+      voice.synth.output.disconnect(this.output);
+      this.pitchModulation.disconnect(voice.synth.pitchModulation);
+      this.ampModulation.disconnect(voice.synth.ampModulation);
+      this.filterFrequencyModulation.disconnect(voice.synth.filterFrequencyModulation);
+      this.filterQModulation.disconnect(voice.synth.filterFrequencyModulation);
+      voice.dispose();
+    });
+    this.pitchModulation.dispose();
+    this.ampModulation.dispose();
+    this.filterFrequencyModulation.dispose();
+    this.filterQModulation.dispose();
+    this.output.dispose();
   }
 
   // oscillatorSpread

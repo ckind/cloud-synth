@@ -19,6 +19,10 @@ export class DryWetMixer implements DryWet {
     this.output = this.mixer.output;
   }
 
+  dispose() {
+    this.mixer.dispose();
+  }
+
   get wetness() {
     return this._wetness;
   }

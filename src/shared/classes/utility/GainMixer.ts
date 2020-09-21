@@ -13,7 +13,16 @@ export class GainMixer implements SignalMixer {
     this.channels.fill(null);
   }
 
-  public addInput(n: number, input: ToneAudioNode) {
+  dispose() {
+    this.channels.forEach(channel => {
+      if (channel) {
+        channel.dispose();
+      }
+    });
+    this.output.dispose();
+  }
+
+  addInput(n: number, input: ToneAudioNode) {
     if (this.channels[n] !== null) {
       throw `channel ${n} already taken`;
     } else {
@@ -24,11 +33,11 @@ export class GainMixer implements SignalMixer {
     }
   }
 
-  public removeInput(n: number) {
+  removeInput(n: number) {
     throw "removeInput not implemented!";
   }
 
-  public channel(n: number) {
+  channel(n: number) {
     if (this.channels[n] === null) {
       throw `channel ${n} is unassigned`;
     } else {
@@ -37,7 +46,7 @@ export class GainMixer implements SignalMixer {
     }
   }
 
-  public balance() {
+  balance() {
     let balancedGain: number;
     const activeChannels = this.channels.filter(c => c !== null);
     if (activeChannels.length > 0) {

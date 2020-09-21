@@ -14,6 +14,12 @@ export class VANoiseSynth extends VABaseSynth implements IMidiReceiver {
     this.noiseSource = new Noise(type).start().connect(this.filter);
   }
 
+  dispose() {
+    this.noiseSource.disconnect(this.filter);
+    this.noiseSource.dispose();
+    super.dispose();
+  }
+
   public receiveMidi(message: IMidiMessage) {
     switch (message.midiFunction) {
       case MidiFunction.noteon:

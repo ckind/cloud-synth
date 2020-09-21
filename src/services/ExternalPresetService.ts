@@ -12,4 +12,8 @@ export class ExternalPresetService implements IPresetService {
   getFactoryBank(): Promise<IPresetBank> {
     return Promise.resolve(getDefaultKeypadBank());
   }
+
+  getLocalBank(): IPresetBank {
+    return getDefaultKeypadBank();
+  }
 }

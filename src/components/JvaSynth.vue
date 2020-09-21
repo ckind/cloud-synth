@@ -294,7 +294,7 @@ import {
 import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
 import { IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
-import { IVueInstrumentDevice } from "@/shared/interfaces/devices/IVueInstrumentDevice";
+import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
 
 @Component({
   components: {
@@ -303,7 +303,7 @@ import { IVueInstrumentDevice } from "@/shared/interfaces/devices/IVueInstrument
     KnobControl
   }
 })
-export default class JvaSynth extends Vue implements IVueInstrumentDevice {
+export default class JvaSynth extends Vue implements IInstrumentDevice {
   name = "Jva Poly";
   output: ToneGain;
 
@@ -320,8 +320,7 @@ export default class JvaSynth extends Vue implements IVueInstrumentDevice {
   private noise: VANoiseSynth;
   private noiseVolume: ToneVolume;
 
-  // non-required to supress warnings, but this should always be set by instrument container
-  @Prop({ required: false })
+  @Prop({ required: true })
   public settings!: IJvaSettings;
 
   public constructor() {
@@ -364,13 +363,37 @@ export default class JvaSynth extends Vue implements IVueInstrumentDevice {
     this.volume.connect(this.output);
   }
 
+  // Lifecycle Hooks
+
   mounted() {
-    //
+    this.$emit("deviceMounted");
   }
 
-  // Computed
-
+  beforeDestroy() {
+    this.dispose();
+  }
   // Methods
+
+  dispose() {
+    this.volume.disconnect(this.output);
+    this.synth.output.disconnect(this.volume);
+    this.noise.output.disconnect(this.noiseVolume);
+    this.noiseVolume.disconnect(this.volume);
+
+    this.filterLFO.stop().disconnect(this.synth.filterFrequencyModulation);
+    this.ampLFO.stop().disconnect(this.synth.ampModulation);
+    this.pitchLFO.stop().disconnect(this.synth.pitchModulation);
+
+    this.filterLFO.dispose();
+    this.ampLFO.dispose();
+    this.pitchLFO.dispose();
+
+    this.noiseVolume.dispose();
+    this.noise.dispose();
+    this.synth.dispose();
+    this.volume.dispose();
+    this.output.dispose();
+  }
 
   receiveMidi(message: IMidiMessage) {
     this.synth.receiveMidi(message); // todo: don't release noise if keys are still down

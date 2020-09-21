@@ -1,8 +1,9 @@
 import { ToneAudioNode } from "tone";
 import { IAudioModule } from "./IAudioModule";
 import { IMidiReceiver } from "../midi/IMidiReceiver";
+import { IDisposable } from "../utility/IDisposable";
 
-export interface SubtractiveSynthModule extends IAudioModule, IMidiReceiver {
+export interface SubtractiveSynthModule extends IAudioModule, IMidiReceiver, IDisposable {
 
   ampAttack: number;
 

@@ -11,4 +11,8 @@ export class VASynthVoice implements AnalogSynthVoice {
     this.isActive = false;
     this.currentMidiNote = -1;
   }
+
+  dispose() {
+    this.synth.dispose();
+  }
 }

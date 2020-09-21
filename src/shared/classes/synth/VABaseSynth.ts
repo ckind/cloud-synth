@@ -54,6 +54,30 @@ export abstract class VABaseSynth implements SubtractiveSynthModule {
     this.filter.chain(this.ampModulationStage, this.output);
   }
 
+  dispose() {
+    this.ampModulationStage.disconnect(this.output);
+    this.filter.disconnect(this.ampModulationStage);
+    this.filterQModulationMixer.output.disconnect(this.filter.Q);
+    this.filterFrequencyModulationMixer.output.disconnect(this.filter.frequency);
+    this.ampModulationMixer.output.disconnect(this.ampModulationStage.gain);
+
+    this.ampEnvelope.dispose();
+    this.ampModulation.dispose();
+    this.ampModulationStage.dispose();
+    this.ampModulationMixer.dispose();
+
+    this.filter.dispose();
+    this.filterFrequencyModulation.dispose();
+    this.filterEnvelope.dispose();
+    this.filterFrequencyModulationMixer.dispose();
+
+    this.filterQSignal.dispose();
+    this.filterQModulation.dispose();
+    this.filterQModulationMixer.dispose();
+
+    this.output.dispose();
+  }
+
   // ampModulationMix
   get ampModulationMix() {
     return this.ampModulationMixer.wetness;

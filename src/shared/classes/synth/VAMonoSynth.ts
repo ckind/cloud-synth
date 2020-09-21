@@ -46,6 +46,19 @@ export class VAMonoSynth extends VABaseSynth implements AnalogMonoSynthModule {
     this.oscillatorSpread = 0; 
   }
 
+  dispose() {
+    this.oscillators.forEach(osc => {
+      osc.output.disconnect(this.filter);
+      this.pitchModulationMixer.output.disconnect(osc.frequency);
+      osc.dispose();
+    });
+    this.pitch.dispose();
+    this.pitchModulation.dispose();
+    this.pitchModulationMixer.dispose();
+    
+    super.dispose();
+  }
+
   // oscillatorSpread
   get oscillatorSpread() {
     return this._oscillatorSpread;

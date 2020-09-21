@@ -8,8 +8,12 @@ export class JvaPresetService implements IPresetService {
     //
   }
 
-  // todo: replace with api call
   getFactoryBank(): Promise<IPresetBank> {
+    // todo: replace with api call
     return Promise.resolve(getDefaultJvaBank());
+  }
+
+  getLocalBank(): IPresetBank {
+    return getDefaultJvaBank();
   }
 }

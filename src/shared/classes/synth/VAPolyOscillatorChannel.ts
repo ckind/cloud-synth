@@ -1,7 +1,7 @@
 import { ToneOscillatorType, Signal } from "tone";
 import { OscillatorChannel } from "../../interfaces/synth/OscillatorChannel";
 
-export class PolyOscillator implements OscillatorChannel {
+export class VAPolyOscillatorChannel implements OscillatorChannel {
   readonly frequency: Signal<"frequency">;
 
   private readonly oscGroup: Array<OscillatorChannel>;
@@ -42,7 +42,7 @@ export class PolyOscillator implements OscillatorChannel {
   dispose() {
     this.oscGroup.forEach(o => {
       this.frequency.disconnect(o.frequency);
-      o.dispose();
+      // o.dispose(); don't dispose this -- should be handled by the voice it belongs to
     });
     this.frequency.dispose();
   }
