@@ -244,6 +244,65 @@
                         },
                         "volume": -12
                     }
+                },
+                {
+                    "name": "Warble Pad",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                      "oscillator1": {
+                        "volume": -12,
+                        "transpose": 0,
+                        "detune": -5,
+                        "type": "triangle"
+                      },
+                      "oscillator2": {
+                        "volume": -21.428571428571416,
+                        "transpose": 7,
+                        "detune": 0,
+                        "type": "square"
+                      },
+                      "oscillator3": {
+                        "volume": -12,
+                        "transpose": 0,
+                        "detune": 4.285714285714286,
+                        "type": "triangle"
+                      },
+                      "oscillatorSpread": 0,
+                      "amp": {
+                        "envelope": {
+                          "attack": 42.571428571428555,
+                          "decay": 408.92857142857133,
+                          "sustain": 0.2,
+                          "release": 457.142857142857
+                        },
+                        "modulationAmount": 0,
+                        "modulationRate": 4
+                      },
+                      "filter": {
+                        "envelope": {
+                          "attack": 14.285714285714889,
+                          "decay": 660.7142857142852,
+                          "sustain": 0.02999999999999945,
+                          "release": 271.4285714285714
+                        },
+                        "envelopeAmount": 0.3642857142857138,
+                        "frequency": 83.64857888666961,
+                        "q": 8,
+                        "type": "highpass",
+                        "modulationAmount": 0.010000000000000002,
+                        "modulationRate": 0.10579591836734692
+                      },
+                      "pitch": {
+                        "modulationAmount": 0.00032142857142857125,
+                        "modulationRate": 3.857142857142861
+                      },
+                      "noise": {
+                        "type": "white",
+                        "volume": -29.571428571428587
+                      },
+                      "volume": -4
+                    }
                 }
             ]
         },
