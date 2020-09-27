@@ -12,7 +12,7 @@
     "@types/webmidi": "^2.0.4",
     "axios": "^0.20.0",
     "core-js": "^3.6.5",
-    "tone": "^14.7.39",
+    "tone": "^14.7.58",
     "uuid": "^8.3.0",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",

@@ -10,8 +10,14 @@
       >
         <v-card-text>
           <p>
-            Sorry, but your browser doesn't support WebMidi! Please check the compatibility list 
-            <a href="https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess#Browser_compatibility">here</a>.
+            Sorry, but your browser doesn't support WebMidi! Please check the 
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess#Browser_compatibility"
+              target="_blank"
+            >
+              compatibility list
+            </a>
+            .
           </p>
         </v-card-text>
       </v-card>
@@ -110,7 +116,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { Draw, immediate } from "tone";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
@@ -123,6 +129,7 @@ import webmidi, { InputEventNoteoff, InputEventNoteon } from "webmidi";
 @Component({})
 export default class ExternalMidiDevice extends Vue implements IMidiDevice {
   name = "External Midi Device";
+  settings = {}; // todo: settings for external?
 
   private selectedExternalDevice = "Click to Select Device";
   private connections: Array<IMidiReceiver>;
@@ -131,9 +138,6 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
   private availableDevices: string[] = [];
   private readonly keyPressedColor = "#ff2929";
   private readonly blackKeys = [1, 3, 6, 8, 10];
-
-  @Prop({ required: true })
-  public settings!: any;
 
   public constructor() {
     super();

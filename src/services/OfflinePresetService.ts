@@ -3,7 +3,7 @@ import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
 import { ArpeggioMode, IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
 import defaultBank from "@/assets/presets/OfflineDefaultBank.json";
 
-const getDefaultJvaSettings = function(): IJvaSettings {
+export const getDefaultJvaSettings = function(): IJvaSettings {
   return {
     oscillator1: {
       volume: -12,
@@ -60,7 +60,7 @@ const getDefaultJvaSettings = function(): IJvaSettings {
   };
 };
 
-const getDefaultKeypadSettings = function(): IComputerMidiKeyboardSettings {
+export const getDefaultKeypadSettings = function(): IComputerMidiKeyboardSettings {
   return {
     arpOn: false,
     arpMode: ArpeggioMode.UP,

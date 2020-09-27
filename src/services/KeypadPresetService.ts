@@ -1,6 +1,6 @@
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
-import { getDefaultKeypadBank } from "./LocalDefaults";
+import { getDefaultKeypadBank } from "./OfflinePresetService";
 
 export class KeypadPresetService implements IPresetService {
 

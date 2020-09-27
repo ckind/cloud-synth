@@ -25,7 +25,7 @@
       </h4>
 
       <h4 class="menu-link">
-        <span class="menu-option">Tutorials</span>
+        <span class="menu-option" @click="test">Tutorials</span>
       </h4>
 
       <v-spacer></v-spacer>
@@ -49,6 +49,8 @@
 import Vue from "vue";
 import QuickStart from "./components/modal content/QuickStart.vue";
 import ChangeLog from "./components/modal content/ChangeLog.vue";
+import { Filter, Signal } from "tone";
+import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 
 export default Vue.extend({
   name: "App",
@@ -61,7 +63,20 @@ export default Vue.extend({
   data: () => ({
     showQuickStart: true,
     showChangeLog: false
-  })
+  }),
+
+  methods: {
+    test: () => {
+      // const s = new Signal<"frequency">(1000);
+      // const f = new Filter();
+      // s.connect(f.frequency);
+      // s.disconnect(f.frequency);
+      // s.dispose();
+      // f.dispose();
+      const n = new VANoiseSynth("white");
+      n.dispose();
+    }
+  }
 });
 </script>
 

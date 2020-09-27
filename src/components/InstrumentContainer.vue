@@ -49,13 +49,25 @@
           style="display:none"
         />
       </v-col>
+      <v-col cols="6">
+        <v-icon v-if="expanded" dark class="expand-icon" @click="expanded = false">
+          mdi-chevron-down
+        </v-icon>
+        <v-icon v-else dark class="expand-icon" @click="expanded = true">
+          mdi-chevron-left
+        </v-icon>
+      </v-col>
     </v-row>
-    <div>
+    <div v-show="expanded">
       <jva-synth
         ref="jvaPoly"
-        :settings="currentPreset.settings"
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'Jva Poly'"
+      />
+      <external-instrument
+        ref="external"
+        @deviceMounted="newDeviceMounted"
+        v-if="currentDeviceName === 'External'"
       />
     </div>
   </div>
@@ -72,10 +84,12 @@ import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import JvaSynth from "./JvaSynth.vue";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
+import ExternalInstrument from "./ExternalInstrument.vue";
 
 @Component({
   components: {
     JvaSynth,
+    ExternalInstrument,
     PresetDropdown,
     DeviceDropdown
   }
@@ -88,8 +102,11 @@ export default class InstrumentContainer extends Vue
   availableDevices: string[];
   currentDeviceName: string;
 
+  private expanded = true;
+
   $refs!: {
     jvaPoly: JvaSynth;
+    external: ExternalInstrument;
   };
 
   public constructor() {
@@ -107,9 +124,6 @@ export default class InstrumentContainer extends Vue
 
   mounted() {
     this.device.applySettings(this.currentPreset.settings);
-    this.loadFactoryPresets().then(() => {
-      console.log(`loaded preset bank ${this.currentBank._id}`);
-    });
   }
 
   // Computed
@@ -122,7 +136,7 @@ export default class InstrumentContainer extends Vue
         currentDevice = this.$refs.jvaPoly;
         break;
       case "External":
-        currentDevice = this.$refs.jvaPoly; // todo: create external instrument component
+        currentDevice = this.$refs.external; // todo: create external instrument component
         break;
       default:
         throw `Invalid Device Name ${this.currentDeviceName}`;
@@ -151,9 +165,12 @@ export default class InstrumentContainer extends Vue
 
   newDeviceMounted() {
     this.loadFactoryPresets().then(() => {
-      console.log(`loaded preset bank ${this.currentBank._id}`);
+      console.log(
+        `loaded ${this.device.name} preset bank ${this.currentBank._id}`
+      );
     });
     this.$emit("newDeviceMounted");
+    console.log(`mounted device ${this.device.name}`);
   }
 
   downloadCurrentSettings() {
@@ -213,5 +230,8 @@ export default class InstrumentContainer extends Vue
 .preset-icon {
   padding-right: 10px;
   display: inline;
+}
+.expand-icon {
+  float: right;
 }
 </style>

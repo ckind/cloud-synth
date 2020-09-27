@@ -282,6 +282,7 @@ import { Component, Vue, Watch, Prop } from "vue-property-decorator";
 import PianoKeyboard from "@/components/PianoKeyboard.vue";
 import AdsrGraph from "@/components/AdsrGraph.vue";
 import KnobControl from "@/components/KnobControl.vue";
+import { getDefaultJvaSettings } from "@/services/OfflinePresetService";
 import { VAPolySynth } from "@/shared/classes/synth/VAPolySynth";
 import {
   NoiseType as ToneNoiseType,
@@ -304,38 +305,41 @@ import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice
   }
 })
 export default class JvaSynth extends Vue implements IInstrumentDevice {
+  /**
+   * Important: define audio devices outside of the constructor so vue doesn't
+   * apply reactivity to them. Reactivity can interfere with the dispose methods
+   * of some Tone/WebAudio devices
+   */
   name = "Jva Poly";
-  output: ToneGain;
+  output!: ToneGain;
+  settings: IJvaSettings;
 
-  private synth: VAPolySynth;
-  private volume: ToneVolume;
-  private filterLFO: ToneLFO;
-  private ampLFO: ToneLFO;
-  private pitchLFO: ToneLFO;
+  private synth!: VAPolySynth;
+  private volume!: ToneVolume;
+  private filterLFO!: ToneLFO;
+  private ampLFO!: ToneLFO;
+  private pitchLFO!: ToneLFO;
+  private noise!: VANoiseSynth;
+  private noiseVolume!: ToneVolume;
+
   private waveforms: Array<ToneOscillatorType>;
   private noiseTypes: Array<string>;
   private noiseTypeIndex: number;
   private filterTypes: Array<BiquadFilterType>;
   private filterTypeIndex: number;
-  private noise: VANoiseSynth;
-  private noiseVolume: ToneVolume;
-
-  @Prop({ required: true })
-  public settings!: IJvaSettings;
 
   public constructor() {
     super();
 
-    this.synth = new VAPolySynth(6, 3, "sawtooth");
+    this.settings = getDefaultJvaSettings();
 
-    this.filterLFO = new ToneLFO();
-    this.filterLFO.start().connect(this.synth.filterFrequencyModulation);
-
-    this.ampLFO = new ToneLFO();
-    this.ampLFO.start().connect(this.synth.ampModulation);
-
-    this.pitchLFO = new ToneLFO();
-    this.pitchLFO.start().connect(this.synth.pitchModulation);
+    // this.synth = new VAPolySynth(6, 3, "sawtooth");
+    // this.filterLFO = new ToneLFO();
+    // this.filterLFO.start().connect(this.synth.filterFrequencyModulation);
+    // this.ampLFO = new ToneLFO();
+    // this.ampLFO.start().connect(this.synth.ampModulation);
+    // this.pitchLFO = new ToneLFO();
+    // this.pitchLFO.start().connect(this.synth.pitchModulation);
 
     this.waveforms = new Array<ToneOscillatorType>(4);
     this.waveforms[0] = "sine";
@@ -348,22 +352,44 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
     this.noiseTypes[1] = "pink";
     this.noiseTypes[2] = "brown";
     this.noiseTypeIndex = 0;
-    this.noise = new VANoiseSynth("white");
-    this.noiseVolume = new ToneVolume(-24);
+    // this.noise = new VANoiseSynth("white");
+    // this.noiseVolume = new ToneVolume(-24);
 
     this.filterTypes = new Array<BiquadFilterType>(2);
     this.filterTypes[0] = "lowpass";
     this.filterTypes[1] = "highpass";
     this.filterTypeIndex = 0;
 
+    // this.output = new ToneGain(1);
+    // this.volume = new ToneVolume();
+    // this.noise.output.chain(this.noiseVolume, this.volume);
+    // this.synth.output.connect(this.volume);
+    // this.volume.connect(this.output);
+  }
+
+  // Lifecycle Hooks
+
+  created() {
+    this.synth = new VAPolySynth(6, 3, "sawtooth");
+
+    this.filterLFO = new ToneLFO();
+    this.ampLFO = new ToneLFO();
+    this.pitchLFO = new ToneLFO();
+
+    this.filterLFO.start().connect(this.synth.filterFrequencyModulation);
+    this.ampLFO.start().connect(this.synth.ampModulation);
+    this.pitchLFO.start().connect(this.synth.pitchModulation);
+
+    this.noise = new VANoiseSynth("white");
+    this.noiseVolume = new ToneVolume(-24);
+
     this.output = new ToneGain(1);
     this.volume = new ToneVolume();
+
     this.noise.output.chain(this.noiseVolume, this.volume);
     this.synth.output.connect(this.volume);
     this.volume.connect(this.output);
   }
-
-  // Lifecycle Hooks
 
   mounted() {
     this.$emit("deviceMounted");

@@ -17,17 +17,23 @@
           label="presets"
         />
       </v-col>
+      <v-col cols="8">
+        <v-icon v-if="expanded" dark class="expand-icon" @click="expanded = false">
+          mdi-chevron-down
+        </v-icon>
+        <v-icon v-else dark class="expand-icon" @click="expanded = true">
+          mdi-chevron-left
+        </v-icon>
+      </v-col>
     </v-row>
-    <div>
+    <div v-show="expanded">
       <computer-midi-keyboard
         ref="keypad"
-        :settings="currentPreset.settings"
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'Keypad'"
       />
       <external-midi-device
         ref="external"
-        :settings="currentPreset.settings"
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'External'"
       />
@@ -41,7 +47,7 @@ import { IMidiDeviceContainer } from "../shared/interfaces/containers/IMidiDevic
 import { IPreset } from "../shared/interfaces/presets/IPreset";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
-import { getDefaultKeypadBank } from "@/services/LocalDefaults";
+import { getDefaultKeypadBank } from "@/services/OfflinePresetService";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 import ComputerMidiKeyboard from "./ComputerMidiKeyboard.vue";
@@ -66,6 +72,8 @@ export default class MidiDeviceContainer extends Vue
   private availableMidiDevices = ["Keypad", "External"];
   // private availableMidiDevices = ["Keypad", "Step Sequencer", "External"]; // todo: build step sequencer
 
+  private expanded = true;
+
   $refs!: {
     keypad: ComputerMidiKeyboard;
     external: ExternalMidiDevice;
@@ -84,9 +92,7 @@ export default class MidiDeviceContainer extends Vue
   // Lifecycle Hooks
 
   mounted() {
-    this.loadFactoryPresets().then(() => {
-      console.log(`loaded preset bank ${this.currentBank._id}`);
-    });
+    this.device.applySettings(this.currentPreset.settings);
   }
 
   // Computed
@@ -115,6 +121,7 @@ export default class MidiDeviceContainer extends Vue
   async loadFactoryPresets() {
     this.currentBank = await this.presetService.getFactoryBank();
     this.currentPreset = this.currentBank.categories[0].presets[0];
+    this.device.applySettings(this.currentPreset.settings);
   }
 
   presetSelected(p: IPreset) {
@@ -128,7 +135,13 @@ export default class MidiDeviceContainer extends Vue
   }
 
   newDeviceMounted() {
+    this.loadFactoryPresets().then(() => {
+      console.log(
+        `loaded ${this.device.name} preset bank ${this.currentBank._id}`
+      );
+    });
     this.$emit("newDeviceMounted");
+    console.log(`mounted device ${this.device.name}`);
   }
 }
 </script>
@@ -141,5 +154,8 @@ export default class MidiDeviceContainer extends Vue
 .device-window {
   border: 12px solid black;
   border-radius: 12px;
+}
+.expand-icon {
+  float: right;
 }
 </style>

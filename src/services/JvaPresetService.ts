@@ -1,6 +1,6 @@
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
-import { getDefaultJvaBank } from "./LocalDefaults";
+import { getDefaultJvaBank } from "./OfflinePresetService";
 
 export class JvaPresetService implements IPresetService {
 

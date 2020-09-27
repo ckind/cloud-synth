@@ -7,7 +7,7 @@
         <ul class="change-list">
           <li v-for="(message, index) in commitMessages" :key="index">{{ message }}</li>
         </ul>
-        <a href="https://github.com/ckind/JvaSynth">view source</a>
+        <a href="https://github.com/ckind/JvaSynth" target="_blank">view source</a>
       </v-card-text>
 
       <v-card-actions>

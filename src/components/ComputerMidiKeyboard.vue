@@ -174,7 +174,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { Draw, immediate } from "tone";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
@@ -183,11 +183,12 @@ import {
   IMidiMessage
 } from "@/shared/interfaces/midi/IMidiMessage";
 import { IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
-import webmidi from "webmidi";
+import { getDefaultKeypadSettings } from "@/services/OfflinePresetService";
 
 @Component({})
 export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   name = "Computer Keyboard";
+  settings: IComputerMidiKeyboardSettings;
 
   private readonly keyPressedColor = "#ff2929";
   private readonly blackKeys = [1, 3, 6, 8, 10];
@@ -212,14 +213,12 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     "KeyL"
   ];
 
-  @Prop({ required: true })
-  public settings!: IComputerMidiKeyboardSettings;
-
   public constructor() {
     super();
     this.connections = [];
     this.keysPressed = new Array<boolean>(127);
     this.keysPressed.fill(false);
+    this.settings = getDefaultKeypadSettings();
 
     document.addEventListener("keydown", this.userKeyPressed);
     document.addEventListener("keyup", this.userKeyReleased);
