@@ -1,17 +1,16 @@
 import {
-  Oscillator,
   ScaleExp,
   Signal,
   ToneOscillatorType,
   immediate,
-  Midi
+  Midi,
+  Transport
 } from "tone";
 import { IMidiMessage, MidiFunction } from "../../interfaces/midi/IMidiMessage";
 import { DryWetMixer } from "../utility/DryWetMixer";
 import { VAMonoOscillatorChannel } from "../synth/VAMonoOscillatorChannel";
 import { AnalogMonoSynthModule } from "../../interfaces/synth/AnalogMonoSynthModule";
 import { VABaseSynth } from "./VABaseSynth";
-import { OscillatorChannel } from '@/shared/interfaces/synth/OscillatorChannel';
 
 export class VAMonoSynth extends VABaseSynth implements AnalogMonoSynthModule {
   // todo: replace VAMonoOscillatorChannel with an interface?
@@ -84,13 +83,13 @@ export class VAMonoSynth extends VABaseSynth implements AnalogMonoSynthModule {
     this.pitchModulationMixer.wetness = w;
   }
 
-  receiveMidi(message: IMidiMessage) {
+  receiveMidi(message: IMidiMessage, time?: number) {
     switch (message.midiFunction) {
       case MidiFunction.noteon:
-        this.triggerAttack(message.noteNumber);
+        this.triggerAttack(message.noteNumber, time);
         break;
       case MidiFunction.noteoff:
-        this.triggerRelease(message.noteNumber);
+        this.triggerRelease(message.noteNumber, time);
         break;
     }
   }
@@ -102,20 +101,20 @@ export class VAMonoSynth extends VABaseSynth implements AnalogMonoSynthModule {
     });
   }
 
-  private triggerAttack(midiNote: number) {
+  private triggerAttack(midiNote: number, time?: number) {
     this.currentMidiNote = midiNote;
     // this.resetPhase();
-    this.pitch.setValueAtTime(Midi(midiNote).toFrequency(), immediate());
-    this.ampEnvelope.triggerAttack(immediate());
-    this.filterEnvelope.triggerAttack(immediate());
+    this.pitch.setValueAtTime(Midi(midiNote).toFrequency(), time ? time : immediate());
+    this.ampEnvelope.triggerAttack(time ? time - Transport.sampleTime : immediate());
+    this.filterEnvelope.triggerAttack(time ? time - Transport.sampleTime : immediate());
   }
 
-  private triggerRelease(midiNote: number) {
+  private triggerRelease(midiNote: number, time?: number) {
     if (midiNote === this.currentMidiNote) {
-      this.ampEnvelope.cancel(immediate()); // because triggering release before attack finishes fucks up envelope
-      this.filterEnvelope.cancel(immediate()); // todo: find a better way
-      this.ampEnvelope.triggerRelease(immediate());
-      this.filterEnvelope.triggerRelease(immediate());
+      this.ampEnvelope.cancel(time ? time : immediate()); // because triggering release before attack finishes fucks up envelope
+      this.filterEnvelope.cancel(time ? time : immediate()); // todo: find a better way
+      this.ampEnvelope.triggerRelease(time ? time : immediate());
+      this.filterEnvelope.triggerRelease(time ? time : immediate());
     }
   }
 }

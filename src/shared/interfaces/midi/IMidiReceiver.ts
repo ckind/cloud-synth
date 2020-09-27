@@ -1,5 +1,5 @@
 import { IMidiMessage } from "./IMidiMessage";
 
 export interface IMidiReceiver {
-  receiveMidi(message: IMidiMessage): void;
+  receiveMidi(message: IMidiMessage, time?: number): void;
 }

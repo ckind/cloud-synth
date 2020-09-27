@@ -3,7 +3,7 @@ import { IMidiReceiver } from "./IMidiReceiver";
 
 export interface IMidiSender {
 
-  sendMidi(message: IMidiMessage): void;
+  sendMidi(message: IMidiMessage, time?: number): void;
 
   connect(receiver: IMidiReceiver): void;
 

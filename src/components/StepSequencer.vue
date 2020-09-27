@@ -1,9 +1,22 @@
 <template>
   <v-row class="sequencer-container">
-    <!-- todo: fix this shit -->
-    <v-btn @click="sequence.start">start</v-btn>
-    <v-btn @click="sequence.stop">stop</v-btn>
     <div class="sequencer">
+      <v-btn @click="sequencerEvent.start()">start</v-btn>
+      <v-btn @click="sequencerEvent.stop()">stop</v-btn>
+      <v-text-field
+        v-model="sequenceLength"
+        type="number"
+        label="Length"
+        min="1"
+        max="16"
+      ></v-text-field>
+      <v-text-field
+        v-model="subdivision"
+        type="number"
+        label="Subdivision"
+        min="1"
+        max="32"
+      ></v-text-field>
       <div class="step-column" v-for="(step, i) in steps" :key="i">
         <knob-control
           v-model="step.note"
@@ -45,14 +58,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
 import {
   MidiFunction,
   IMidiMessage
 } from "@/shared/interfaces/midi/IMidiMessage";
-import { Sequence as ToneSequence, Transport as ToneTransport } from "tone";
+import { Transport as ToneTransport, ToneEvent } from "tone";
 import KnobControl from "@/components/KnobControl.vue";
 
 interface IStep {
@@ -64,9 +77,6 @@ interface IStep {
   active: boolean;
 }
 
-const activeStepColor = "#2196f3";
-const inactiveStepColor = "#323232";
-
 @Component({
   components: {
     KnobControl
@@ -77,11 +87,12 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
   settings = {};
 
   private sequenceLength = 16;
-  private previousStep = 15;
+  private previousStep = this.sequenceLength - 1;
   private activeStep = 0;
+  private subdivision = 16;
+  private sequencerEvent: ToneEvent;
   private connections: Array<IMidiReceiver>;
   private steps: IStep[];
-  private sequence: ToneSequence;
   private readonly keyPressedColor = "#ff2929";
   private readonly blackKeys = [1, 3, 6, 8, 10];
 
@@ -92,35 +103,18 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
     for (let i = 0; i < this.sequenceLength; i++) {
       this.steps[i] = {
         index: i,
-        note: Math.ceil(Math.random() * 126),
+        note: 67,
         velocity: 67,
         length: 1.0,
         on: true,
         active: false
       };
     }
-    this.sequence = new ToneSequence((time, step) => {
-      this.triggerStep(step);
-      this.previousStep = this.activeStep;
-      this.activeStep = step.index;
-      this.$set(this.steps, this.activeStep, {
-        index: this.steps[this.activeStep].index,
-        note: this.steps[this.activeStep].note,
-        velocity: this.steps[this.activeStep].velocity,
-        length: this.steps[this.activeStep].length,
-        on: this.steps[this.activeStep].on,
-        active: true
-      });
-      this.$set(this.steps, this.previousStep, {
-        index: this.steps[this.previousStep].index,
-        note: this.steps[this.previousStep].note,
-        velocity: this.steps[this.previousStep].velocity,
-        length: this.steps[this.previousStep].length,
-        on: this.steps[this.previousStep].on,
-        active: false
-      });
-    }, this.steps);
-    this.sequence.loop = true;
+    this.sequencerEvent = new ToneEvent(time => {
+      this.advanceSequencer(time);
+    });
+    this.sequencerEvent.loop = true;
+    this.sequencerEvent.playbackRate = this.subdivision;
     ToneTransport.start();
   }
 
@@ -135,6 +129,28 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
   }
 
   // Methods
+
+  advanceSequencer(time: number) {
+    this.previousStep = this.activeStep;
+    this.activeStep = (this.activeStep + 1) % this.sequenceLength;
+    this.triggerStep(this.steps[this.activeStep], time);
+    this.$set(this.steps, this.activeStep, {
+      index: this.steps[this.activeStep].index,
+      note: this.steps[this.activeStep].note,
+      velocity: this.steps[this.activeStep].velocity,
+      length: this.steps[this.activeStep].length,
+      on: this.steps[this.activeStep].on,
+      active: true
+    });
+    this.$set(this.steps, this.previousStep, {
+      index: this.steps[this.previousStep].index,
+      note: this.steps[this.previousStep].note,
+      velocity: this.steps[this.previousStep].velocity,
+      length: this.steps[this.previousStep].length,
+      on: this.steps[this.previousStep].on,
+      active: false
+    });
+  }
 
   applySettings(settings: any) {
     // nothing yet
@@ -154,33 +170,43 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
   }
 
   dispose() {
-    this.sequence.stop();
-    this.sequence.dispose();
+    this.sequencerEvent.stop();
+    this.sequencerEvent.dispose();
   }
 
-  sendMidi(message: IMidiMessage) {
+  sendMidi(message: IMidiMessage, time?: number) {
     this.connections.forEach(r => {
-      r.receiveMidi(message);
+      r.receiveMidi(message, time);
     });
   }
 
-  receiveMidi(message: IMidiMessage) {
+  receiveMidi(message: IMidiMessage, time?: number) {
     // does nothing for now
   }
 
-  triggerStep(step: IStep) {
-    this.sendMidi({
-      midiFunction: MidiFunction.noteon,
-      noteNumber: step.note,
-      noteVelocity: step.velocity
-    });
-    window.setTimeout(() => {
-      this.sendMidi({
+  triggerStep(step: IStep, time: number) {
+    this.sendMidi(
+      {
+        midiFunction: MidiFunction.noteon,
+        noteNumber: step.note,
+        noteVelocity: step.velocity
+      },
+      time
+    );
+    this.sendMidi(
+      {
         midiFunction: MidiFunction.noteoff,
         noteNumber: step.note,
         noteVelocity: step.velocity
-      });
-    }, 200);
+      },
+      time + 0.1
+    );
+  }
+
+  // Watches
+  @Watch("subdivision")
+  onSubdivisionChange(value: number) {
+    this.sequencerEvent.playbackRate = value;
   }
 }
 </script>

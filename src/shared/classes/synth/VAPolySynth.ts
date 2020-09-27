@@ -284,7 +284,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
     });
   }
 
-  receiveMidi(message: IMidiMessage) {
+  receiveMidi(message: IMidiMessage, time?: number) {
     let voiceNum: number;
     switch (message.midiFunction) {
       case MidiFunction.noteon:
@@ -292,7 +292,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
         if (voiceNum > -1) {
           this.voices[voiceNum].currentMidiNote = message.noteNumber;
           this.voices[voiceNum].isActive = true;
-          this.voices[voiceNum].synth.receiveMidi(message);
+          this.voices[voiceNum].synth.receiveMidi(message, time);
         } else {
           // nothing to do - no voices available
         }
@@ -302,7 +302,7 @@ export class VAPolySynth implements AnalogPolySynthModule {
         if (voiceNum > -1) {
           this.voices[voiceNum].currentMidiNote = -1;
           this.voices[voiceNum].isActive = false;
-          this.voices[voiceNum].synth.receiveMidi(message);
+          this.voices[voiceNum].synth.receiveMidi(message, time);
         } else {
           // nothing to do - no voices available
         }

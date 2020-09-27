@@ -403,9 +403,9 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
     this.output.dispose();
   }
 
-  receiveMidi(message: IMidiMessage) {
-    this.synth.receiveMidi(message); // todo: don't release noise if keys are still down
-    this.noise.receiveMidi(message);
+  receiveMidi(message: IMidiMessage, time?: number) {
+    this.synth.receiveMidi(message, time);
+    this.noise.receiveMidi(message, time); // todo: don't release noise if keys are still down
   }
 
   applySettings(settings: IJvaSettings) {

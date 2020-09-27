@@ -20,13 +20,13 @@ export class VANoiseSynth extends VABaseSynth implements IMidiReceiver {
     super.dispose();
   }
 
-  public receiveMidi(message: IMidiMessage) {
+  public receiveMidi(message: IMidiMessage, time?: number) {
     switch (message.midiFunction) {
       case MidiFunction.noteon:
-        this.triggerAttack();
+        this.triggerAttack(time);
         break;
       case MidiFunction.noteoff:
-        this.triggerRelease();
+        this.triggerRelease(time);
         break;
     }
   }
@@ -40,14 +40,14 @@ export class VANoiseSynth extends VABaseSynth implements IMidiReceiver {
     this.noiseSource.type = t;
   }
 
-  private triggerAttack() {
-    this.filterEnvelope.triggerAttack(immediate());
-    this.ampEnvelope.triggerAttack(immediate());
+  private triggerAttack(time?: number) {
+    this.filterEnvelope.triggerAttack(time ? time : immediate());
+    this.ampEnvelope.triggerAttack(time ? time : immediate());
   }
 
-  private triggerRelease() {
-    this.filterEnvelope.triggerRelease(immediate());
-    this.ampEnvelope.triggerRelease(immediate());
+  private triggerRelease(time?: number) {
+    this.filterEnvelope.triggerRelease(time ? time : immediate());
+    this.ampEnvelope.triggerRelease(time ? time : immediate());
   }
 
 }
