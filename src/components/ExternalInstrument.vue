@@ -1,46 +1,48 @@
 <template>
-  <div class="synth-panel">
-    <v-card
-      v-if="!webmidiSupported"
-      class="mx-auto not-supported-message"
-      max-width="344"
-      dark
-    >
-      <v-card-text>
-        <p>
-          Sorry, but your browser doesn't support WebMidi! Please check the
-          <a
-            href="https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess#Browser_compatibility"
-            target="_blank"
-          >
-            compatibility list
-          </a>
-          .
-        </p>
-      </v-card-text>
-    </v-card>
-    <!-- todo: figure this out -->
-    <!-- <v-menu bottom offset-y v-else>
-      <template v-slot:activator="{ on }">
-        <v-text-field
-          v-on="on"
-          dense
-          dark
-          readonly
-          :value="selectedExternalDevice"
-          class="selected-device-disp"
-        />
-      </template>
-      <v-list>
-        <v-divider></v-divider>
-        <span v-for="device in availableDevices" :key="device" @click="externalDeviceSelected(device)">
-          <v-list-item link>
-            {{ device }}
-          </v-list-item>
+  <div class="back-panel">
+    <div class="content-container">
+      <v-card
+        v-if="!webmidiSupported"
+        class="mx-auto not-supported-message"
+        max-width="344"
+        dark
+      >
+        <v-card-text>
+          <p>
+            Sorry, but your browser doesn't support WebMidi! Please check the
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess#Browser_compatibility"
+              target="_blank"
+            >
+              compatibility list
+            </a>
+            .
+          </p>
+        </v-card-text>
+      </v-card>
+      <!-- todo: figure this out -->
+      <v-menu bottom offset-y nudge-top="12" v-else>
+        <template v-slot:activator="{ on }">
+          <v-text-field
+            v-on="on"
+            dense
+            dark
+            readonly
+            :value="selectedExternalDevice"
+            class="selected-device-disp"
+          />
+        </template>
+        <v-list>
           <v-divider></v-divider>
-        </span>
-      </v-list>
-    </v-menu> -->
+          <span v-for="device in availableDevices" :key="device" @click="externalDeviceSelected(device)">
+            <v-list-item link>
+              {{ device }}
+            </v-list-item>
+            <v-divider></v-divider>
+          </span>
+        </v-list>
+      </v-menu>
+    </div>
   </div>
 </template>
 
@@ -49,6 +51,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { Gain as ToneGain, Filter as ToneFilter } from "tone";
 import { IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
 import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
+import webmidi, { InputEventNoteoff, InputEventNoteon } from "webmidi";
 
 @Component({})
 export default class ExternalInstrument extends Vue implements IInstrumentDevice {
@@ -59,10 +62,20 @@ export default class ExternalInstrument extends Vue implements IInstrumentDevice
   private selectedExternalDevice = "Click to Select Device";
   private webmidiSupported = true;
   private webmidiError = "";
-  private availableDevices: string[] = ["device 1", "device 2", "device 3"];
+  private availableDevices: string[] = [];
 
   public constructor() {
     super();
+    webmidi.enable(err => {
+      if (err) {
+        this.webmidiSupported = false;
+        this.webmidiError = err ? err.message : "";
+      } else {
+        webmidi.outputs.forEach(output => {
+          this.availableDevices.push(output.name);
+        });
+      }
+    });
 
     // output does nothing for external instrument
     this.output = new ToneGain(0);
@@ -80,8 +93,12 @@ export default class ExternalInstrument extends Vue implements IInstrumentDevice
 
   // Methods
 
+  externalDeviceSelected(deviceName: string) {
+    // todo: implement
+  }
+
   applySettings(settings: any) {
-    // nothing here
+    // nothing to see here
   }
 
   dispose() {
@@ -97,13 +114,13 @@ export default class ExternalInstrument extends Vue implements IInstrumentDevice
 </script>
 
 <style scoped>
-div.synth-panel {
+div.back-panel {
   justify-content: center;
   background-color: black;
   position: relative;
   height: 200px;
 }
-div.synth-panel::after {
+div.back-panel::after {
   content: "";
   background: url("../assets/Modular2.png");
   background-position: 0px -200px;
@@ -114,5 +131,18 @@ div.synth-panel::after {
   position: absolute;
   z-index: 2;
   opacity: 0.4;
+}
+div.content-container {
+  position: absolute;
+  justify-content: center;
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+.selected-device-disp {
+  top: 30%;
+  position: absolute;
+  opacity: 1;
+  z-index: 3;
 }
 </style>

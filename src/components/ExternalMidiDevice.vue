@@ -2,116 +2,116 @@
   <!-- todo: this is kind of messy...should generate keys in a loop -->
   <!-- prettier-ignore -->
   <v-row class="keyboard-container">
-      <v-card
-        v-if="!webmidiSupported"
-        class="mx-auto not-supported-message"
-        max-width="344"
-        dark
-      >
-        <v-card-text>
-          <p>
-            Sorry, but your browser doesn't support WebMidi! Please check the 
-            <a
-              href="https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess#Browser_compatibility"
-              target="_blank"
-            >
-              compatibility list
-            </a>
-            .
-          </p>
-        </v-card-text>
-      </v-card>
-      <v-menu bottom offset-y nudge-top="12" v-else>
-        <template v-slot:activator="{ on }">
-          <v-text-field
-            v-on="on"
-            dense
-            dark
-            readonly
-            :value="selectedExternalDevice"
-            class="selected-device-disp"
-          />
-        </template>
-        <v-list>
+    <v-card
+      v-if="!webmidiSupported"
+      class="mx-auto not-supported-message"
+      max-width="344"
+      dark
+    >
+      <v-card-text>
+        <p>
+          Sorry, but your browser doesn't support WebMidi! Please check the 
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Web/API/MIDIAccess#Browser_compatibility"
+            target="_blank"
+          >
+            compatibility list
+          </a>
+          .
+        </p>
+      </v-card-text>
+    </v-card>
+    <v-menu bottom offset-y nudge-top="12" v-else>
+      <template v-slot:activator="{ on }">
+        <v-text-field
+          v-on="on"
+          dense
+          dark
+          readonly
+          :value="selectedExternalDevice"
+          class="selected-device-disp"
+        />
+      </template>
+      <v-list>
+        <v-divider></v-divider>
+        <span v-for="device in availableDevices" :key="device" @click="externalDeviceSelected(device)">
+          <v-list-item link>
+            {{ device }}
+          </v-list-item>
           <v-divider></v-divider>
-          <span v-for="device in availableDevices" :key="device" @click="externalDeviceSelected(device)">
-            <v-list-item link>
-              {{ device }}
-            </v-list-item>
-            <v-divider></v-divider>
-          </span>
-        </v-list>
-      </v-menu>
-      <ul class="ext-keyboard">
-        <li id="key24" class="key"> 
-          <div id="key25" class="black-key"></div>
-        </li>
-        <li id="key26" class="key">
-          <div id="key27" class="black-key"></div>
-        </li>
-        <li id="key28" class="key"></li>
-        <li id="key29" class="key">
-          <div id="key30" class="black-key"></div>
-        </li>
-        <li id="key31" class="key">
-          <div id="key32" class="black-key"></div>
-        </li>
-        <li id="key33" class="key">
-          <div id="key34" class="black-key"></div>
-        </li>
-        <li id="key35" class="key"></li>
-        <li id="key36" class="key">
-          <div id="key37" class="black-key"></div>
-        </li>
-        <li id="key38" class="key">
-          <div id="key39" class="black-key"></div>
-        </li>
-        <li id="key40" class="key"></li>
-        <li id="key41" class="key">
-          <div id="key42" class="black-key"></div>
-        </li>
-        <li id="key43" class="key">
-          <div id="key44" class="black-key"></div>
-        </li>
-        <li id="key45" class="key">
-          <div id="key46" class="black-key"></div>
-        </li>
-        <li id="key47" class="key"></li>
-        <li id="key48" class="key">
-          <div id="key49" class="black-key"></div>
-        </li>
-        <li id="key50" class="key">
-          <div id="key51" class="black-key"></div>
-        </li>
-        <li id="key52" class="key"></li>
-        <li id="key53" class="key">
-          <div id="key54" class="black-key"></div>
-        </li>
-        <li id="key55" class="key">
-          <div id="key56" class="black-key"></div>
-        </li>
-        <li id="key57" class="key">
-          <div id="key58" class="black-key"></div>
-        </li>
-        <li id="key59" class="key"></li>
-        <li id="key60" class="key">
-          <div id="key61" class="black-key"></div>
-        </li>
-        <li id="key62" class="key">
-          <div id="key63" class="black-key"></div>
-        </li>
-        <li id="key64" class="key"></li>
-        <li id="key65" class="key">
-          <div id="key66" class="black-key"></div>
-        </li>
-        <li id="key67" class="key">
-          <div id="key68" class="black-key"></div>
-        </li>
-        <li id="key69" class="key">
-          <div id="key70" class="black-key"></div>
-        </li>
-        <li id="key71" class="key"></li>
-      </ul>
+        </span>
+      </v-list>
+    </v-menu>
+    <ul class="ext-keyboard">
+      <li id="key24" class="key"> 
+        <div id="key25" class="black-key"></div>
+      </li>
+      <li id="key26" class="key">
+        <div id="key27" class="black-key"></div>
+      </li>
+      <li id="key28" class="key"></li>
+      <li id="key29" class="key">
+        <div id="key30" class="black-key"></div>
+      </li>
+      <li id="key31" class="key">
+        <div id="key32" class="black-key"></div>
+      </li>
+      <li id="key33" class="key">
+        <div id="key34" class="black-key"></div>
+      </li>
+      <li id="key35" class="key"></li>
+      <li id="key36" class="key">
+        <div id="key37" class="black-key"></div>
+      </li>
+      <li id="key38" class="key">
+        <div id="key39" class="black-key"></div>
+      </li>
+      <li id="key40" class="key"></li>
+      <li id="key41" class="key">
+        <div id="key42" class="black-key"></div>
+      </li>
+      <li id="key43" class="key">
+        <div id="key44" class="black-key"></div>
+      </li>
+      <li id="key45" class="key">
+        <div id="key46" class="black-key"></div>
+      </li>
+      <li id="key47" class="key"></li>
+      <li id="key48" class="key">
+        <div id="key49" class="black-key"></div>
+      </li>
+      <li id="key50" class="key">
+        <div id="key51" class="black-key"></div>
+      </li>
+      <li id="key52" class="key"></li>
+      <li id="key53" class="key">
+        <div id="key54" class="black-key"></div>
+      </li>
+      <li id="key55" class="key">
+        <div id="key56" class="black-key"></div>
+      </li>
+      <li id="key57" class="key">
+        <div id="key58" class="black-key"></div>
+      </li>
+      <li id="key59" class="key"></li>
+      <li id="key60" class="key">
+        <div id="key61" class="black-key"></div>
+      </li>
+      <li id="key62" class="key">
+        <div id="key63" class="black-key"></div>
+      </li>
+      <li id="key64" class="key"></li>
+      <li id="key65" class="key">
+        <div id="key66" class="black-key"></div>
+      </li>
+      <li id="key67" class="key">
+        <div id="key68" class="black-key"></div>
+      </li>
+      <li id="key69" class="key">
+        <div id="key70" class="black-key"></div>
+      </li>
+      <li id="key71" class="key"></li>
+    </ul>
   </v-row>
 </template>
 
@@ -141,7 +141,6 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
 
   public constructor() {
     super();
-    console.log("external created");
     this.connections = [];
     webmidi.enable(err => {
       if (err) {

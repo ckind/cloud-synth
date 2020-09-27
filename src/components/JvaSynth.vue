@@ -279,7 +279,6 @@
 
 <script lang="ts">
 import { Component, Vue, Watch, Prop } from "vue-property-decorator";
-import PianoKeyboard from "@/components/PianoKeyboard.vue";
 import AdsrGraph from "@/components/AdsrGraph.vue";
 import KnobControl from "@/components/KnobControl.vue";
 import { getDefaultJvaSettings } from "@/services/OfflinePresetService";
@@ -299,7 +298,6 @@ import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice
 
 @Component({
   components: {
-    PianoKeyboard,
     AdsrGraph,
     KnobControl
   }
@@ -333,14 +331,6 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
 
     this.settings = getDefaultJvaSettings();
 
-    // this.synth = new VAPolySynth(6, 3, "sawtooth");
-    // this.filterLFO = new ToneLFO();
-    // this.filterLFO.start().connect(this.synth.filterFrequencyModulation);
-    // this.ampLFO = new ToneLFO();
-    // this.ampLFO.start().connect(this.synth.ampModulation);
-    // this.pitchLFO = new ToneLFO();
-    // this.pitchLFO.start().connect(this.synth.pitchModulation);
-
     this.waveforms = new Array<ToneOscillatorType>(4);
     this.waveforms[0] = "sine";
     this.waveforms[1] = "triangle";
@@ -352,19 +342,11 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
     this.noiseTypes[1] = "pink";
     this.noiseTypes[2] = "brown";
     this.noiseTypeIndex = 0;
-    // this.noise = new VANoiseSynth("white");
-    // this.noiseVolume = new ToneVolume(-24);
 
     this.filterTypes = new Array<BiquadFilterType>(2);
     this.filterTypes[0] = "lowpass";
     this.filterTypes[1] = "highpass";
     this.filterTypeIndex = 0;
-
-    // this.output = new ToneGain(1);
-    // this.volume = new ToneVolume();
-    // this.noise.output.chain(this.noiseVolume, this.volume);
-    // this.synth.output.connect(this.volume);
-    // this.volume.connect(this.output);
   }
 
   // Lifecycle Hooks

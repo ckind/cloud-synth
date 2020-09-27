@@ -37,6 +37,11 @@
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'External'"
       />
+      <step-sequencer
+        ref="stepSequencer"
+        @deviceMounted="newDeviceMounted"
+        v-if="currentDeviceName === 'Step Sequencer'"
+      />
     </div>
   </div>
 </template>
@@ -52,6 +57,7 @@ import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 import ComputerMidiKeyboard from "./ComputerMidiKeyboard.vue";
 import ExternalMidiDevice from "./ExternalMidiDevice.vue";
+import StepSequencer from "./StepSequencer.vue";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 
@@ -60,7 +66,8 @@ import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
     PresetDropdown,
     DeviceDropdown,
     ComputerMidiKeyboard,
-    ExternalMidiDevice
+    ExternalMidiDevice,
+    StepSequencer
   }
 })
 export default class MidiDeviceContainer extends Vue
@@ -69,14 +76,14 @@ export default class MidiDeviceContainer extends Vue
   private currentPreset: IPreset;
   private currentBank: IPresetBank;
   private currentDeviceName: string;
-  private availableMidiDevices = ["Keypad", "External"];
-  // private availableMidiDevices = ["Keypad", "Step Sequencer", "External"]; // todo: build step sequencer
+  private availableMidiDevices = ["Keypad", "Step Sequencer", "External"];
 
   private expanded = true;
 
   $refs!: {
     keypad: ComputerMidiKeyboard;
     external: ExternalMidiDevice;
+    stepSequencer: StepSequencer;
   };
 
   public constructor() {
@@ -105,7 +112,7 @@ export default class MidiDeviceContainer extends Vue
         currentDevice = this.$refs.keypad;
         break;
       case "Step Sequencer":
-        currentDevice = this.$refs.keypad; // todo: create step sequencer component
+        currentDevice = this.$refs.stepSequencer; // todo: create step sequencer component
         break;
       case "External":
         currentDevice = this.$refs.external;

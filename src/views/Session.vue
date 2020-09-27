@@ -45,8 +45,10 @@ export default class Session extends Vue {
   // Methods
 
   newInstrumentDeviceMounted() {
-    this.$refs.instrumentContainer.device.output.connect(ToneMaster);
-    // todo: disconnect?
+    this.$refs.instrumentContainer.device.output.connect(ToneMaster); // relies on dispose method for disconnection
+    this.$refs.midiDeviceContainer.device.connect(
+      this.$refs.instrumentContainer.device
+    );
   }
 
   newMidiDeviceMounted() {
