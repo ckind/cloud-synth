@@ -112,7 +112,7 @@ export default class InstrumentContainer extends Vue
   public constructor() {
     super();
     this.availableDevices = ["Jva Poly", "External"];
-    this.currentDeviceName = this.availableDevices[1];
+    this.currentDeviceName = this.availableDevices[0];
     this.presetService = PresetServiceFactory.getPresetService(
       this.currentDeviceName
     );
