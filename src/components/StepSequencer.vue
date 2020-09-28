@@ -1,73 +1,127 @@
 <template>
-  <v-row class="sequencer-container">
+  <div class="sequencer-container">
     <div class="sequencer">
-      <v-btn @click="startSequence()">start</v-btn>
-      <v-btn @click="stopSequence()">stop</v-btn>
-      <v-btn @click="randomizeNotes()">randnote</v-btn>
-      <v-btn @click="randomizeOctaves()">randoctave</v-btn>
-      <v-btn @click="randomizeVelocities()">randvelocity</v-btn>
-      <v-btn @click="randomizeLengths()">randlength</v-btn>
-      <v-btn @click="randomizeGates()">randgate</v-btn>
-      <v-text-field
-        v-model="sequenceLength"
-        type="number"
-        label="Length"
-        min="1"
-        max="8"
-      ></v-text-field>
-      <v-text-field
-        v-model="subdivision"
-        type="number"
-        label="Subdivision"
-        min="1"
-        max="32"
-      ></v-text-field>
-      <div class="step-column" v-for="(step, i) in steps" :key="i">
-        <knob-control
-          v-model="step.note"
-          :minValue="1"
-          :maxValue="12"
-          :id="`step${i}note`"
-          :step="1"
-          size="60"
-        ></knob-control>
-        <knob-control
-          v-model="step.octave"
-          :minValue="3"
-          :maxValue="6"
-          :id="`step${i}octave`"
-          :step="1"
-          size="60"
-        ></knob-control>
-        <knob-control
-          v-model="step.velocity"
-          :minValue="1"
-          :maxValue="127"
-          :id="`step${i}velocity`"
-          :step="1"
-          size="60"
-        ></knob-control>
-        <knob-control
-          v-model="step.length"
-          :minValue="0.001"
-          :maxValue="1.0"
-          :id="`step${i}length`"
-          :step="0.001"
-          size="60"
-        ></knob-control>
-        <div class="trigger-container">
-          <div
-            :class="[
-              'step-trigger',
-              step.active ? 'active-step' : 'inactive-step'
-            ]"
-            @click="triggerStep(step)"
-            :id="`step${i}trigger`"
-          />
+      <div class="sequencer-row">
+        <div class="sequencer-block">
+          <div class="row-label">note</div>
+        </div>
+        <div class="sequencer-block" v-for="(step, i) in steps" :key="i">
+          <knob-control
+            class="step-column"
+            v-model="step.note"
+            :minValue="1"
+            :maxValue="12"
+            :id="`step${i}note`"
+            :step="1"
+            size="60"
+          ></knob-control>
+        </div>
+        <div class="sequencer-block">
+          <v-icon @click="randomizeNotes">
+            mdi-refresh
+          </v-icon>
+        </div>
+        <div class="sequencer-block">
+          <knob-control
+            class="step-column"
+            v-model="sequenceLength"
+            :minValue="1"
+            :maxValue="8"
+            :id="`sequencerLengthKnob`"
+            :step="1"
+            size="60"
+          ></knob-control>
         </div>
       </div>
+      <div class="sequencer-row">
+        <div class="sequencer-block">
+          <div class="row-label">octave</div>
+        </div>
+        <div class="sequencer-block" v-for="(step, i) in steps" :key="i">
+          <knob-control
+            class="step-column"
+            v-model="step.octave"
+            :minValue="3"
+            :maxValue="6"
+            :id="`step${i}octave`"
+            :step="1"
+            size="60"
+          ></knob-control>
+        </div>
+        <div class="sequencer-block">
+          <v-icon @click="randomizeOctaves">
+            mdi-refresh
+          </v-icon>
+        </div>
+        <div class="sequencer-block"></div>
+      </div>
+      <div class="sequencer-row">
+        <div class="sequencer-block">
+          <div class="row-label">velocity</div>
+        </div>
+        <div class="sequencer-block" v-for="(step, i) in steps" :key="i">
+          <knob-control
+            class="step-column"
+            v-model="step.velocity"
+            :minValue="1"
+            :maxValue="127"
+            :id="`step${i}velocity`"
+            :step="1"
+            size="60"
+          ></knob-control>
+        </div>
+        <div class="sequencer-block">
+          <v-icon @click="randomizeVelocities">
+            mdi-refresh
+          </v-icon>
+        </div>
+        <div class="sequencer-block"></div>
+      </div>
+      <div class="sequencer-row">
+        <div class="sequencer-block">
+          <div class="row-label">length</div>
+        </div>
+        <div class="sequencer-block" v-for="(step, i) in steps" :key="i">
+          <knob-control
+            class="step-column"
+            v-model="step.length"
+            :minValue="0.01"
+            :maxValue="1"
+            :id="`step${i}length`"
+            :step="0.01"
+            size="60"
+          ></knob-control>
+        </div>
+        <div class="sequencer-block">
+          <v-icon @click="randomizeLengths">
+            mdi-refresh
+          </v-icon>
+        </div>
+        <div class="sequencer-block"></div>
+      </div>
+      <div class="sequencer-row">
+        <div class="sequencer-block"></div>
+        <div class="sequencer-block" v-for="(step, i) in steps" :key="i">
+          <div class="trigger-container">
+            <div
+              :class="[
+                'step-trigger',
+                step.active ? 'active-step' : 'inactive-step'
+              ]"
+              @click="triggerStep(step)"
+              :id="`step${i}trigger`"
+            />
+          </div>
+        </div>
+        <div class="sequencer-block">
+          <v-icon @click="toggleSequence()">
+            mdi-play-pause
+          </v-icon>
+        </div>
+        <div class="sequencer-block"></div>
+      </div>
     </div>
-  </v-row>
+  </div>
 </template>
 
 <script lang="ts">
@@ -78,10 +132,8 @@ import {
   MidiFunction,
   IMidiMessage
 } from "@/shared/interfaces/midi/IMidiMessage";
-import { Transport as ToneTransport, ToneEvent, Master as ToneMaster, Gain } from "tone";
+import { Transport as ToneTransport, ToneEvent } from "tone";
 import KnobControl from "@/components/KnobControl.vue";
-
-import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 
 interface IStep {
   index: number;
@@ -103,18 +155,16 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
   name = "External Midi Device";
   settings = {};
 
+  private running = false;
   private sequenceLength = 8;
   private previousStep = this.sequenceLength - 1;
   private activeStep = 0;
   private subdivision = 16;
   private sequencerEvent: ToneEvent;
-  private metronomeEvent: ToneEvent;
   private connections: Array<IMidiReceiver>;
   private steps: IStep[];
   private readonly keyPressedColor = "#ff2929";
   private readonly blackKeys = [1, 3, 6, 8, 10];
-
-  private metronome: VANoiseSynth;
 
   public constructor() {
     super();
@@ -136,22 +186,6 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
     });
     this.sequencerEvent.loop = true;
     this.sequencerEvent.playbackRate = this.subdivision;
-
-    this.metronome = new VANoiseSynth("white");
-    this.metronome.ampAttack = 0.001;
-    this.metronome.ampDecay = 0.2;
-    this.metronome.ampSustain = 0;
-    this.metronome.ampRelease = 0.1;
-    this.metronome.filterAttack = 0.001;
-    this.metronome.filterDecay = 0.2;
-    this.metronome.filterSustain = 0;
-    this.metronome.filterRelease = 0.1;
-    this.metronome.output.chain(new Gain(1.0), ToneMaster);
-    this.metronomeEvent = new ToneEvent(time => {
-      this.triggerMetronome(time);
-    });
-    this.metronomeEvent.loop = true;
-    this.metronomeEvent.playbackRate = 4;
 
     ToneTransport.start();
   }
@@ -254,33 +288,14 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
     // does nothing for now
   }
 
-  startSequence() {
-    this.sequencerEvent.start();
-    this.metronomeEvent.start();
-  }
-
-  stopSequence() {
-    this.sequencerEvent.stop();
-    this.metronomeEvent.stop();
-  }
-
-  triggerMetronome(time: number) {
-    this.metronome.receiveMidi(
-      {
-        midiFunction: MidiFunction.noteon,
-        noteNumber: 67,
-        noteVelocity: 67
-      },
-      time
-    );
-    this.sendMidi(
-      {
-        midiFunction: MidiFunction.noteoff,
-        noteNumber: 67,
-        noteVelocity: 67
-      },
-      time + 0.05
-    );
+  toggleSequence() {
+    if (this.sequencerEvent.state === "stopped") {
+      this.sequencerEvent.start();
+      this.running = true;
+    } else {
+      this.sequencerEvent.stop();
+      this.running = false;
+    }
   }
 
   triggerStep(step: IStep, time: number) {
@@ -318,15 +333,14 @@ div.sequencer-container {
   background-image: url("../assets/wood-2.png");
   background-repeat: repeat;
   position: relative;
+  display: flex;
+  color: black;
 }
 div.sequencer {
   background-image: url("../assets/metal-1.png");
   background-repeat: repeat;
   color: white;
   font-size: 10pt;
-}
-div.step-column {
-  display: inline-block;
 }
 div.trigger-container {
   display: flex;
@@ -344,5 +358,21 @@ div.active-step {
 }
 div.inactive-step {
   background-color: #323232;
+}
+div.sequencer-row {
+  display: flex;
+  justify-content: center;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+div.sequencer-block {
+  height: 60px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+div.row-label {
+  width: 80%;
 }
 </style>

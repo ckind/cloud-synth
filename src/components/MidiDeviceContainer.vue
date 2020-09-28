@@ -88,7 +88,7 @@ export default class MidiDeviceContainer extends Vue
 
   public constructor() {
     super();
-    this.currentDeviceName = this.availableMidiDevices[0];
+    this.currentDeviceName = this.availableMidiDevices[1];
     this.presetService = PresetServiceFactory.getPresetService(
       this.currentDeviceName
     );
@@ -112,7 +112,7 @@ export default class MidiDeviceContainer extends Vue
         currentDevice = this.$refs.keypad;
         break;
       case "Step Sequencer":
-        currentDevice = this.$refs.stepSequencer; // todo: create step sequencer component
+        currentDevice = this.$refs.stepSequencer;
         break;
       case "External":
         currentDevice = this.$refs.external;
