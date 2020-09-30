@@ -64,6 +64,65 @@
                     }
                 },
                 {
+                    "name": "Warble Bass",
+                    "version": 0,
+                    "private": false,
+                    "settings": {
+                        "oscillator1": {
+                            "volume": -12,
+                            "transpose": 0,
+                            "detune": -5,
+                            "type": "triangle"
+                        },
+                        "oscillator2": {
+                            "volume": -21.428571428571416,
+                            "transpose": 7,
+                            "detune": 0,
+                            "type": "square"
+                        },
+                        "oscillator3": {
+                            "volume": -12,
+                            "transpose": -12,
+                            "detune": 4.285714285714286,
+                            "type": "square"
+                        },
+                        "oscillatorSpread": 0,
+                        "amp": {
+                            "envelope": {
+                                "attack": 13.999999999999872,
+                                "decay": 632.1428571428569,
+                                "sustain": 0.7800000000000001,
+                                "release": 457.142857142857
+                            },
+                            "modulationAmount": 0,
+                            "modulationRate": 4
+                        },
+                        "filter": {
+                            "envelope": {
+                                "attack": 3.907985046680551e-13,
+                                "decay": 558.9285714285722,
+                                "sustain": 0.11999999999999966,
+                                "release": 271.4285714285714
+                            },
+                            "envelopeAmount": 0.3571428571428566,
+                            "frequency": 163.9935508793654,
+                            "q": 2.499999999999999,
+                            "type": "lowpass",
+                            "modulationAmount": 0,
+                            "modulationRate": 1.098448979591837
+                        },
+                        "pitch": {
+                            "modulationAmount": 0.0001785714285714286,
+                            "modulationRate": 3.857142857142861
+                        },
+                        "noise": {
+                            "type": "white",
+                            "volume": -60
+                        },
+                        "volume": -4
+                    }
+                },
+                {
                     "name": "808 Sub Bass",
                     "version": 0,
                     "private": false,

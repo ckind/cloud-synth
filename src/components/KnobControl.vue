@@ -5,6 +5,7 @@
         :src="require(`../assets/knob-2.svg`)"
         :width="size"
         :style="`transform: rotate(${knobRotation}rad);`"
+        class="knob-img"
         @mousedown="onKnobMouseDown"
         @dblclick="onKnobDblClick"
       />
@@ -160,5 +161,8 @@ export default class KnobControl extends Vue {
 .knob-row {
   justify-content: center;
   display: flex;
+}
+.knob-img {
+  /* cursor: pointer; */
 }
 </style>
