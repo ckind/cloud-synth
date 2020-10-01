@@ -9,12 +9,43 @@
       ref="midiDeviceContainer"
       @newDeviceMounted="newMidiDeviceMounted"
     />
+    <v-footer absolute class="session-footer">
+      <v-col cols="4" />
+      <v-col class="text-center" cols="3">
+        <v-slider
+          hide-details
+          dense
+          max="240"
+          min="40"
+          v-model="bpm"
+        ></v-slider>
+      </v-col>
+      <v-col class="text-center" cols="1">
+        <v-icon
+          @click="startStopTransport"
+          :class="[transportRunning ? 'transport-running' : '']"
+        >
+          mdi-play-pause
+        </v-icon>
+        <v-icon
+          @click="startStopRecording"
+          :class="[recording ? 'recording' : '']"
+        >
+          mdi-record
+        </v-icon>
+      </v-col>
+      <v-col cols="4" />
+    </v-footer>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { context as ToneContext, Master as ToneMaster } from "tone";
+import { Component, Vue, Watch } from "vue-property-decorator";
+import {
+  context as ToneContext,
+  Master as ToneMaster,
+  Transport as ToneTransport
+} from "tone";
 import InstrumentContainer from "@/components/InstrumentContainer.vue";
 import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
 
@@ -25,6 +56,10 @@ import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
   }
 })
 export default class Session extends Vue {
+  private bpm = 120;
+  private transportRunning = false;
+  private recording = false;
+
   $refs!: {
     midiDeviceContainer: MidiDeviceContainer;
     instrumentContainer: InstrumentContainer;
@@ -40,6 +75,8 @@ export default class Session extends Vue {
         console.log("context resumed!");
       }
     });
+
+    ToneTransport.bpm.value = this.bpm;
   }
 
   // Methods
@@ -57,11 +94,46 @@ export default class Session extends Vue {
     );
     // don't worry about disconnect - this is cleaned up in the beforeDestroy hook for midi devices
   }
+
+  startStopTransport() {
+    if (ToneTransport.state === "started") {
+      ToneTransport.stop();
+      this.transportRunning = false;
+    } else {
+      ToneTransport.start();
+      this.transportRunning = true;
+    }
+  }
+
+  startStopRecording() {
+    if (this.recording) {
+      this.recording = false;
+    } else {
+      this.recording = true;
+    }
+  }
+
+  // Watches
+  @Watch("bpm")
+  onBpmChange(v: number) {
+    ToneTransport.bpm.value = v;
+  }
 }
 </script>
 
 <style scoped>
 .session-container {
   padding: 10px;
+}
+.session-footer {
+  padding: 0px;
+  margin: 0px;
+  border-top: 1px solid black;
+}
+.transport-running {
+  color: #2196f3;
+}
+.recording {
+  color: red;
 }
 </style>

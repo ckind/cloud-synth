@@ -135,7 +135,7 @@
       <!-- GATE/TRIGGER -->
       <div class="sequencer-row">
         <div class="sequencer-block">
-          <v-icon @click="toggleSequence()">
+          <v-icon @click="toggleSequence()" :class="[running ? 'sequence-running' : '']">
             mdi-play-pause
           </v-icon>
         </div>
@@ -146,7 +146,7 @@
                 'step-trigger',
                 step.active ? 'active-step' : !step.gate ? 'no-gate' : 'inactive-step'
               ]"
-              @click="toggleGate(step)"
+              @click="toggleGate(i)"
               :id="`step${i}trigger`"
             />
           </div>
@@ -209,13 +209,13 @@ interface OctaveOption {
     PageSelector
   }
 })
-export default class ExternalMidiDevice extends Vue implements IMidiDevice {
+export default class StepSequencer extends Vue implements IMidiDevice {
   name = "External Midi Device";
   settings = {};
 
   private sequence: Sequence;
   private pageLength = 8;
-  private numPages = 1;
+  private numPages = 4;
   private sequenceLength: number;
   private selectedPageIndex = 0;
   private pageOptions: PageOption[];
@@ -226,6 +226,8 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
   private subdivision = 16;
   private sequencerEvent: ToneEvent;
   private connections: Array<IMidiReceiver>;
+  private getNextStep: () => number;
+  private pingPongForward = true;
 
   public constructor() {
     super();
@@ -254,13 +256,13 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
     this.activeStepIndex = this.pageLength - 1;
     this.sequenceLength = this.numPages * this.pageLength;
 
+    this.getNextStep = this.getNextStepForward;
+
     this.sequencerEvent = new ToneEvent(time => {
       this.advanceSequencer(time);
     });
     this.sequencerEvent.loop = true;
     this.sequencerEvent.playbackRate = this.subdivision;
-
-    ToneTransport.start();
   }
 
   // Lifecycle Hooks
@@ -285,16 +287,53 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
     this.selectedPageIndex = option.value;
   }
 
-  octaveSelected(stepIndex: number, option: OctaveOption) {
-    console.log(stepIndex, option);
+  toggleGate(stepIndex: number) {
     this.$set(this.sequence.pages[this.selectedPageIndex].steps, stepIndex, {
       note: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].note,
-      octave: option.value,
-      velocity: this.sequence.pages[this.activePageIndex].steps[stepIndex].velocity,
-      length: this.sequence.pages[this.activePageIndex].steps[stepIndex].length,
-      gate: this.sequence.pages[this.activePageIndex].steps[stepIndex].gate,
-      active: this.sequence.pages[this.activePageIndex].steps[stepIndex].active
+      octave: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].octave,
+      velocity: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].velocity,
+      length: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].length,
+      gate: !this.sequence.pages[this.selectedPageIndex].steps[stepIndex].gate,
+      active: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].active
     });
+  }
+
+  getNextStepForward(): number {
+    return this.activePageIndex * this.pageLength + this.activeStepIndex + 1 >=
+      this.sequenceLength
+      ? 0
+      : this.activePageIndex * this.pageLength + this.activeStepIndex + 1;
+  }
+
+  getNextStepReverse(): number {
+    return this.activePageIndex * this.pageLength + this.activeStepIndex - 1 < 0
+      ? this.sequenceLength - 1
+      : this.activePageIndex * this.pageLength + this.activeStepIndex - 1;
+  }
+
+  getNextStepPingPong(): number {
+    if (this.pingPongForward) {
+      if (
+        this.activePageIndex * this.pageLength + this.activeStepIndex >=
+        this.sequenceLength - 1
+      ) {
+        this.pingPongForward = false;
+        return this.getNextStepReverse();
+      } else {
+        return this.getNextStepForward();
+      }
+    } else {
+      if (this.activePageIndex * this.pageLength + this.activeStepIndex <= 0) {
+        this.pingPongForward = true;
+        return this.getNextStepForward();
+      } else {
+        return this.getNextStepReverse();
+      }
+    }
+  }
+
+  getNextStepRandom(): number {
+    return Math.floor(Math.random() * this.sequenceLength);
   }
 
   advanceSequencer(time: number) {
@@ -321,15 +360,10 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
       }
     );
 
-    // TODO: figure out custom sequence length
-    const nextstep =
-      (this.activePageIndex * this.pageLength + this.activeStepIndex + 1) %
-      (this.numPages * this.pageLength); // this.sequenceLength;
-
-    // console.log(nextstep, this.activePageIndex, this.activeStepIndex);
+    const nextstep = this.getNextStep();
 
     this.activePageIndex = Math.floor(nextstep / this.pageLength);
-    this.activeStepIndex = (this.activeStepIndex + 1) % this.pageLength;
+    this.activeStepIndex = nextstep % this.pageLength;
 
     this.triggerStep(
       this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex],
@@ -362,7 +396,7 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
 
   randomizeNotes() {
     this.selectedPage.steps.forEach(step => {
-      step.note = Math.floor(Math.random() * 12) + 1;
+      step.note = Math.floor(Math.random() * 12);
     });
   }
 
@@ -529,5 +563,8 @@ div.row-label {
   background-color: white;
   border: 1px solid gray;
   width: 100%;
+}
+.sequence-running {
+  color: #2196f3;
 }
 </style>
