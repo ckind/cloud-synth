@@ -152,7 +152,11 @@
           </v-col>
           <v-col cols="3" class="waveform-select-container">
             <select class="waveform-select" v-model="settings.noise.type">
-              <option v-for="(noiseType, j) in noiseTypes" :key="j" :value="noiseType">
+              <option
+                v-for="(noiseType, j) in noiseTypes"
+                :key="j"
+                :value="noiseType"
+              >
                 {{ noiseType }}
               </option>
             </select>
@@ -160,7 +164,11 @@
         </v-row>
       </v-col>
       <v-col cols="4">
-        <adsr-graph class="adsr" v-model="settings.filter.envelope" :width="300" />
+        <adsr-graph
+          class="adsr"
+          v-model="settings.filter.envelope"
+          :width="300"
+        />
         <v-row>
           <v-col cols="1" />
           <v-col cols="10">
@@ -278,7 +286,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch, Prop } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import AdsrGraph from "@/components/AdsrGraph.vue";
 import KnobControl from "@/components/KnobControl.vue";
 import { getDefaultJvaSettings } from "@/services/OfflinePresetService";

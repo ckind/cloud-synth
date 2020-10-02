@@ -6,7 +6,11 @@
         <div class="sequencer-block">
           <div class="row-label">note</div>
         </div>
-        <div class="sequencer-block" v-for="(step, i) in selectedPage.steps" :key="i">
+        <div
+          class="sequencer-block"
+          v-for="(step, i) in selectedPage.steps"
+          :key="i"
+        >
           <knob-control
             class="step-column"
             v-model="step.note"
@@ -24,16 +28,14 @@
           </v-icon>
         </div>
         <div class="wide-sequencer-block">
-          <select class="option-dropdown">
-            <option>chromatic</option>
-            <option>major</option>
-            <option>minor</option>
-            <option>dorian</option>
-            <option>phrygian</option>
-            <option>lydian</option>
-            <option>mixolydian</option>
-            <option>locrian</option>
-            <option>harm. minor</option>
+          <select class="option-dropdown" v-model="quantizeScale">
+            <option
+              v-for="(option, i) in scaleOptions"
+              :key="i"
+              :value="option"
+            >
+              {{ option.label }}
+            </option>
           </select>
         </div>
       </div>
@@ -42,12 +44,16 @@
         <div class="sequencer-block">
           <div class="row-label">octave</div>
         </div>
-        <div class="sequencer-block" v-for="(step, i) in selectedPage.steps" :key="i">
+        <div
+          class="sequencer-block"
+          v-for="(step, i) in selectedPage.steps"
+          :key="i"
+        >
           <knob-control
             class="step-column"
             v-model="step.octave"
             :minValue="3"
-            :maxValue="5"
+            :maxValue="6"
             :id="`step${i}octave`"
             :step="1"
             size="60"
@@ -80,7 +86,11 @@
         <div class="sequencer-block">
           <div class="row-label">velocity</div>
         </div>
-        <div class="sequencer-block" v-for="(step, i) in selectedPage.steps" :key="i">
+        <div
+          class="sequencer-block"
+          v-for="(step, i) in selectedPage.steps"
+          :key="i"
+        >
           <knob-control
             class="step-column"
             v-model="step.velocity"
@@ -97,11 +107,14 @@
           </v-icon>
         </div>
         <div class="wide-sequencer-block">
-          <select class="option-dropdown">
-            <option>forward</option>
-            <option>reverse</option>
-            <option>ping pong</option>
-            <option>random</option>
+          <select class="option-dropdown" v-model="direction">
+            <option
+              v-for="(option, i) in directionOptions"
+              :key="i"
+              :value="option"
+            >
+              {{ option.label }}
+            </option>
           </select>
         </div>
       </div>
@@ -110,7 +123,11 @@
         <div class="sequencer-block">
           <div class="row-label">length</div>
         </div>
-        <div class="sequencer-block" v-for="(step, i) in selectedPage.steps" :key="i">
+        <div
+          class="sequencer-block"
+          v-for="(step, i) in selectedPage.steps"
+          :key="i"
+        >
           <knob-control
             class="step-column"
             v-model="step.length"
@@ -135,16 +152,27 @@
       <!-- GATE/TRIGGER -->
       <div class="sequencer-row">
         <div class="sequencer-block">
-          <v-icon @click="toggleSequence()" :class="[running ? 'sequence-running' : '']">
+          <v-icon
+            @click="toggleSequence()"
+            :class="[running ? 'sequence-running' : '']"
+          >
             mdi-play-pause
           </v-icon>
         </div>
-        <div class="sequencer-block" v-for="(step, i) in selectedPage.steps" :key="i">
+        <div
+          class="sequencer-block"
+          v-for="(step, i) in selectedPage.steps"
+          :key="i"
+        >
           <div class="trigger-container">
             <div
               :class="[
                 'step-trigger',
-                step.active ? 'active-step' : !step.gate ? 'no-gate' : 'inactive-step'
+                step.active
+                  ? 'active-step'
+                  : !step.gate
+                  ? 'no-gate'
+                  : 'inactive-step'
               ]"
               @click="toggleGate(i)"
               :id="`step${i}trigger`"
@@ -168,13 +196,15 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
+import { scales, quantizePitch } from "@/musicTheory/scales.ts";
 import {
   MidiFunction,
   IMidiMessage
 } from "@/shared/interfaces/midi/IMidiMessage";
-import { Transport as ToneTransport, ToneEvent } from "tone";
+import { ToneEvent } from "tone";
 import KnobControl from "@/components/KnobControl.vue";
 import PageSelector from "@/components/PageSelector.vue";
+
 
 interface Step {
   note: number;
@@ -199,9 +229,17 @@ interface PageOption {
   value: number;
 }
 
-interface OctaveOption {
-  value: number;
+interface DirectionOption {
+  label: string;
+  nextStepFunction: SequencerAdvanceFunction;
 }
+
+interface ScaleOption {
+  label: string;
+  scale: number[];
+}
+
+type SequencerAdvanceFunction = () => number;
 
 @Component({
   components: {
@@ -219,21 +257,45 @@ export default class StepSequencer extends Vue implements IMidiDevice {
   private sequenceLength: number;
   private selectedPageIndex = 0;
   private pageOptions: PageOption[];
-  private octaveOptions: OctaveOption[];
+  private directionOptions: DirectionOption[];
+  private scaleOptions: ScaleOption[];
+  private direction: DirectionOption;
+  private quantizeScale: ScaleOption;
   private activeStepIndex: number;
   private activePageIndex: number;
   private running = false;
   private subdivision = 16;
   private sequencerEvent: ToneEvent;
   private connections: Array<IMidiReceiver>;
-  private getNextStep: () => number;
   private pingPongForward = true;
 
   public constructor() {
     super();
     this.connections = [];
 
-    this.octaveOptions = [{ value: 3 }, { value: 4 }, { value: 5 }];
+    this.directionOptions = [
+      { label: "forward", nextStepFunction: this.getNextStepForward },
+      { label: "reverse", nextStepFunction: this.getNextStepReverse },
+      { label: "ping pong", nextStepFunction: this.getNextStepPingPong },
+      { label: "random", nextStepFunction: this.getNextStepRandom }
+    ];
+
+    this.direction = this.directionOptions[0];
+
+    this.scaleOptions = [
+      { label: "chromatic", scale: scales.chromatic },
+      { label: "major", scale: scales.ionian },
+      { label: "minor", scale: scales.aeolian },
+      { label: "dorian", scale: scales.dorian },
+      { label: "phrygian", scale: scales.phrygian },
+      { label: "lydian", scale: scales.lydian },
+      { label: "mixolydian", scale: scales.mixolydian },
+      { label: "locrian", scale: scales.locrian },
+      { label: "harm. minor", scale: scales.harmonicMinor },
+      { label: "blues", scale: scales.blues }
+    ];
+
+    this.quantizeScale = this.scaleOptions[0];
 
     this.sequence = { pages: new Array<SequencerPage>(this.numPages) };
     this.pageOptions = new Array<PageOption>(this.numPages);
@@ -255,8 +317,6 @@ export default class StepSequencer extends Vue implements IMidiDevice {
     this.activePageIndex = this.numPages - 1;
     this.activeStepIndex = this.pageLength - 1;
     this.sequenceLength = this.numPages * this.pageLength;
-
-    this.getNextStep = this.getNextStepForward;
 
     this.sequencerEvent = new ToneEvent(time => {
       this.advanceSequencer(time);
@@ -290,11 +350,15 @@ export default class StepSequencer extends Vue implements IMidiDevice {
   toggleGate(stepIndex: number) {
     this.$set(this.sequence.pages[this.selectedPageIndex].steps, stepIndex, {
       note: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].note,
-      octave: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].octave,
-      velocity: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].velocity,
-      length: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].length,
+      octave: this.sequence.pages[this.selectedPageIndex].steps[stepIndex]
+        .octave,
+      velocity: this.sequence.pages[this.selectedPageIndex].steps[stepIndex]
+        .velocity,
+      length: this.sequence.pages[this.selectedPageIndex].steps[stepIndex]
+        .length,
       gate: !this.sequence.pages[this.selectedPageIndex].steps[stepIndex].gate,
-      active: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].active
+      active: this.sequence.pages[this.selectedPageIndex].steps[stepIndex]
+        .active
     });
   }
 
@@ -360,7 +424,7 @@ export default class StepSequencer extends Vue implements IMidiDevice {
       }
     );
 
-    const nextstep = this.getNextStep();
+    const nextstep = this.direction.nextStepFunction();
 
     this.activePageIndex = Math.floor(nextstep / this.pageLength);
     this.activeStepIndex = nextstep % this.pageLength;
@@ -402,7 +466,7 @@ export default class StepSequencer extends Vue implements IMidiDevice {
 
   randomizeOctaves() {
     this.selectedPage.steps.forEach(step => {
-      step.octave = Math.floor(Math.random() * 3) + 3;
+      step.octave = Math.floor(Math.random() * 4) + 3;
     });
   }
 
@@ -467,11 +531,15 @@ export default class StepSequencer extends Vue implements IMidiDevice {
   }
 
   triggerStep(step: Step, time: number) {
+    const noteNumber = quantizePitch(
+      step.note + 12 * step.octave,
+      this.quantizeScale.scale
+    );
     if (step.gate) {
       this.sendMidi(
         {
           midiFunction: MidiFunction.noteon,
-          noteNumber: step.note + 12 * step.octave,
+          noteNumber: noteNumber,
           noteVelocity: step.velocity
         },
         time
@@ -479,7 +547,7 @@ export default class StepSequencer extends Vue implements IMidiDevice {
       this.sendMidi(
         {
           midiFunction: MidiFunction.noteoff,
-          noteNumber: step.note + 12 * step.octave,
+          noteNumber: noteNumber,
           noteVelocity: step.velocity
         },
         time + 0.1

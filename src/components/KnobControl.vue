@@ -148,7 +148,11 @@ export default class KnobControl extends Vue {
   @Watch("value")
   onValueChanged(value: number) {
     this.curvedValue = value;
-    this.linearValue = this.valueCurve.getLinearValue(this.curvedValue);
+    this.unsteppedValue = this.valueCurve.getLinearValue(this.curvedValue);
+    this.linearValue =
+      this.step === 0
+        ? this.unsteppedValue
+        : this.roundToStep(this.unsteppedValue);
   }
 }
 </script>
