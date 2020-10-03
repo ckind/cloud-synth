@@ -28,7 +28,7 @@
           </v-icon>
         </div>
         <div class="wide-sequencer-block">
-          <select class="option-dropdown" v-model="quantizeScale">
+          <select class="option-dropdown" v-model="scaleOption">
             <option
               v-for="(option, i) in scaleOptions"
               :key="i"
@@ -65,19 +65,14 @@
           </v-icon>
         </div>
         <div class="wide-sequencer-block">
-          <select class="option-dropdown">
-            <option>C</option>
-            <option>C#</option>
-            <option>D</option>
-            <option>D#</option>
-            <option>E</option>
-            <option>F</option>
-            <option>F#</option>
-            <option>G</option>
-            <option>G#</option>
-            <option>A</option>
-            <option>Bb</option>
-            <option>B</option>
+          <select class="option-dropdown" v-model="transposeOption">
+            <option
+              v-for="(option, i) in transposeOptions"
+              :key="i"
+              :value="option"
+            >
+              {{ option.label }}
+            </option>
           </select>
         </div>
       </div>
@@ -107,7 +102,7 @@
           </v-icon>
         </div>
         <div class="wide-sequencer-block">
-          <select class="option-dropdown" v-model="direction">
+          <select class="option-dropdown" v-model="directionOption">
             <option
               v-for="(option, i) in directionOptions"
               :key="i"
@@ -144,8 +139,10 @@
           </v-icon>
         </div>
         <div class="wide-sequencer-block">
-          <select class="option-dropdown">
-            <option v-for="len in 32" :key="len">{{ len }}</option>
+          <select class="option-dropdown" v-model="sequenceLength">
+            <option v-for="len in numPages * pageLength" :key="len">
+              {{ len }}
+            </option>
           </select>
         </div>
       </div>
@@ -196,7 +193,12 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
-import { scales, quantizePitch } from "@/musicTheory/scales.ts";
+import {
+  quantizePitch,
+  ScaleType,
+  getScale,
+  KeySignature
+} from "@/musicTheory/scales.ts";
 import {
   MidiFunction,
   IMidiMessage
@@ -204,7 +206,6 @@ import {
 import { ToneEvent } from "tone";
 import KnobControl from "@/components/KnobControl.vue";
 import PageSelector from "@/components/PageSelector.vue";
-
 
 interface Step {
   note: number;
@@ -229,6 +230,8 @@ interface PageOption {
   value: number;
 }
 
+type SequencerAdvanceFunction = () => number;
+
 interface DirectionOption {
   label: string;
   nextStepFunction: SequencerAdvanceFunction;
@@ -236,10 +239,13 @@ interface DirectionOption {
 
 interface ScaleOption {
   label: string;
-  scale: number[];
+  scale: ScaleType;
 }
 
-type SequencerAdvanceFunction = () => number;
+interface TransposeOption {
+  label: string;
+  note: number;
+}
 
 @Component({
   components: {
@@ -259,12 +265,14 @@ export default class StepSequencer extends Vue implements IMidiDevice {
   private pageOptions: PageOption[];
   private directionOptions: DirectionOption[];
   private scaleOptions: ScaleOption[];
-  private direction: DirectionOption;
-  private quantizeScale: ScaleOption;
+  private transposeOptions: TransposeOption[];
+  private directionOption: DirectionOption;
+  private scaleOption: ScaleOption;
+  private transposeOption: TransposeOption;
   private activeStepIndex: number;
   private activePageIndex: number;
   private running = false;
-  private subdivision = 16;
+  private subdivision = 8;
   private sequencerEvent: ToneEvent;
   private connections: Array<IMidiReceiver>;
   private pingPongForward = true;
@@ -280,22 +288,39 @@ export default class StepSequencer extends Vue implements IMidiDevice {
       { label: "random", nextStepFunction: this.getNextStepRandom }
     ];
 
-    this.direction = this.directionOptions[0];
+    this.directionOption = this.directionOptions[0];
 
     this.scaleOptions = [
-      { label: "chromatic", scale: scales.chromatic },
-      { label: "major", scale: scales.ionian },
-      { label: "minor", scale: scales.aeolian },
-      { label: "dorian", scale: scales.dorian },
-      { label: "phrygian", scale: scales.phrygian },
-      { label: "lydian", scale: scales.lydian },
-      { label: "mixolydian", scale: scales.mixolydian },
-      { label: "locrian", scale: scales.locrian },
-      { label: "harm. minor", scale: scales.harmonicMinor },
-      { label: "blues", scale: scales.blues }
+      { label: "chromatic", scale: ScaleType.Chromatic },
+      { label: "major", scale: ScaleType.Ionian },
+      { label: "minor", scale: ScaleType.Aeolian },
+      { label: "dorian", scale: ScaleType.Dorian },
+      { label: "phrygian", scale: ScaleType.Phrygian },
+      { label: "lydian", scale: ScaleType.Lydian },
+      { label: "mixolydian", scale: ScaleType.Mixolydian },
+      { label: "locrian", scale: ScaleType.Locrian },
+      { label: "harm. minor", scale: ScaleType.HarmonicMinor },
+      { label: "blues", scale: ScaleType.Blues }
     ];
 
-    this.quantizeScale = this.scaleOptions[0];
+    this.scaleOption = this.scaleOptions[0];
+
+    this.transposeOptions = [
+      { label: "C", note: KeySignature.C },
+      { label: "C#", note: KeySignature.CSharp },
+      { label: "D", note: KeySignature.D },
+      { label: "D#", note: KeySignature.DSharp },
+      { label: "E", note: KeySignature.E },
+      { label: "F", note: KeySignature.F },
+      { label: "F#", note: KeySignature.FSharp },
+      { label: "G", note: KeySignature.G },
+      { label: "G#", note: KeySignature.GSharp },
+      { label: "A", note: KeySignature.A },
+      { label: "Bb", note: KeySignature.BFlat },
+      { label: "B", note: KeySignature.B }
+    ];
+
+    this.transposeOption = this.transposeOptions[0];
 
     this.sequence = { pages: new Array<SequencerPage>(this.numPages) };
     this.pageOptions = new Array<PageOption>(this.numPages);
@@ -303,7 +328,7 @@ export default class StepSequencer extends Vue implements IMidiDevice {
       this.sequence.pages[i] = { steps: new Array<Step>(this.pageLength) };
       for (let j = 0; j < this.pageLength; j++) {
         this.sequence.pages[i].steps[j] = {
-          note: 7,
+          note: 0,
           octave: 3,
           velocity: 67,
           length: 1.0,
@@ -316,7 +341,7 @@ export default class StepSequencer extends Vue implements IMidiDevice {
 
     this.activePageIndex = this.numPages - 1;
     this.activeStepIndex = this.pageLength - 1;
-    this.sequenceLength = this.numPages * this.pageLength;
+    this.sequenceLength = this.pageLength;
 
     this.sequencerEvent = new ToneEvent(time => {
       this.advanceSequencer(time);
@@ -339,6 +364,12 @@ export default class StepSequencer extends Vue implements IMidiDevice {
 
   get selectedPage() {
     return this.sequence.pages[this.selectedPageIndex];
+  }
+
+  get quantizeScale() {
+    const scale = getScale(this.scaleOption.scale, this.transposeOption.note);
+    console.log(scale);
+    return scale;
   }
 
   // Methods
@@ -424,7 +455,7 @@ export default class StepSequencer extends Vue implements IMidiDevice {
       }
     );
 
-    const nextstep = this.direction.nextStepFunction();
+    const nextstep = this.directionOption.nextStepFunction();
 
     this.activePageIndex = Math.floor(nextstep / this.pageLength);
     this.activeStepIndex = nextstep % this.pageLength;
@@ -533,8 +564,9 @@ export default class StepSequencer extends Vue implements IMidiDevice {
   triggerStep(step: Step, time: number) {
     const noteNumber = quantizePitch(
       step.note + 12 * step.octave,
-      this.quantizeScale.scale
+      this.quantizeScale
     );
+    console.log(noteNumber);
     if (step.gate) {
       this.sendMidi(
         {
