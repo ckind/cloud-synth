@@ -354,6 +354,8 @@ export default class StepSequencer extends Vue implements IMidiDevice {
 
   mounted() {
     this.$emit("deviceMounted");
+    this.sequencerEvent.start();
+    this.running = true;
   }
 
   beforeDestroy() {

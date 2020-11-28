@@ -9,7 +9,7 @@
       ref="midiDeviceContainer"
       @newDeviceMounted="newMidiDeviceMounted"
     />
-    <v-footer absolute class="session-footer">
+    <v-footer app class="session-footer">
       <v-col cols="4" />
       <v-col class="text-center" cols="3">
         <v-slider
