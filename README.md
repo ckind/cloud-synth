@@ -1,4 +1,4 @@
-# synth-app
+# cloud-synth
 
 ## Project setup
 ```
