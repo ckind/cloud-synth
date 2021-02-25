@@ -48,10 +48,10 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { Gain as ToneGain, Filter as ToneFilter } from "tone";
-import { IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
+import { Gain as ToneGain, Filter as ToneFilter, Transport as ToneTransport, immediate as toneImmediate, Midi as ToneMidi } from "tone";
+import { IMidiMessage, MidiFunction } from "@/shared/interfaces/midi/IMidiMessage";
 import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
-import webmidi, { InputEventNoteoff, InputEventNoteon } from "webmidi";
+import webmidi, { InputEventNoteoff, InputEventNoteon, Output, INoteParam } from "webmidi";
 
 @Component({})
 export default class ExternalInstrument extends Vue implements IInstrumentDevice {
@@ -60,6 +60,7 @@ export default class ExternalInstrument extends Vue implements IInstrumentDevice
   settings = {};
 
   private selectedExternalDevice = "Click to Select Device";
+  private selectedOutput: Output | false = false;
   private webmidiSupported = true;
   private webmidiError = "";
   private availableDevices: string[] = [];
@@ -95,6 +96,8 @@ export default class ExternalInstrument extends Vue implements IInstrumentDevice
 
   externalDeviceSelected(deviceName: string) {
     // todo: implement
+    this.selectedExternalDevice = deviceName;
+    this.selectedOutput = webmidi.getOutputByName(deviceName);
   }
 
   applySettings(settings: any) {
@@ -105,8 +108,28 @@ export default class ExternalInstrument extends Vue implements IInstrumentDevice
     // todo: cleanup
   }
 
-  receiveMidi(message: IMidiMessage) {
-    // todo: send midi to ext instrument
+  receiveMidi(message: IMidiMessage, time?: number) {
+    // todo: this has inaccurate timing when used with step sequencer
+    if (this.selectedOutput) {
+      switch (message.midiFunction) {
+        case MidiFunction.noteon:
+          // ToneTransport.scheduleOnce(() => {
+          //   if (this.selectedOutput) {
+          //     this.selectedOutput.playNote("C4", "all");
+          //   }
+          // }, time !== undefined ? time : toneImmediate());
+          this.selectedOutput.playNote(message.noteNumber, "all");
+          break;
+        case MidiFunction.noteoff:
+          // ToneTransport.scheduleOnce(() => {
+          //   if (this.selectedOutput) {
+          //     this.selectedOutput.stopNote("C4", "all");
+          //   }
+          // }, time !== undefined ? time : toneImmediate());
+          this.selectedOutput.stopNote(message.noteNumber, "all");
+          break;
+      }
+    }
   }
 
   // Watches

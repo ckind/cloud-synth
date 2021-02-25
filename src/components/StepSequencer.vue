@@ -370,7 +370,6 @@ export default class StepSequencer extends Vue implements IMidiDevice {
 
   get quantizeScale() {
     const scale = getScale(this.scaleOption.scale, this.transposeOption.note);
-    console.log(scale);
     return scale;
   }
 
@@ -383,15 +382,11 @@ export default class StepSequencer extends Vue implements IMidiDevice {
   toggleGate(stepIndex: number) {
     this.$set(this.sequence.pages[this.selectedPageIndex].steps, stepIndex, {
       note: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].note,
-      octave: this.sequence.pages[this.selectedPageIndex].steps[stepIndex]
-        .octave,
-      velocity: this.sequence.pages[this.selectedPageIndex].steps[stepIndex]
-        .velocity,
-      length: this.sequence.pages[this.selectedPageIndex].steps[stepIndex]
-        .length,
+      octave: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].octave,
+      velocity: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].velocity,
+      length: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].length,
       gate: !this.sequence.pages[this.selectedPageIndex].steps[stepIndex].gate,
-      active: this.sequence.pages[this.selectedPageIndex].steps[stepIndex]
-        .active
+      active: this.sequence.pages[this.selectedPageIndex].steps[stepIndex].active
     });
   }
 
@@ -438,21 +433,11 @@ export default class StepSequencer extends Vue implements IMidiDevice {
       this.sequence.pages[this.activePageIndex].steps,
       this.activeStepIndex,
       {
-        note: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].note,
-        octave: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].octave,
-        velocity: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].velocity,
-        length: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].length,
-        gate: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].gate,
+        note: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].note,
+        octave: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].octave,
+        velocity: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].velocity,
+        length: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].length,
+        gate: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].gate,
         active: false
       }
     );
@@ -471,21 +456,11 @@ export default class StepSequencer extends Vue implements IMidiDevice {
       this.sequence.pages[this.activePageIndex].steps,
       this.activeStepIndex,
       {
-        note: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].note,
-        octave: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].octave,
-        velocity: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].velocity,
-        length: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].length,
-        gate: this.sequence.pages[this.activePageIndex].steps[
-          this.activeStepIndex
-        ].gate,
+        note: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].note,
+        octave: this.sequence.pages[this.activePageIndex].steps[ this.activeStepIndex].octave,
+        velocity: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].velocity,
+        length: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].length,
+        gate: this.sequence.pages[this.activePageIndex].steps[this.activeStepIndex].gate,
         active: true
       }
     );
@@ -568,7 +543,6 @@ export default class StepSequencer extends Vue implements IMidiDevice {
       step.note + 12 * step.octave,
       this.quantizeScale
     );
-    console.log(noteNumber);
     if (step.gate) {
       this.sendMidi(
         {

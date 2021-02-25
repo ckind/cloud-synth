@@ -65,7 +65,7 @@ export const getDefaultKeypadSettings = function(): IComputerMidiKeyboardSetting
     arpOn: false,
     arpMode: ArpeggioMode.UP,
     arpNodeRepeat: 1,
-    chordTrigger: [0],
+    chordTrigger: [0, 3, 5, 7, 8],
     octaveOffset: 48,
     transposeOffset: 0
   };
