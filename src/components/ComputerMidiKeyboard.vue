@@ -2,8 +2,46 @@
   <div>
     <!-- todo: this is kind of messy...should generate keys in a loop -->
     <!-- prettier-ignore -->
-    <v-row class="keyboard-container">
-      <!-- <v-col cols="12"> -->
+    <v-row class="wood-background justify-center">
+      <v-col cols="2" class="pa-0">
+        <div class="metal-1-background control-panel">
+          <v-row>
+            <v-col cols="6" class="pa-0">
+              <knob-control
+                :minValue="0"
+                :maxValue="5"
+                :step="1"
+                v-model="settings.arpMode"
+                size="70"
+                id="arpStyleKnob"
+                label="Arp Style"
+              ></knob-control>
+            </v-col>
+            <v-col cols="6" class="pa-0">
+              <knob-control
+                :minValue="0"
+                :maxValue="8"
+                :step="1"
+                v-model="settings.arpRate"
+                size="70"
+                id="arpRateKnob"
+                label="Arp Rate"
+              ></knob-control>
+            </v-col>
+          </v-row>
+          <v-row class="pa-0">
+            <v-col cols="6" class="pa-0">
+              <!-- kind of a hack - we're using messages instead of label to put the text underneath -->
+              <v-switch :messages="['Arp']" class="switch-center"></v-switch>
+            </v-col>
+            <v-col cols="6" class="pa-0">
+              <v-switch :messages="['Chord']"  class="switch-center"></v-switch>
+            </v-col>
+          </v-row>
+        </div>
+      </v-col>
+      <v-col cols="8" class="pa-0">
+        <v-row class="justify-center">
         <ul class="keyboard">
           <li id="key24" class="key"
           @mousedown="e => { keyMouseDown(e, 24) }" @mouseup="e => { keyMouseUp(e, 24) }"
@@ -170,7 +208,9 @@
           @mousedown="e => { keyMouseDown(e, 71) }" @mouseup="e => { keyMouseUp(e, 71) }"
           @mouseover="e => { keySlideOn(e, 71) }" @mouseout="e => { keySlideOff(e, 71) }"></li>
         </ul>
-      <!-- </v-col> -->
+        </v-row>
+      </v-col>
+      <v-col cols="2" class="pa-0"></v-col>
     </v-row>
   </div>
 </template>
@@ -186,8 +226,13 @@ import {
 } from "@/shared/interfaces/midi/IMidiMessage";
 import { IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
 import { getDefaultKeypadSettings } from "@/services/OfflinePresetService";
+import KnobControl from "@/components/KnobControl.vue";
 
-@Component({})
+@Component({
+  components: {
+    KnobControl
+  }
+})
 export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   name = "Computer Keyboard";
   settings: IComputerMidiKeyboardSettings;
@@ -355,6 +400,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   private keyMouseUp(e: Event, keyNum: number) {
     e.stopPropagation();
     this.mouseIsDown = false;
+
     this.settings.chordTrigger.forEach(offset => {
       const note = keyNum + offset;
       const n =
@@ -370,6 +416,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
         noteVelocity: 67
       });
     });
+
   }
 
   private userKeyPressed(e: KeyboardEvent) {
@@ -463,11 +510,30 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
 </script>
 
 <style scoped>
-div .keyboard-container {
-  justify-content: center;
+
+/* misc */
+div .wood-background {
   background-image: url("../assets/wood-2.png");
   background-repeat: repeat;
 }
+div .metal-1-background {
+  background-image: url("../assets/metal-1.png");
+  background-repeat: repeat;
+}
+div .justify-center {
+  justify-content: center;
+}
+div .align-center {
+  align-items: center;
+}
+.control-panel {
+  font-size: 10pt;
+}
+.switch-center {
+  padding-left: 35%;
+}
+
+/* keyboard */
 ul {
   list-style: none;
   display: flex;

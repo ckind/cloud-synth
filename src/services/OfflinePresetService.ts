@@ -1,6 +1,6 @@
 import { IPresetBank } from "@/shared/interfaces/presets/IPresetBank";
 import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
-import { ArpeggioMode, IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
+import { ArpeggioMode, ArpeggioRate, IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
 import defaultBank from "@/assets/presets/OfflineDefaultBank.json";
 
 export const getDefaultJvaSettings = function(): IJvaSettings {
@@ -63,9 +63,10 @@ export const getDefaultJvaSettings = function(): IJvaSettings {
 export const getDefaultKeypadSettings = function(): IComputerMidiKeyboardSettings {
   return {
     arpOn: false,
+    arpRate: ArpeggioRate.SIXTEENTH_NOTE,
     arpMode: ArpeggioMode.UP,
     arpNodeRepeat: 1,
-    chordTrigger: [0, 3, 5, 7, 8],
+    chordTrigger: [0],
     octaveOffset: 48,
     transposeOffset: 0
   };
