@@ -1,287 +1,289 @@
 <template>
   <div class="synth-panel">
-    <v-row>
-      <v-col cols="4">
-        <v-row class="dense-row">
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator1.transpose"
-              :minValue="-12"
-              :maxValue="12"
-              :step="1"
-              :id="`oscillator1TransposeControl`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator1.detune"
-              :minValue="-50"
-              :maxValue="50"
-              :id="`oscillator1FineTuningControl`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator1.volume"
-              :minValue="-60"
-              :maxValue="0"
-              :default="-12"
-              :id="`oscillator1Volume`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3" class="waveform-select-container">
-            <select class="waveform-select" v-model="settings.oscillator1.type">
-              <option
-                v-for="(waveform, j) in waveforms"
-                :key="j"
-                :value="waveform"
-              >
-                {{ waveform }}
-              </option>
-            </select>
-          </v-col>
-        </v-row>
-        <v-row class="dense-row">
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator2.transpose"
-              :minValue="-12"
-              :maxValue="12"
-              :step="1"
-              :id="`oscillator2TransposeControl`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator2.detune"
-              :minValue="-50"
-              :maxValue="50"
-              :id="`oscillator2FineTuningControl`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator2.volume"
-              :minValue="-60"
-              :maxValue="0"
-              :default="-12"
-              :id="`oscillator2Volume`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3" class="waveform-select-container">
-            <select class="waveform-select" v-model="settings.oscillator2.type">
-              <option
-                v-for="(waveform, j) in waveforms"
-                :key="j"
-                :value="waveform"
-              >
-                {{ waveform }}
-              </option>
-            </select>
-          </v-col>
-        </v-row>
-        <v-row class="dense-row">
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator3.transpose"
-              :minValue="-12"
-              :maxValue="12"
-              :step="1"
-              :id="`oscillator3TransposeControl`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator3.detune"
-              :minValue="-50"
-              :maxValue="50"
-              :id="`oscillator1FineTuningControl`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillator3.volume"
-              :minValue="-60"
-              :maxValue="0"
-              :default="-12"
-              :id="`oscillator3Volume`"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3" class="waveform-select-container">
-            <select class="waveform-select" v-model="settings.oscillator3.type">
-              <option
-                v-for="(waveform, j) in waveforms"
-                :key="j"
-                :value="waveform"
-              >
-                {{ waveform }}
-              </option>
-            </select>
-          </v-col>
-        </v-row>
-        <v-row class="dense-row">
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.oscillatorSpread"
-              :minValue="0"
-              :maxValue="1"
-              id="oscillatorSpreadKnob"
-              label="Osc Spread"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3" />
-          <v-col cols="3">
-            <knob-control
-              v-model="settings.noise.volume"
-              :minValue="-60"
-              :maxValue="0"
-              id="noiseLevelKnob"
-              label="Noise"
-              size="70"
-            ></knob-control>
-          </v-col>
-          <v-col cols="3" class="waveform-select-container">
-            <select class="waveform-select" v-model="settings.noise.type">
-              <option
-                v-for="(noiseType, j) in noiseTypes"
-                :key="j"
-                :value="noiseType"
-              >
-                {{ noiseType }}
-              </option>
-            </select>
-          </v-col>
-        </v-row>
-      </v-col>
-      <v-col cols="4">
-        <adsr-graph
-          class="adsr"
-          v-model="settings.filter.envelope"
-          :width="300"
-        />
-        <v-row>
-          <v-col cols="1" />
-          <v-col cols="10">
-            <v-row class="dense-row">
-              <v-col cols="3">
-                <knob-control
-                  v-model="settings.filter.frequency"
-                  :minValue="20"
-                  :maxValue="20000"
-                  id="filterFrequencyKnob"
-                  label="Cutoff"
-                  scale="exponential"
-                  size="70"
-                ></knob-control>
-              </v-col>
-              <v-col cols="3">
-                <knob-control
-                  v-model="settings.filter.q"
-                  :minValue="0"
-                  :maxValue="10"
-                  id="filterQKnob"
-                  label="Q"
-                  size="70"
-                ></knob-control>
-              </v-col>
-              <v-col cols="3">
-                <knob-control
-                  v-model="settings.filter.envelopeAmount"
-                  :minValue="0"
-                  :maxValue="1"
-                  id="envAmtKnob"
-                  label="Env Amt"
-                  size="70"
-                ></knob-control>
-              </v-col>
-              <v-col cols="3">
-                <knob-control
-                  v-model="filterTypeIndex"
-                  :minValue="0"
-                  :maxValue="1"
-                  :step="1"
-                  id="filterTypeKnob"
-                  label="Type"
-                  size="70"
-                ></knob-control>
-              </v-col>
-            </v-row>
-          </v-col>
-          <v-col cols="1" />
-        </v-row>
-        <v-row class="dense-row">
-          <v-col cols="6">
-            <knob-control
-              v-model="settings.filter.modulationAmount"
-              :minValue="0"
-              :maxValue="1"
-              size="70"
-              scale="quadratic bezier"
-              id="filterModKnob"
-              label="Filter Mod"
-            ></knob-control>
-          </v-col>
-          <v-col cols="6">
-            <knob-control
-              v-model="settings.filter.modulationRate"
-              :minValue="0"
-              :maxValue="10"
-              size="70"
-              scale="quadratic bezier"
-              id="filterModRateKnob"
-              label="Mod Rate"
-            ></knob-control>
-          </v-col>
-        </v-row>
-      </v-col>
-      <v-col cols="4">
-        <adsr-graph class="adsr" v-model="settings.amp.envelope" :width="300" />
-        <v-row>
-          <v-col cols="6">
-            <knob-control
-              v-model="settings.pitch.modulationAmount"
-              :minValue="0"
-              :maxValue="0.005"
-              size="70"
-              id="pitchModKnob"
-              label="Pitch Mod"
-            ></knob-control>
-          </v-col>
-          <v-col cols="6">
-            <knob-control
-              v-model="settings.pitch.modulationRate"
-              :minValue="0"
-              :maxValue="10"
-              size="70"
-              id="pitchModRateKnob"
-              label="Mod Rate"
-            ></knob-control>
-          </v-col>
-        </v-row>
-        <v-row class="dense-row">
-          <v-col cols="12">
-            <knob-control
-              v-model="settings.volume"
-              :minValue="-60"
-              :maxValue="0"
-              size="70"
-              id="volumeLevelKnob"
-              label="Volume"
-            ></knob-control>
-          </v-col>
-        </v-row>
-      </v-col>
-    </v-row>
+    <div class="synth-section">
+      <v-row class="dense-row mb-4">
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator1.transpose"
+            :minValue="-12"
+            :maxValue="12"
+            :step="1"
+            :id="`oscillator1TransposeControl`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator1.detune"
+            :minValue="-50"
+            :maxValue="50"
+            :id="`oscillator1FineTuningControl`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator1.volume"
+            :minValue="-60"
+            :maxValue="0"
+            :default="-12"
+            :id="`oscillator1Volume`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3" class="waveform-select-container">
+          <select class="waveform-select" v-model="settings.oscillator1.type">
+            <option
+              v-for="(waveform, j) in waveforms"
+              :key="j"
+              :value="waveform"
+            >
+              {{ waveform }}
+            </option>
+          </select>
+        </v-col>
+      </v-row>
+      <v-row class="dense-row mb-4">
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator2.transpose"
+            :minValue="-12"
+            :maxValue="12"
+            :step="1"
+            :id="`oscillator2TransposeControl`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator2.detune"
+            :minValue="-50"
+            :maxValue="50"
+            :id="`oscillator2FineTuningControl`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator2.volume"
+            :minValue="-60"
+            :maxValue="0"
+            :default="-12"
+            :id="`oscillator2Volume`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3" class="waveform-select-container">
+          <select class="waveform-select" v-model="settings.oscillator2.type">
+            <option
+              v-for="(waveform, j) in waveforms"
+              :key="j"
+              :value="waveform"
+            >
+              {{ waveform }}
+            </option>
+          </select>
+        </v-col>
+      </v-row>
+      <v-row class="dense-row mb-4">
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator3.transpose"
+            :minValue="-12"
+            :maxValue="12"
+            :step="1"
+            :id="`oscillator3TransposeControl`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator3.detune"
+            :minValue="-50"
+            :maxValue="50"
+            :id="`oscillator1FineTuningControl`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillator3.volume"
+            :minValue="-60"
+            :maxValue="0"
+            :default="-12"
+            :id="`oscillator3Volume`"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3" class="waveform-select-container">
+          <select class="waveform-select" v-model="settings.oscillator3.type">
+            <option
+              v-for="(waveform, j) in waveforms"
+              :key="j"
+              :value="waveform"
+            >
+              {{ waveform }}
+            </option>
+          </select>
+        </v-col>
+      </v-row>
+      <v-row class="dense-row mb-4">
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.oscillatorSpread"
+            :minValue="0"
+            :maxValue="1"
+            id="oscillatorSpreadKnob"
+            label="Osc Spread"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3" />
+        <v-col cols="3">
+          <knob-control
+            v-model="settings.noise.volume"
+            :minValue="-60"
+            :maxValue="0"
+            id="noiseLevelKnob"
+            label="Noise"
+            size="50"
+          ></knob-control>
+        </v-col>
+        <v-col cols="3" class="waveform-select-container">
+          <select class="waveform-select" v-model="settings.noise.type">
+            <option
+              v-for="(noiseType, j) in noiseTypes"
+              :key="j"
+              :value="noiseType"
+            >
+              {{ noiseType }}
+            </option>
+          </select>
+        </v-col>
+      </v-row>
+    </div>
+    <div class="synth-section">
+      <adsr-graph
+        class="adsr"
+        v-model="settings.filter.envelope"
+        :width="$vuetify.breakpoint.name = 'xs' ? 250 : 300"
+      />
+      <v-row>
+        <v-col cols="1" />
+        <v-col cols="10">
+          <v-row class="dense-row">
+            <v-col cols="3">
+              <knob-control
+                v-model="settings.filter.frequency"
+                :minValue="20"
+                :maxValue="20000"
+                id="filterFrequencyKnob"
+                label="Cutoff"
+                scale="exponential"
+                size="50"
+              ></knob-control>
+            </v-col>
+            <v-col cols="3">
+              <knob-control
+                v-model="settings.filter.q"
+                :minValue="0"
+                :maxValue="10"
+                id="filterQKnob"
+                label="Q"
+                size="50"
+              ></knob-control>
+            </v-col>
+            <v-col cols="3">
+              <knob-control
+                v-model="settings.filter.envelopeAmount"
+                :minValue="0"
+                :maxValue="1"
+                id="envAmtKnob"
+                label="Env Amt"
+                size="50"
+              ></knob-control>
+            </v-col>
+            <v-col cols="3">
+              <knob-control
+                v-model="filterTypeIndex"
+                :minValue="0"
+                :maxValue="1"
+                :step="1"
+                id="filterTypeKnob"
+                label="Type"
+                size="50"
+              ></knob-control>
+            </v-col>
+          </v-row>
+        </v-col>
+        <v-col cols="1" />
+      </v-row>
+      <v-row class="dense-row">
+        <v-col cols="6">
+          <knob-control
+            v-model="settings.filter.modulationAmount"
+            :minValue="0"
+            :maxValue="1"
+            size="50"
+            scale="quadratic bezier"
+            id="filterModKnob"
+            label="Filter Mod"
+          ></knob-control>
+        </v-col>
+        <v-col cols="6">
+          <knob-control
+            v-model="settings.filter.modulationRate"
+            :minValue="0"
+            :maxValue="10"
+            size="50"
+            scale="quadratic bezier"
+            id="filterModRateKnob"
+            label="Mod Rate"
+          ></knob-control>
+        </v-col>
+      </v-row>
+    </div>
+    <div class="synth-section">
+      <adsr-graph
+        class="adsr"
+        v-model="settings.amp.envelope"
+        :width="$vuetify.breakpoint.name = 'xs' ? 250 : 300"
+      />
+      <v-row>
+        <v-col cols="6">
+          <knob-control
+            v-model="settings.pitch.modulationAmount"
+            :minValue="0"
+            :maxValue="0.005"
+            size="50"
+            id="pitchModKnob"
+            label="Pitch Mod"
+          ></knob-control>
+        </v-col>
+        <v-col cols="6">
+          <knob-control
+            v-model="settings.pitch.modulationRate"
+            :minValue="0"
+            :maxValue="10"
+            size="50"
+            id="pitchModRateKnob"
+            label="Mod Rate"
+          ></knob-control>
+        </v-col>
+      </v-row>
+      <v-row class="dense-row">
+        <v-col cols="12">
+          <knob-control
+            v-model="settings.volume"
+            :minValue="-60"
+            :maxValue="0"
+            size="50"
+            id="volumeLevelKnob"
+            label="Volume"
+          ></knob-control>
+        </v-col>
+      </v-row>
+    </div>
   </div>
 </template>
 
@@ -297,7 +299,7 @@ import {
   Volume as ToneVolume,
   LFO as ToneLFO,
   immediate as ToneImmediate,
-  Gain as ToneGain
+  Gain as ToneGain,
 } from "tone";
 import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
@@ -307,8 +309,8 @@ import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice
 @Component({
   components: {
     AdsrGraph,
-    KnobControl
-  }
+    KnobControl,
+  },
 })
 export default class JvaSynth extends Vue implements IInstrumentDevice {
   /**
@@ -640,7 +642,16 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
   background-image: url("../assets/metal-2.png");
   background-repeat: repeat;
   color: white;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
   font-size: 10pt;
+}
+
+.synth-section {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 400px;
 }
 
 .waveform-select {

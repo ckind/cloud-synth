@@ -12,14 +12,15 @@
           :key="i"
         >
           <knob-control
-            class="step-column"
+            class="step-column ma-4"
             v-model="step.note"
             :minValue="0"
             :maxValue="11"
             :id="`step${i}note`"
             :step="1"
             :default="0"
-            size="60"
+            :shadow="false"
+            size="45"
           ></knob-control>
         </div>
         <div class="sequencer-block">
@@ -50,13 +51,14 @@
           :key="i"
         >
           <knob-control
-            class="step-column"
+            class="step-column ma-4"
             v-model="step.octave"
             :minValue="3"
             :maxValue="6"
             :id="`step${i}octave`"
             :step="1"
-            size="60"
+            :shadow="false"
+            size="45"
           ></knob-control>
         </div>
         <div class="sequencer-block">
@@ -87,13 +89,14 @@
           :key="i"
         >
           <knob-control
-            class="step-column"
+            class="step-column ma-4"
             v-model="step.velocity"
             :minValue="1"
             :maxValue="127"
             :id="`step${i}velocity`"
             :step="1"
-            size="60"
+            :shadow="false"
+            size="45"
           ></knob-control>
         </div>
         <div class="sequencer-block">
@@ -124,13 +127,14 @@
           :key="i"
         >
           <knob-control
-            class="step-column"
+            class="step-column ma-4"
             v-model="step.length"
             :minValue="0.01"
             :maxValue="1"
             :id="`step${i}length`"
             :step="0.01"
-            size="60"
+            :shadow="false"
+            size="45"
           ></knob-control>
         </div>
         <div class="sequencer-block">
@@ -198,7 +202,7 @@ import {
   ScaleType,
   getScale,
   KeySignature
-} from "@/musicTheory/scales.ts";
+} from "@/musicTheory/scales";
 import {
   MidiFunction,
   IMidiMessage

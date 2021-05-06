@@ -3,7 +3,7 @@
     <!-- todo: this is kind of messy...should generate keys in a loop -->
     <!-- prettier-ignore -->
     <v-row class="wood-background justify-center">
-      <v-col cols="2" class="pa-0">
+      <!-- <div class="pa-0">
         <div class="metal-1-background control-panel">
           <v-row>
             <v-col cols="6" class="pa-0">
@@ -31,7 +31,6 @@
           </v-row>
           <v-row class="pa-0">
             <v-col cols="6" class="pa-0">
-              <!-- kind of a hack - we're using messages instead of label to put the text underneath -->
               <v-switch :messages="['Arp']" class="switch-center"></v-switch>
             </v-col>
             <v-col cols="6" class="pa-0">
@@ -39,178 +38,197 @@
             </v-col>
           </v-row>
         </div>
-      </v-col>
-      <v-col cols="8" class="pa-0">
+      </div> -->
+      <div class="pa-0">
         <v-row class="justify-center">
-        <ul class="keyboard">
-          <li id="key24" class="key"
-          @mousedown="e => { keyMouseDown(e, 24) }" @mouseup="e => { keyMouseUp(e, 24) }"
-          @mouseover="e => { keySlideOn(e, 24) }" @mouseout="e => { keySlideOff(e, 24) }"> 
-            <div id="key25" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 25) }" @mouseup="e => { keyMouseUp(e, 25) }"
-            @mouseover="e => { keySlideOn(e, 25) }" @mouseout="e => { keySlideOff(e, 25) }"></div>
-          </li>
-          <li id="key26" class="key"
-          @mousedown="e => { keyMouseDown(e, 26) }" @mouseup="e => { keyMouseUp(e, 26) }"
-          @mouseover="e => { keySlideOn(e, 26) }" @mouseout="e => { keySlideOff(e, 26) }">
-            <div id="key27" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 27) }" @mouseup="e => { keyMouseUp(e, 27) }"
-            @mouseover="e => { keySlideOn(e, 27) }" @mouseout="e => { keySlideOff(e, 27) }"></div>
-          </li>
-          <li id="key28" class="key"
-          @mousedown="e => { keyMouseDown(e, 28) }" @mouseup="e => { keyMouseUp(e, 28) }"
-          @mouseover="e => { keySlideOn(e, 28) }" @mouseout="e => { keySlideOff(e, 28) }"></li>
-          <li id="key29" class="key"
-          @mousedown="e => { keyMouseDown(e, 29) }" @mouseup="e => { keyMouseUp(e, 29) }"
-          @mouseover="e => { keySlideOn(e, 29) }" @mouseout="e => { keySlideOff(e, 29) }">
-            <div id="key30" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 30) }" @mouseup="e => { keyMouseUp(e, 30) }"
-            @mouseover="e => { keySlideOn(e, 30) }" @mouseout="e => { keySlideOff(e, 30) }"></div>
-          </li>
-          <li id="key31" class="key"
-          @mousedown="e => { keyMouseDown(e, 31) }" @mouseup="e => { keyMouseUp(e, 31) }"
-          @mouseover="e => { keySlideOn(e, 31) }" @mouseout="e => { keySlideOff(e, 31) }">
-            <div id="key32" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 32) }" @mouseup="e => { keyMouseUp(e, 32) }"
-            @mouseover="e => { keySlideOn(e, 32) }" @mouseout="e => { keySlideOff(e, 32) }"></div>
-          </li>
-          <li id="key33" class="key"
-          @mousedown="e => { keyMouseDown(e, 33) }" @mouseup="e => { keyMouseUp(e, 33) }"
-          @mouseover="e => { keySlideOn(e, 33) }" @mouseout="e => { keySlideOff(e, 33) }">
-            <div id="key34" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 34) }" @mouseup="e => { keyMouseUp(e, 34) }"
-            @mouseover="e => { keySlideOn(e, 34) }" @mouseout="e => { keySlideOff(e, 34) }"></div>
-          </li>
-          <li id="key35" class="key"
-          @mousedown="e => { keyMouseDown(e, 35) }" @mouseup="e => { keyMouseUp(e, 35) }"
-          @mouseover="e => { keySlideOn(e, 35) }" @mouseout="e => { keySlideOff(e, 35) }"></li>
-          <li id="key36" class="key"
-          @mousedown="e => { keyMouseDown(e, 36) }" @mouseup="e => { keyMouseUp(e, 36) }"
-          @mouseover="e => { keySlideOn(e, 36) }" @mouseout="e => { keySlideOff(e, 36) }">
-            <div id="key37" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 37) }" @mouseup="e => { keyMouseUp(e, 37) }"
-            @mouseover="e => { keySlideOn(e, 37) }" @mouseout="e => { keySlideOff(e, 37) }"></div>
-          </li>
-          <li id="key38" class="key"
-          @mousedown="e => { keyMouseDown(e, 38) }" @mouseup="e => { keyMouseUp(e, 38) }"
-          @mouseover="e => { keySlideOn(e, 38) }" @mouseout="e => { keySlideOff(e, 38) }">
-            <div id="key39" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 39) }" @mouseup="e => { keyMouseUp(e, 39) }"
-            @mouseover="e => { keySlideOn(e, 39) }" @mouseout="e => { keySlideOff(e, 39) }"></div>
-          </li>
-          <li id="key40" class="key"
-          @mousedown="e => { keyMouseDown(e, 40) }" @mouseup="e => { keyMouseUp(e, 40) }"
-          @mouseover="e => { keySlideOn(e, 40) }" @mouseout="e => { keySlideOff(e, 40) }"></li>
-          <li id="key41" class="key"
-          @mousedown="e => { keyMouseDown(e, 41) }" @mouseup="e => { keyMouseUp(e, 41) }"
-          @mouseover="e => { keySlideOn(e, 41) }" @mouseout="e => { keySlideOff(e, 41) }">
-            <div id="key42" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 42) }" @mouseup="e => { keyMouseUp(e, 42) }"
-            @mouseover="e => { keySlideOn(e, 42) }" @mouseout="e => { keySlideOff(e, 42) }"></div>
-          </li>
-          <li id="key43" class="key"
-          @mousedown="e => { keyMouseDown(e, 43) }" @mouseup="e => { keyMouseUp(e, 43) }"
-          @mouseover="e => { keySlideOn(e, 43) }" @mouseout="e => { keySlideOff(e, 43) }">
-            <div id="key44" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 44) }" @mouseup="e => { keyMouseUp(e, 44) }"
-            @mouseover="e => { keySlideOn(e, 44) }" @mouseout="e => { keySlideOff(e, 44) }"></div>
-          </li>
-          <li id="key45" class="key"
-          @mousedown="e => { keyMouseDown(e, 45) }" @mouseup="e => { keyMouseUp(e, 45) }"
-          @mouseover="e => { keySlideOn(e, 45) }" @mouseout="e => { keySlideOff(e, 45) }">
-            <div id="key46" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 46) }" @mouseup="e => { keyMouseUp(e, 46) }"
-            @mouseover="e => { keySlideOn(e, 46) }" @mouseout="e => { keySlideOff(e, 46) }"></div>
-          </li>
-          <li id="key47" class="key"
-          @mousedown="e => { keyMouseDown(e, 47) }" @mouseup="e => { keyMouseUp(e, 47) }"
-          @mouseover="e => { keySlideOn(e, 47) }" @mouseout="e => { keySlideOff(e, 47) }"></li>
-          <li id="key48" class="key"
-          @mousedown="e => { keyMouseDown(e, 48) }" @mouseup="e => { keyMouseUp(e, 48) }"
-          @mouseover="e => { keySlideOn(e, 48) }" @mouseout="e => { keySlideOff(e, 48) }">
-            <div id="key49" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 49) }" @mouseup="e => { keyMouseUp(e, 49) }"
-            @mouseover="e => { keySlideOn(e, 49) }" @mouseout="e => { keySlideOff(e, 49) }"></div>
-          </li>
-          <li id="key50" class="key"
-          @mousedown="e => { keyMouseDown(e, 50) }" @mouseup="e => { keyMouseUp(e, 50) }"
-          @mouseover="e => { keySlideOn(e, 50) }" @mouseout="e => { keySlideOff(e, 50) }">
-            <div id="key51" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 51) }" @mouseup="e => { keyMouseUp(e, 51) }"
-            @mouseover="e => { keySlideOn(e, 51) }" @mouseout="e => { keySlideOff(e, 51) }"></div>
-          </li>
-          <li id="key52" class="key"
-          @mousedown="e => { keyMouseDown(e, 52) }" @mouseup="e => { keyMouseUp(e, 52) }"
-          @mouseover="e => { keySlideOn(e, 52) }" @mouseout="e => { keySlideOff(e, 52) }"></li>
-          <li id="key53" class="key"
-          @mousedown="e => { keyMouseDown(e, 53) }" @mouseup="e => { keyMouseUp(e, 53) }"
-          @mouseover="e => { keySlideOn(e, 53) }" @mouseout="e => { keySlideOff(e, 53) }">
-            <div id="key54" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 54) }" @mouseup="e => { keyMouseUp(e, 54) }"
-            @mouseover="e => { keySlideOn(e, 54) }" @mouseout="e => { keySlideOff(e, 54) }"></div>
-          </li>
-          <li id="key55" class="key"
-          @mousedown="e => { keyMouseDown(e, 55) }" @mouseup="e => { keyMouseUp(e, 55) }"
-          @mouseover="e => { keySlideOn(e, 55) }" @mouseout="e => { keySlideOff(e, 55) }">
-            <div id="key56" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 56) }" @mouseup="e => { keyMouseUp(e, 56) }"
-            @mouseover="e => { keySlideOn(e, 56) }" @mouseout="e => { keySlideOff(e, 56) }"></div>
-          </li>
-          <li id="key57" class="key"
-          @mousedown="e => { keyMouseDown(e, 57) }" @mouseup="e => { keyMouseUp(e, 57) }"
-          @mouseover="e => { keySlideOn(e, 57) }" @mouseout="e => { keySlideOff(e, 57) }">
-            <div id="key58" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 58) }" @mouseup="e => { keyMouseUp(e, 58) }"
-            @mouseover="e => { keySlideOn(e, 58) }" @mouseout="e => { keySlideOff(e, 58) }"></div>
-          </li>
-          <li id="key59" class="key"
-          @mousedown="e => { keyMouseDown(e, 59) }" @mouseup="e => { keyMouseUp(e, 59) }"
-          @mouseover="e => { keySlideOn(e, 59) }" @mouseout="e => { keySlideOff(e, 59) }"></li>
-          <li id="key60" class="key"
-          @mousedown="e => { keyMouseDown(e, 60) }" @mouseup="e => { keyMouseUp(e, 60) }"
-          @mouseover="e => { keySlideOn(e, 60) }" @mouseout="e => { keySlideOff(e, 60) }">
-            <div id="key61" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 61) }" @mouseup="e => { keyMouseUp(e, 61) }"
-            @mouseover="e => { keySlideOn(e, 61) }" @mouseout="e => { keySlideOff(e, 61) }"></div>
-          </li>
-          <li id="key62" class="key"
-          @mousedown="e => { keyMouseDown(e, 62) }" @mouseup="e => { keyMouseUp(e, 62) }"
-          @mouseover="e => { keySlideOn(e, 62) }" @mouseout="e => { keySlideOff(e, 62) }">
-            <div id="key63" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 63) }" @mouseup="e => { keyMouseUp(e, 63) }"
-            @mouseover="e => { keySlideOn(e, 63) }" @mouseout="e => { keySlideOff(e, 63) }"></div>
-          </li>
-          <li id="key64" class="key"
-          @mousedown="e => { keyMouseDown(e, 64) }" @mouseup="e => { keyMouseUp(e, 64) }"
-          @mouseover="e => { keySlideOn(e, 64) }" @mouseout="e => { keySlideOff(e, 64) }"></li>
-          <li id="key65" class="key"
-          @mousedown="e => { keyMouseDown(e, 65) }" @mouseup="e => { keyMouseUp(e, 65) }"
-          @mouseover="e => { keySlideOn(e, 65) }" @mouseout="e => { keySlideOff(e, 65) }">
-            <div id="key66" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 66) }" @mouseup="e => { keyMouseUp(e, 66) }"
-            @mouseover="e => { keySlideOn(e, 66) }" @mouseout="e => { keySlideOff(e, 66) }"></div>
-          </li>
-          <li id="key67" class="key"
-          @mousedown="e => { keyMouseDown(e, 67) }" @mouseup="e => { keyMouseUp(e, 67) }"
-          @mouseover="e => { keySlideOn(e, 67) }" @mouseout="e => { keySlideOff(e, 67) }">
-            <div id="key68" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 68) }" @mouseup="e => { keyMouseUp(e, 68) }"
-            @mouseover="e => { keySlideOn(e, 68) }" @mouseout="e => { keySlideOff(e, 68) }"></div>
-          </li>
-          <li id="key69" class="key"
-          @mousedown="e => { keyMouseDown(e, 69) }" @mouseup="e => { keyMouseUp(e, 69) }"
-          @mouseover="e => { keySlideOn(e, 69) }" @mouseout="e => { keySlideOff(e, 69) }">
-            <div id="key70" class="black-key"
-            @mousedown="e => { keyMouseDown(e, 70) }" @mouseup="e => { keyMouseUp(e, 70) }"
-            @mouseover="e => { keySlideOn(e, 70) }" @mouseout="e => { keySlideOff(e, 70) }"></div>
-          </li>
-          <li id="key71" class="key"
-          @mousedown="e => { keyMouseDown(e, 71) }" @mouseup="e => { keyMouseUp(e, 71) }"
-          @mouseover="e => { keySlideOn(e, 71) }" @mouseout="e => { keySlideOff(e, 71) }"></li>
-        </ul>
+          <div class="keyboard">
+            <div v-if="$vuetify.breakpoint.mdAndUp" class="octave-section">
+
+              <div id="key24" class="key"
+              @mousedown="e => { keyMouseDown(e, 24) }" @mouseup="e => { keyMouseUp(e, 24) }"
+              @mouseover="e => { keySlideOn(e, 24) }" @mouseout="e => { keySlideOff(e, 24) }"> 
+                <div id="key25" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 25) }" @mouseup="e => { keyMouseUp(e, 25) }"
+                @mouseover="e => { keySlideOn(e, 25) }" @mouseout="e => { keySlideOff(e, 25) }"></div>
+              </div>
+              <div id="key26" class="key"
+              @mousedown="e => { keyMouseDown(e, 26) }" @mouseup="e => { keyMouseUp(e, 26) }"
+              @mouseover="e => { keySlideOn(e, 26) }" @mouseout="e => { keySlideOff(e, 26) }">
+                <div id="key27" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 27) }" @mouseup="e => { keyMouseUp(e, 27) }"
+                @mouseover="e => { keySlideOn(e, 27) }" @mouseout="e => { keySlideOff(e, 27) }"></div>
+              </div>
+              <div id="key28" class="key"
+              @mousedown="e => { keyMouseDown(e, 28) }" @mouseup="e => { keyMouseUp(e, 28) }"
+              @mouseover="e => { keySlideOn(e, 28) }" @mouseout="e => { keySlideOff(e, 28) }"></div>
+              <div id="key29" class="key"
+              @mousedown="e => { keyMouseDown(e, 29) }" @mouseup="e => { keyMouseUp(e, 29) }"
+              @mouseover="e => { keySlideOn(e, 29) }" @mouseout="e => { keySlideOff(e, 29) }">
+                <div id="key30" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 30) }" @mouseup="e => { keyMouseUp(e, 30) }"
+                @mouseover="e => { keySlideOn(e, 30) }" @mouseout="e => { keySlideOff(e, 30) }"></div>
+              </div>
+              <div id="key31" class="key"
+              @mousedown="e => { keyMouseDown(e, 31) }" @mouseup="e => { keyMouseUp(e, 31) }"
+              @mouseover="e => { keySlideOn(e, 31) }" @mouseout="e => { keySlideOff(e, 31) }">
+                <div id="key32" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 32) }" @mouseup="e => { keyMouseUp(e, 32) }"
+                @mouseover="e => { keySlideOn(e, 32) }" @mouseout="e => { keySlideOff(e, 32) }"></div>
+              </div>
+              <div id="key33" class="key"
+              @mousedown="e => { keyMouseDown(e, 33) }" @mouseup="e => { keyMouseUp(e, 33) }"
+              @mouseover="e => { keySlideOn(e, 33) }" @mouseout="e => { keySlideOff(e, 33) }">
+                <div id="key34" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 34) }" @mouseup="e => { keyMouseUp(e, 34) }"
+                @mouseover="e => { keySlideOn(e, 34) }" @mouseout="e => { keySlideOff(e, 34) }"></div>
+              </div>
+              <div id="key35" class="key"
+              @mousedown="e => { keyMouseDown(e, 35) }" @mouseup="e => { keyMouseUp(e, 35) }"
+              @mouseover="e => { keySlideOn(e, 35) }" @mouseout="e => { keySlideOff(e, 35) }"></div>
+
+            </div>
+
+            <div v-if="$vuetify.breakpoint.smAndUp" class="octave-section">
+
+              <div id="key36" class="key"
+              @mousedown="e => { keyMouseDown(e, 36) }" @mouseup="e => { keyMouseUp(e, 36) }"
+              @mouseover="e => { keySlideOn(e, 36) }" @mouseout="e => { keySlideOff(e, 36) }">
+                <div id="key37" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 37) }" @mouseup="e => { keyMouseUp(e, 37) }"
+                @mouseover="e => { keySlideOn(e, 37) }" @mouseout="e => { keySlideOff(e, 37) }"></div>
+              </div>
+              <div id="key38" class="key"
+              @mousedown="e => { keyMouseDown(e, 38) }" @mouseup="e => { keyMouseUp(e, 38) }"
+              @mouseover="e => { keySlideOn(e, 38) }" @mouseout="e => { keySlideOff(e, 38) }">
+                <div id="key39" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 39) }" @mouseup="e => { keyMouseUp(e, 39) }"
+                @mouseover="e => { keySlideOn(e, 39) }" @mouseout="e => { keySlideOff(e, 39) }"></div>
+              </div>
+              <div id="key40" class="key"
+              @mousedown="e => { keyMouseDown(e, 40) }" @mouseup="e => { keyMouseUp(e, 40) }"
+              @mouseover="e => { keySlideOn(e, 40) }" @mouseout="e => { keySlideOff(e, 40) }"></div>
+              <div id="key41" class="key"
+              @mousedown="e => { keyMouseDown(e, 41) }" @mouseup="e => { keyMouseUp(e, 41) }"
+              @mouseover="e => { keySlideOn(e, 41) }" @mouseout="e => { keySlideOff(e, 41) }">
+                <div id="key42" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 42) }" @mouseup="e => { keyMouseUp(e, 42) }"
+                @mouseover="e => { keySlideOn(e, 42) }" @mouseout="e => { keySlideOff(e, 42) }"></div>
+              </div>
+              <div id="key43" class="key"
+              @mousedown="e => { keyMouseDown(e, 43) }" @mouseup="e => { keyMouseUp(e, 43) }"
+              @mouseover="e => { keySlideOn(e, 43) }" @mouseout="e => { keySlideOff(e, 43) }">
+                <div id="key44" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 44) }" @mouseup="e => { keyMouseUp(e, 44) }"
+                @mouseover="e => { keySlideOn(e, 44) }" @mouseout="e => { keySlideOff(e, 44) }"></div>
+              </div>
+              <div id="key45" class="key"
+              @mousedown="e => { keyMouseDown(e, 45) }" @mouseup="e => { keyMouseUp(e, 45) }"
+              @mouseover="e => { keySlideOn(e, 45) }" @mouseout="e => { keySlideOff(e, 45) }">
+                <div id="key46" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 46) }" @mouseup="e => { keyMouseUp(e, 46) }"
+                @mouseover="e => { keySlideOn(e, 46) }" @mouseout="e => { keySlideOff(e, 46) }"></div>
+              </div>
+              <div id="key47" class="key"
+              @mousedown="e => { keyMouseDown(e, 47) }" @mouseup="e => { keyMouseUp(e, 47) }"
+              @mouseover="e => { keySlideOn(e, 47) }" @mouseout="e => { keySlideOff(e, 47) }"></div>
+
+            </div>
+
+            <div class="octave-section">
+
+              <div id="key48" class="key"
+              @mousedown="e => { keyMouseDown(e, 48) }" @mouseup="e => { keyMouseUp(e, 48) }"
+              @mouseover="e => { keySlideOn(e, 48) }" @mouseout="e => { keySlideOff(e, 48) }">
+                <div id="key49" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 49) }" @mouseup="e => { keyMouseUp(e, 49) }"
+                @mouseover="e => { keySlideOn(e, 49) }" @mouseout="e => { keySlideOff(e, 49) }"></div>
+              </div>
+              <div id="key50" class="key"
+              @mousedown="e => { keyMouseDown(e, 50) }" @mouseup="e => { keyMouseUp(e, 50) }"
+              @mouseover="e => { keySlideOn(e, 50) }" @mouseout="e => { keySlideOff(e, 50) }">
+                <div id="key51" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 51) }" @mouseup="e => { keyMouseUp(e, 51) }"
+                @mouseover="e => { keySlideOn(e, 51) }" @mouseout="e => { keySlideOff(e, 51) }"></div>
+              </div>
+              <div id="key52" class="key"
+              @mousedown="e => { keyMouseDown(e, 52) }" @mouseup="e => { keyMouseUp(e, 52) }"
+              @mouseover="e => { keySlideOn(e, 52) }" @mouseout="e => { keySlideOff(e, 52) }"></div>
+              <div id="key53" class="key"
+              @mousedown="e => { keyMouseDown(e, 53) }" @mouseup="e => { keyMouseUp(e, 53) }"
+              @mouseover="e => { keySlideOn(e, 53) }" @mouseout="e => { keySlideOff(e, 53) }">
+                <div id="key54" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 54) }" @mouseup="e => { keyMouseUp(e, 54) }"
+                @mouseover="e => { keySlideOn(e, 54) }" @mouseout="e => { keySlideOff(e, 54) }"></div>
+              </div>
+              <div id="key55" class="key"
+              @mousedown="e => { keyMouseDown(e, 55) }" @mouseup="e => { keyMouseUp(e, 55) }"
+              @mouseover="e => { keySlideOn(e, 55) }" @mouseout="e => { keySlideOff(e, 55) }">
+                <div id="key56" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 56) }" @mouseup="e => { keyMouseUp(e, 56) }"
+                @mouseover="e => { keySlideOn(e, 56) }" @mouseout="e => { keySlideOff(e, 56) }"></div>
+              </div>
+              <div id="key57" class="key"
+              @mousedown="e => { keyMouseDown(e, 57) }" @mouseup="e => { keyMouseUp(e, 57) }"
+              @mouseover="e => { keySlideOn(e, 57) }" @mouseout="e => { keySlideOff(e, 57) }">
+                <div id="key58" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 58) }" @mouseup="e => { keyMouseUp(e, 58) }"
+                @mouseover="e => { keySlideOn(e, 58) }" @mouseout="e => { keySlideOff(e, 58) }"></div>
+              </div>
+              <div id="key59" class="key"
+              @mousedown="e => { keyMouseDown(e, 59) }" @mouseup="e => { keyMouseUp(e, 59) }"
+              @mouseover="e => { keySlideOn(e, 59) }" @mouseout="e => { keySlideOff(e, 59) }"></div>
+
+            </div>
+
+            <div v-if="$vuetify.breakpoint.lgAndUp" class="octave-section">
+
+              <div id="key60" class="key"
+              @mousedown="e => { keyMouseDown(e, 60) }" @mouseup="e => { keyMouseUp(e, 60) }"
+              @mouseover="e => { keySlideOn(e, 60) }" @mouseout="e => { keySlideOff(e, 60) }">
+                <div id="key61" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 61) }" @mouseup="e => { keyMouseUp(e, 61) }"
+                @mouseover="e => { keySlideOn(e, 61) }" @mouseout="e => { keySlideOff(e, 61) }"></div>
+              </div>
+              <div id="key62" class="key"
+              @mousedown="e => { keyMouseDown(e, 62) }" @mouseup="e => { keyMouseUp(e, 62) }"
+              @mouseover="e => { keySlideOn(e, 62) }" @mouseout="e => { keySlideOff(e, 62) }">
+                <div id="key63" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 63) }" @mouseup="e => { keyMouseUp(e, 63) }"
+                @mouseover="e => { keySlideOn(e, 63) }" @mouseout="e => { keySlideOff(e, 63) }"></div>
+              </div>
+              <div id="key64" class="key"
+              @mousedown="e => { keyMouseDown(e, 64) }" @mouseup="e => { keyMouseUp(e, 64) }"
+              @mouseover="e => { keySlideOn(e, 64) }" @mouseout="e => { keySlideOff(e, 64) }"></div>
+              <div id="key65" class="key"
+              @mousedown="e => { keyMouseDown(e, 65) }" @mouseup="e => { keyMouseUp(e, 65) }"
+              @mouseover="e => { keySlideOn(e, 65) }" @mouseout="e => { keySlideOff(e, 65) }">
+                <div id="key66" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 66) }" @mouseup="e => { keyMouseUp(e, 66) }"
+                @mouseover="e => { keySlideOn(e, 66) }" @mouseout="e => { keySlideOff(e, 66) }"></div>
+              </div>
+              <div id="key67" class="key"
+              @mousedown="e => { keyMouseDown(e, 67) }" @mouseup="e => { keyMouseUp(e, 67) }"
+              @mouseover="e => { keySlideOn(e, 67) }" @mouseout="e => { keySlideOff(e, 67) }">
+                <div id="key68" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 68) }" @mouseup="e => { keyMouseUp(e, 68) }"
+                @mouseover="e => { keySlideOn(e, 68) }" @mouseout="e => { keySlideOff(e, 68) }"></div>
+              </div>
+              <div id="key69" class="key"
+              @mousedown="e => { keyMouseDown(e, 69) }" @mouseup="e => { keyMouseUp(e, 69) }"
+              @mouseover="e => { keySlideOn(e, 69) }" @mouseout="e => { keySlideOff(e, 69) }">
+                <div id="key70" class="black-key"
+                @mousedown="e => { keyMouseDown(e, 70) }" @mouseup="e => { keyMouseUp(e, 70) }"
+                @mouseover="e => { keySlideOn(e, 70) }" @mouseout="e => { keySlideOff(e, 70) }"></div>
+              </div>
+              <div id="key71" class="key"
+              @mousedown="e => { keyMouseDown(e, 71) }" @mouseup="e => { keyMouseUp(e, 71) }"
+              @mouseover="e => { keySlideOn(e, 71) }" @mouseout="e => { keySlideOff(e, 71) }"></div>
+              
+            </div>
+          </div>
         </v-row>
-      </v-col>
-      <v-col cols="2" class="pa-0"></v-col>
+      </div>
+      <!-- <div class="pa-0"></div> -->
     </v-row>
   </div>
 </template>
@@ -222,7 +240,7 @@ import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
 import {
   MidiFunction,
-  IMidiMessage
+  IMidiMessage,
 } from "@/shared/interfaces/midi/IMidiMessage";
 import { IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
 import { getDefaultKeypadSettings } from "@/services/OfflinePresetService";
@@ -230,8 +248,8 @@ import KnobControl from "@/components/KnobControl.vue";
 
 @Component({
   components: {
-    KnobControl
-  }
+    KnobControl,
+  },
 })
 export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   name = "Computer Keyboard";
@@ -257,7 +275,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     "KeyJ",
     "KeyK",
     "KeyO",
-    "KeyL"
+    "KeyL",
   ];
 
   public constructor() {
@@ -308,7 +326,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   }
 
   sendMidi(message: IMidiMessage) {
-    this.connections.forEach(r => {
+    this.connections.forEach((r) => {
       r.receiveMidi(message);
     });
   }
@@ -336,7 +354,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   private keySlideOn(e: Event, keyNum: number) {
     e.stopPropagation();
     if (this.mouseIsDown) {
-      this.settings.chordTrigger.forEach(offset => {
+      this.settings.chordTrigger.forEach((offset) => {
         const note = keyNum + offset;
         const n =
           note - this.settings.octaveOffset - this.settings.transposeOffset;
@@ -348,7 +366,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
           this.sendMidi({
             midiFunction: MidiFunction.noteon,
             noteNumber: note,
-            noteVelocity: 67
+            noteVelocity: 67,
           });
         }
       });
@@ -358,7 +376,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   private keySlideOff(e: Event, keyNum: number) {
     e.stopPropagation();
     if (this.mouseIsDown) {
-      this.settings.chordTrigger.forEach(offset => {
+      this.settings.chordTrigger.forEach((offset) => {
         const note = keyNum + offset;
         const n =
           note - this.settings.octaveOffset - this.settings.transposeOffset;
@@ -370,7 +388,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
         this.sendMidi({
           midiFunction: MidiFunction.noteoff,
           noteNumber: note,
-          noteVelocity: 67
+          noteVelocity: 67,
         });
       });
     }
@@ -379,7 +397,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   private keyMouseDown(e: Event, keyNum: number) {
     e.stopPropagation();
     this.mouseIsDown = true;
-    this.settings.chordTrigger.forEach(offset => {
+    this.settings.chordTrigger.forEach((offset) => {
       const note = keyNum + offset;
       const n =
         note - this.settings.octaveOffset - this.settings.transposeOffset;
@@ -391,7 +409,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
         this.sendMidi({
           midiFunction: MidiFunction.noteon,
           noteNumber: note,
-          noteVelocity: 67
+          noteVelocity: 67,
         });
       }
     });
@@ -401,7 +419,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     e.stopPropagation();
     this.mouseIsDown = false;
 
-    this.settings.chordTrigger.forEach(offset => {
+    this.settings.chordTrigger.forEach((offset) => {
       const note = keyNum + offset;
       const n =
         note - this.settings.octaveOffset - this.settings.transposeOffset;
@@ -413,19 +431,18 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
       this.sendMidi({
         midiFunction: MidiFunction.noteoff,
         noteNumber: note,
-        noteVelocity: 67
+        noteVelocity: 67,
       });
     });
-
   }
 
   private userKeyPressed(e: KeyboardEvent) {
-    const n = this.noteKeyCodes.findIndex(c => {
+    const n = this.noteKeyCodes.findIndex((c) => {
       return c === e.code;
     });
     // this.keysPressed needed to stop keydown from firing multiple times
     if (n > -1) {
-      this.settings.chordTrigger.forEach(offset => {
+      this.settings.chordTrigger.forEach((offset) => {
         if (!this.keysPressed[n + offset]) {
           this.keysPressed[n + offset] = true;
           const note =
@@ -439,7 +456,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
           this.sendMidi({
             midiFunction: MidiFunction.noteon,
             noteNumber: note,
-            noteVelocity: 67
+            noteVelocity: 67,
           });
         }
       });
@@ -447,11 +464,11 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   }
 
   private userKeyReleased(e: KeyboardEvent) {
-    const n = this.noteKeyCodes.findIndex(c => {
+    const n = this.noteKeyCodes.findIndex((c) => {
       return c === e.code;
     });
     if (n > -1) {
-      this.settings.chordTrigger.forEach(offset => {
+      this.settings.chordTrigger.forEach((offset) => {
         this.keysPressed[n + offset] = false;
         // todo: doesn't release if you change octave or transpose while holding a key
         const note =
@@ -465,7 +482,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
         this.sendMidi({
           midiFunction: MidiFunction.noteoff,
           noteNumber: note,
-          noteVelocity: 67
+          noteVelocity: 67,
         });
       });
     } else if (e.code === "KeyZ") {
@@ -473,7 +490,10 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
       this.settings.octaveOffset = Math.max(this.settings.octaveOffset - 12, 0);
     } else if (e.code === "KeyX") {
       // go up an octave
-      this.settings.octaveOffset = Math.min(this.settings.octaveOffset + 12, 120);
+      this.settings.octaveOffset = Math.min(
+        this.settings.octaveOffset + 12,
+        120
+      );
     } else if (e.code === "KeyC") {
       // transpose down a step
       this.settings.transposeOffset = Math.max(
@@ -510,7 +530,6 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
 </script>
 
 <style scoped>
-
 /* misc */
 div .wood-background {
   background-image: url("../assets/wood-2.png");
@@ -534,14 +553,12 @@ div .align-center {
 }
 
 /* keyboard */
-ul {
-  list-style: none;
-  display: flex;
-  background-color: black;
+.keyboard {
   padding-left: 0px;
-  border-radius: 5px; /* should be the same as ul .key */
+  border-radius: 5px; /* should be the same as .key */
+  height: 140px;
 }
-ul .key {
+.keyboard .key {
   position: relative;
   width: 30px;
   height: 130px;
@@ -549,19 +566,11 @@ ul .key {
   border-right: none;
   background: #ffffff;
   border-radius: 5px;
-  /* box-shadow: 0px 3px 5px #666; */
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding-bottom: 10px;
-  font-weight: bold;
   user-select: none;
+  display: inline-block;
 }
-ul .key:last-child {
-  border-right: 1px solid black;
-}
-ul .black-key {
+.keyboard .black-key {
   position: absolute;
   top: -1px;
   left: 20px;
@@ -571,11 +580,13 @@ ul .black-key {
   border-radius: 5px;
   box-shadow: 0px 3px 5px #666;
   z-index: 2;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding-bottom: 10px;
-  color: white;
   user-select: none;
+  display: inline-block;
+}
+.keyboard > .key:last-child {
+  border-right: 1px solid black;
+}
+.octave-section {
+  display: inline-block;
 }
 </style>

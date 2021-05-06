@@ -6,6 +6,7 @@
         :width="size"
         :style="`transform: rotate(${knobRotation}rad);`"
         class="knob-img"
+        :class="[shadow ? 'knob-shadow' : '']"
         @mousedown="onKnobMouseDown"
         @dblclick="onKnobDblClick"
       />
@@ -67,6 +68,9 @@ export default class KnobControl extends Vue {
 
   @Prop({ required: false })
   public default?: number;
+
+  @Prop({ required: false, default: true })
+  public shadow!: boolean;
 
   public constructor() {
     super();
@@ -167,6 +171,11 @@ export default class KnobControl extends Vue {
   display: flex;
 }
 .knob-img {
-  /* cursor: pointer; */
+  border-radius: 50%;
+  user-select: none;
+}
+.knob-shadow {
+  -webkit-box-shadow: 0 0 12px black;
+  box-shadow: 0 0 12px black;
 }
 </style>
