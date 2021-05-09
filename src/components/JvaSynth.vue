@@ -2,6 +2,20 @@
   <div class="synth-panel">
     <div class="synth-section">
       <v-row class="dense-row mb-4">
+        <v-col cols="3" class="center-text">
+          Coarse
+        </v-col>
+        <v-col cols="3" class="center-text">
+          Fine
+        </v-col>
+        <v-col cols="3" class="center-text">
+          Vol.
+        </v-col>
+        <v-col cols="3" class="center-text">
+          Wave
+        </v-col>
+      </v-row>
+      <v-row class="dense-row mb-4">
         <v-col cols="3">
           <knob-control
             v-model="settings.oscillator1.transpose"
@@ -38,7 +52,8 @@
               :key="j"
               :value="waveform"
             >
-              {{ waveform }}
+              <!-- {{ waveform }} -->
+              <img src="/assets/wood-1.png" height="10px" width="10px" />
             </option>
           </select>
         </v-col>
@@ -672,5 +687,10 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
 
 .dense-row > div.col {
   padding: 0;
+}
+
+.center-text {
+  display: flex;
+  justify-content: center;
 }
 </style>

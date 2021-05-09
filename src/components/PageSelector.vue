@@ -21,7 +21,7 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 
 @Component({})
-export default class PresetDropdown extends Vue {
+export default class PageSelector extends Vue {
   private selectedOption = 0;
 
   @Prop({ required: true })
