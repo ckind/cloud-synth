@@ -2,16 +2,16 @@
   <div class="synth-panel">
     <div class="synth-section">
       <v-row class="dense-row mb-4">
-        <v-col cols="3" class="center-text">
+        <v-col cols="3" class="center-x">
           Coarse
         </v-col>
-        <v-col cols="3" class="center-text">
+        <v-col cols="3" class="center-x">
           Fine
         </v-col>
-        <v-col cols="3" class="center-text">
+        <v-col cols="3" class="center-x">
           Vol.
         </v-col>
-        <v-col cols="3" class="center-text">
+        <v-col cols="3" class="center-x">
           Wave
         </v-col>
       </v-row>
@@ -45,17 +45,8 @@
             size="50"
           ></knob-control>
         </v-col>
-        <v-col cols="3" class="waveform-select-container">
-          <select class="waveform-select" v-model="settings.oscillator1.type">
-            <option
-              v-for="(waveform, j) in waveforms"
-              :key="j"
-              :value="waveform"
-            >
-              <!-- {{ waveform }} -->
-              <img src="/assets/wood-1.png" height="10px" width="10px" />
-            </option>
-          </select>
+        <v-col cols="3" class="center-x center-y">
+          <waveform-selector v-model="settings.oscillator1.type"/>
         </v-col>
       </v-row>
       <v-row class="dense-row mb-4">
@@ -88,16 +79,8 @@
             size="50"
           ></knob-control>
         </v-col>
-        <v-col cols="3" class="waveform-select-container">
-          <select class="waveform-select" v-model="settings.oscillator2.type">
-            <option
-              v-for="(waveform, j) in waveforms"
-              :key="j"
-              :value="waveform"
-            >
-              {{ waveform }}
-            </option>
-          </select>
+        <v-col cols="3" class="center-x center-y">
+          <waveform-selector v-model="settings.oscillator2.type"/>
         </v-col>
       </v-row>
       <v-row class="dense-row mb-4">
@@ -130,16 +113,8 @@
             size="50"
           ></knob-control>
         </v-col>
-        <v-col cols="3" class="waveform-select-container">
-          <select class="waveform-select" v-model="settings.oscillator3.type">
-            <option
-              v-for="(waveform, j) in waveforms"
-              :key="j"
-              :value="waveform"
-            >
-              {{ waveform }}
-            </option>
-          </select>
+        <v-col cols="3" class="center-x center-y">
+          <waveform-selector v-model="settings.oscillator3.type"/>
         </v-col>
       </v-row>
       <v-row class="dense-row mb-4">
@@ -149,7 +124,7 @@
             :minValue="0"
             :maxValue="1"
             id="oscillatorSpreadKnob"
-            label="Osc Spread"
+            label="Spread"
             size="50"
           ></knob-control>
         </v-col>
@@ -164,22 +139,14 @@
             size="50"
           ></knob-control>
         </v-col>
-        <v-col cols="3" class="waveform-select-container">
-          <select class="waveform-select" v-model="settings.noise.type">
-            <option
-              v-for="(noiseType, j) in noiseTypes"
-              :key="j"
-              :value="noiseType"
-            >
-              {{ noiseType }}
-            </option>
-          </select>
+        <v-col cols="3" class="center-x center-y">
+          <noise-type-selector v-model="settings.noise.type"/>
         </v-col>
       </v-row>
     </div>
     <div class="synth-section">
       <adsr-graph
-        class="adsr"
+        class="py-2"
         v-model="settings.filter.envelope"
         :width="$vuetify.breakpoint.name = 'xs' ? 250 : 300"
       />
@@ -260,7 +227,7 @@
     </div>
     <div class="synth-section">
       <adsr-graph
-        class="adsr"
+        class="py-2"
         v-model="settings.amp.envelope"
         :width="$vuetify.breakpoint.name = 'xs' ? 250 : 300"
       />
@@ -306,6 +273,8 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import AdsrGraph from "@/components/AdsrGraph.vue";
 import KnobControl from "@/components/KnobControl.vue";
+import WaveformSelector from "@/components/WaveformSelector.vue";
+import NoiseTypeSelector from "@/components/NoiseTypeSelector.vue";
 import { getDefaultJvaSettings } from "@/services/OfflinePresetService";
 import { VAPolySynth } from "@/shared/classes/synth/VAPolySynth";
 import {
@@ -325,6 +294,8 @@ import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice
   components: {
     AdsrGraph,
     KnobControl,
+    WaveformSelector,
+    NoiseTypeSelector
   },
 })
 export default class JvaSynth extends Vue implements IInstrumentDevice {
@@ -345,9 +316,6 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
   private noise!: VANoiseSynth;
   private noiseVolume!: ToneVolume;
 
-  private waveforms: Array<ToneOscillatorType>;
-  private noiseTypes: Array<string>;
-  private noiseTypeIndex: number;
   private filterTypes: Array<BiquadFilterType>;
   private filterTypeIndex: number;
 
@@ -355,18 +323,6 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
     super();
 
     this.settings = getDefaultJvaSettings();
-
-    this.waveforms = new Array<ToneOscillatorType>(4);
-    this.waveforms[0] = "sine";
-    this.waveforms[1] = "triangle";
-    this.waveforms[2] = "sawtooth";
-    this.waveforms[3] = "square";
-
-    this.noiseTypes = new Array<string>(3);
-    this.noiseTypes[0] = "white";
-    this.noiseTypes[1] = "pink";
-    this.noiseTypes[2] = "brown";
-    this.noiseTypeIndex = 0;
 
     this.filterTypes = new Array<BiquadFilterType>(2);
     this.filterTypes[0] = "lowpass";
@@ -439,7 +395,7 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
     this.updateSynthWatches();
   }
 
-  // kind of verbose but needed for gui reactivity - maybe there's a cleaner way?
+  // kind of verbose but needed for reactivity in certain cases - maybe there's a cleaner way?
   private updateSynthWatches() {
     this.onOscillator1VolumeChanged(this.settings.oscillator1.volume);
     this.onOscillator1TranposeChanged(this.settings.oscillator1.transpose);
@@ -455,6 +411,8 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
     this.onOscillator3TranposeChanged(this.settings.oscillator3.transpose);
     this.onOscillator3DetuneChanged(this.settings.oscillator3.detune);
     this.onOscillator3TypeChanged(this.settings.oscillator3.type);
+
+    this.onOscillatorSpreadChanged(this.settings.oscillatorSpread);
 
     this.onAmpEnvelopeAttackChange(this.settings.amp.envelope.attack);
     this.onAmpEnvelopeDecayChange(this.settings.amp.envelope.decay);
@@ -669,28 +627,16 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
   width: 400px;
 }
 
-.waveform-select {
-  background-color: white;
-  border: 1px solid gray;
-  width: 75px;
-}
-
-.waveform-select-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.waveform-select-label {
-  padding-right: 20px;
-}
-
 .dense-row > div.col {
   padding: 0;
 }
 
-.center-text {
+.center-x {
   display: flex;
   justify-content: center;
+}
+.center-y {
+  display: flex;
+  align-items: center;
 }
 </style>
