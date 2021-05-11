@@ -3,7 +3,9 @@
     <div
       :class="['graph-container', this.activeAnchorId !== '' ? 'dragging' : '']"
       @mousemove="onMouseMove"
+      @touchmove="onTouchMove"
       @mouseup="onMouseUp"
+      @touchend="onMouseUp"
       @mouseleave="onMouseLeave"
       :width="containerWidth"
       :height="containerHeight"
@@ -63,6 +65,7 @@
           class="anchor"
           id="attackAnchor"
           @mousedown="attackAnchorMouseDown"
+          @touchstart="attackAnchorMouseDown"
           :cx="attackPeakX"
           :cy="attackPeakY"
           :r="anchorRadius"
@@ -73,6 +76,7 @@
           class="anchor"
           id="decaySustainAnchor"
           @mousedown="decaySustainAnchorMouseDown"
+          @touchstart="decaySustainAnchorMouseDown"
           :cx="decayEndX"
           :cy="decayEndY"
           :r="anchorRadius"
@@ -83,6 +87,7 @@
           class="anchor"
           id="releaseAnchor"
           @mousedown="releaseAnchorMouseDown"
+          @touchstart="releaseAnchorMouseDown"
           :cx="releaseEndX"
           :cy="releaseEndY"
           :r="anchorRadius"
@@ -206,7 +211,7 @@ export default class AdsrGraph extends Vue {
     this.activeAnchorId = "";
   }
 
-  private onMouseMove(e: MouseEvent) {
+  private onMove(pageX: number, pageY: number) {
     let diffX, diffY: number;
     let diffAttack = 0;
     let diffDecay = 0;
@@ -216,7 +221,7 @@ export default class AdsrGraph extends Vue {
     if (this.activeAnchorId != "") {
       switch (this.activeAnchorId) {
         case "attackAnchor":
-          diffX = e.pageX - this.prevPageX;
+          diffX = pageX - this.prevPageX;
           diffAttack = (diffX / this.attackTotalWidth) * this.attackMax;
           diffAttack =
             this.value.attack + diffAttack >= this.attackMax && diffAttack > 0
@@ -226,7 +231,7 @@ export default class AdsrGraph extends Vue {
               : diffAttack;
           break;
         case "decaySustainAnchor":
-          diffX = e.pageX - this.prevPageX;
+          diffX = pageX - this.prevPageX;
           diffDecay = (diffX / this.decayTotalWidth) * this.decayMax;
           diffDecay =
             this.value.decay + diffDecay >= this.decayMax && diffDecay > 0
@@ -234,7 +239,7 @@ export default class AdsrGraph extends Vue {
               : this.value.decay + diffDecay <= 0 && diffDecay < 0
               ? 0
               : diffDecay;
-          diffY = e.pageY - this.prevPageY;
+          diffY = pageY - this.prevPageY;
           diffSustain = -(diffY / this.graphHeight);
           diffSustain =
             this.value.sustain + diffSustain >= 1.0 && diffSustain > 0
@@ -244,7 +249,7 @@ export default class AdsrGraph extends Vue {
               : diffSustain;
           break;
         case "releaseAnchor":
-          diffX = e.pageX - this.prevPageX;
+          diffX = pageX - this.prevPageX;
           diffRelease = (diffX / this.releaseTotalWidth) * this.releaseMax;
           diffRelease =
             this.value.release + diffRelease >= this.releaseMax && diffRelease > 0
@@ -262,8 +267,16 @@ export default class AdsrGraph extends Vue {
       });
     }
 
-    this.prevPageX = e.pageX;
-    this.prevPageY = e.pageY;
+    this.prevPageX = pageX;
+    this.prevPageY = pageY;
+  }
+
+  private onMouseMove(e: MouseEvent) {
+    this.onMove(e.pageX, e.pageY);
+  }
+
+  private onTouchMove(e: TouchEvent) {
+    this.onMove(e.touches[0].pageX, e.touches[0].pageY)
   }
 
   // Computed

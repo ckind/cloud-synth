@@ -44,185 +44,89 @@
           <div class="keyboard">
             <div v-if="$vuetify.breakpoint.mdAndUp" class="octave-section">
 
-              <div id="key24" class="key"
-              @mousedown="e => { keyMouseDown(e, 24) }" @mouseup="e => { keyMouseUp(e, 24) }"
-              @mouseover="e => { keySlideOn(e, 24) }" @mouseout="e => { keySlideOff(e, 24) }"> 
-                <div id="key25" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 25) }" @mouseup="e => { keyMouseUp(e, 25) }"
-                @mouseover="e => { keySlideOn(e, 25) }" @mouseout="e => { keySlideOff(e, 25) }"></div>
+              <div id="key24" class="key"> 
+                <div id="key25" class="black-key"></div>
               </div>
-              <div id="key26" class="key"
-              @mousedown="e => { keyMouseDown(e, 26) }" @mouseup="e => { keyMouseUp(e, 26) }"
-              @mouseover="e => { keySlideOn(e, 26) }" @mouseout="e => { keySlideOff(e, 26) }">
-                <div id="key27" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 27) }" @mouseup="e => { keyMouseUp(e, 27) }"
-                @mouseover="e => { keySlideOn(e, 27) }" @mouseout="e => { keySlideOff(e, 27) }"></div>
+              <div id="key26" class="key">
+                <div id="key27" class="black-key"></div>
               </div>
-              <div id="key28" class="key"
-              @mousedown="e => { keyMouseDown(e, 28) }" @mouseup="e => { keyMouseUp(e, 28) }"
-              @mouseover="e => { keySlideOn(e, 28) }" @mouseout="e => { keySlideOff(e, 28) }"></div>
-              <div id="key29" class="key"
-              @mousedown="e => { keyMouseDown(e, 29) }" @mouseup="e => { keyMouseUp(e, 29) }"
-              @mouseover="e => { keySlideOn(e, 29) }" @mouseout="e => { keySlideOff(e, 29) }">
-                <div id="key30" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 30) }" @mouseup="e => { keyMouseUp(e, 30) }"
-                @mouseover="e => { keySlideOn(e, 30) }" @mouseout="e => { keySlideOff(e, 30) }"></div>
+              <div id="key28" class="key"></div>
+              <div id="key29" class="key">
+                <div id="key30" class="black-key"></div>
               </div>
-              <div id="key31" class="key"
-              @mousedown="e => { keyMouseDown(e, 31) }" @mouseup="e => { keyMouseUp(e, 31) }"
-              @mouseover="e => { keySlideOn(e, 31) }" @mouseout="e => { keySlideOff(e, 31) }">
-                <div id="key32" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 32) }" @mouseup="e => { keyMouseUp(e, 32) }"
-                @mouseover="e => { keySlideOn(e, 32) }" @mouseout="e => { keySlideOff(e, 32) }"></div>
+              <div id="key31" class="key">
+                <div id="key32" class="black-key"></div>
               </div>
-              <div id="key33" class="key"
-              @mousedown="e => { keyMouseDown(e, 33) }" @mouseup="e => { keyMouseUp(e, 33) }"
-              @mouseover="e => { keySlideOn(e, 33) }" @mouseout="e => { keySlideOff(e, 33) }">
-                <div id="key34" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 34) }" @mouseup="e => { keyMouseUp(e, 34) }"
-                @mouseover="e => { keySlideOn(e, 34) }" @mouseout="e => { keySlideOff(e, 34) }"></div>
+              <div id="key33" class="key">
+                <div id="key34" class="black-key"></div>
               </div>
-              <div id="key35" class="key"
-              @mousedown="e => { keyMouseDown(e, 35) }" @mouseup="e => { keyMouseUp(e, 35) }"
-              @mouseover="e => { keySlideOn(e, 35) }" @mouseout="e => { keySlideOff(e, 35) }"></div>
+              <div id="key35" class="key"></div>
 
             </div>
 
             <div v-if="$vuetify.breakpoint.smAndUp" class="octave-section">
 
-              <div id="key36" class="key"
-              @mousedown="e => { keyMouseDown(e, 36) }" @mouseup="e => { keyMouseUp(e, 36) }"
-              @mouseover="e => { keySlideOn(e, 36) }" @mouseout="e => { keySlideOff(e, 36) }">
-                <div id="key37" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 37) }" @mouseup="e => { keyMouseUp(e, 37) }"
-                @mouseover="e => { keySlideOn(e, 37) }" @mouseout="e => { keySlideOff(e, 37) }"></div>
+              <div id="key36" class="key">
+                <div id="key37" class="black-key"></div>
               </div>
-              <div id="key38" class="key"
-              @mousedown="e => { keyMouseDown(e, 38) }" @mouseup="e => { keyMouseUp(e, 38) }"
-              @mouseover="e => { keySlideOn(e, 38) }" @mouseout="e => { keySlideOff(e, 38) }">
-                <div id="key39" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 39) }" @mouseup="e => { keyMouseUp(e, 39) }"
-                @mouseover="e => { keySlideOn(e, 39) }" @mouseout="e => { keySlideOff(e, 39) }"></div>
+              <div id="key38" class="key">
+                <div id="key39" class="black-key"></div>
               </div>
-              <div id="key40" class="key"
-              @mousedown="e => { keyMouseDown(e, 40) }" @mouseup="e => { keyMouseUp(e, 40) }"
-              @mouseover="e => { keySlideOn(e, 40) }" @mouseout="e => { keySlideOff(e, 40) }"></div>
-              <div id="key41" class="key"
-              @mousedown="e => { keyMouseDown(e, 41) }" @mouseup="e => { keyMouseUp(e, 41) }"
-              @mouseover="e => { keySlideOn(e, 41) }" @mouseout="e => { keySlideOff(e, 41) }">
-                <div id="key42" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 42) }" @mouseup="e => { keyMouseUp(e, 42) }"
-                @mouseover="e => { keySlideOn(e, 42) }" @mouseout="e => { keySlideOff(e, 42) }"></div>
+              <div id="key40" class="key"></div>
+              <div id="key41" class="key">
+                <div id="key42" class="black-key"></div>
               </div>
-              <div id="key43" class="key"
-              @mousedown="e => { keyMouseDown(e, 43) }" @mouseup="e => { keyMouseUp(e, 43) }"
-              @mouseover="e => { keySlideOn(e, 43) }" @mouseout="e => { keySlideOff(e, 43) }">
-                <div id="key44" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 44) }" @mouseup="e => { keyMouseUp(e, 44) }"
-                @mouseover="e => { keySlideOn(e, 44) }" @mouseout="e => { keySlideOff(e, 44) }"></div>
+              <div id="key43" class="key">
+                <div id="key44" class="black-key"></div>
               </div>
-              <div id="key45" class="key"
-              @mousedown="e => { keyMouseDown(e, 45) }" @mouseup="e => { keyMouseUp(e, 45) }"
-              @mouseover="e => { keySlideOn(e, 45) }" @mouseout="e => { keySlideOff(e, 45) }">
-                <div id="key46" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 46) }" @mouseup="e => { keyMouseUp(e, 46) }"
-                @mouseover="e => { keySlideOn(e, 46) }" @mouseout="e => { keySlideOff(e, 46) }"></div>
+              <div id="key45" class="key">
+                <div id="key46" class="black-key"></div>
               </div>
-              <div id="key47" class="key"
-              @mousedown="e => { keyMouseDown(e, 47) }" @mouseup="e => { keyMouseUp(e, 47) }"
-              @mouseover="e => { keySlideOn(e, 47) }" @mouseout="e => { keySlideOff(e, 47) }"></div>
+              <div id="key47" class="key"></div>
 
             </div>
 
             <div class="octave-section">
 
-              <div id="key48" class="key"
-              @mousedown="e => { keyMouseDown(e, 48) }" @mouseup="e => { keyMouseUp(e, 48) }"
-              @mouseover="e => { keySlideOn(e, 48) }" @mouseout="e => { keySlideOff(e, 48) }">
-                <div id="key49" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 49) }" @mouseup="e => { keyMouseUp(e, 49) }"
-                @mouseover="e => { keySlideOn(e, 49) }" @mouseout="e => { keySlideOff(e, 49) }"></div>
+              <div id="key48" class="key">
+                <div id="key49" class="black-key"></div>
               </div>
-              <div id="key50" class="key"
-              @mousedown="e => { keyMouseDown(e, 50) }" @mouseup="e => { keyMouseUp(e, 50) }"
-              @mouseover="e => { keySlideOn(e, 50) }" @mouseout="e => { keySlideOff(e, 50) }">
-                <div id="key51" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 51) }" @mouseup="e => { keyMouseUp(e, 51) }"
-                @mouseover="e => { keySlideOn(e, 51) }" @mouseout="e => { keySlideOff(e, 51) }"></div>
+              <div id="key50" class="key">
+                <div id="key51" class="black-key"></div>
               </div>
-              <div id="key52" class="key"
-              @mousedown="e => { keyMouseDown(e, 52) }" @mouseup="e => { keyMouseUp(e, 52) }"
-              @mouseover="e => { keySlideOn(e, 52) }" @mouseout="e => { keySlideOff(e, 52) }"></div>
-              <div id="key53" class="key"
-              @mousedown="e => { keyMouseDown(e, 53) }" @mouseup="e => { keyMouseUp(e, 53) }"
-              @mouseover="e => { keySlideOn(e, 53) }" @mouseout="e => { keySlideOff(e, 53) }">
-                <div id="key54" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 54) }" @mouseup="e => { keyMouseUp(e, 54) }"
-                @mouseover="e => { keySlideOn(e, 54) }" @mouseout="e => { keySlideOff(e, 54) }"></div>
+              <div id="key52" class="key"></div>
+              <div id="key53" class="key">
+                <div id="key54" class="black-key"></div>
               </div>
-              <div id="key55" class="key"
-              @mousedown="e => { keyMouseDown(e, 55) }" @mouseup="e => { keyMouseUp(e, 55) }"
-              @mouseover="e => { keySlideOn(e, 55) }" @mouseout="e => { keySlideOff(e, 55) }">
-                <div id="key56" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 56) }" @mouseup="e => { keyMouseUp(e, 56) }"
-                @mouseover="e => { keySlideOn(e, 56) }" @mouseout="e => { keySlideOff(e, 56) }"></div>
+              <div id="key55" class="key">
+                <div id="key56" class="black-key"></div>
               </div>
-              <div id="key57" class="key"
-              @mousedown="e => { keyMouseDown(e, 57) }" @mouseup="e => { keyMouseUp(e, 57) }"
-              @mouseover="e => { keySlideOn(e, 57) }" @mouseout="e => { keySlideOff(e, 57) }">
-                <div id="key58" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 58) }" @mouseup="e => { keyMouseUp(e, 58) }"
-                @mouseover="e => { keySlideOn(e, 58) }" @mouseout="e => { keySlideOff(e, 58) }"></div>
+              <div id="key57" class="key">
+                <div id="key58" class="black-key"></div>
               </div>
-              <div id="key59" class="key"
-              @mousedown="e => { keyMouseDown(e, 59) }" @mouseup="e => { keyMouseUp(e, 59) }"
-              @mouseover="e => { keySlideOn(e, 59) }" @mouseout="e => { keySlideOff(e, 59) }"></div>
+              <div id="key59" class="key"></div>
 
             </div>
 
             <div v-if="$vuetify.breakpoint.lgAndUp" class="octave-section">
 
-              <div id="key60" class="key"
-              @mousedown="e => { keyMouseDown(e, 60) }" @mouseup="e => { keyMouseUp(e, 60) }"
-              @mouseover="e => { keySlideOn(e, 60) }" @mouseout="e => { keySlideOff(e, 60) }">
-                <div id="key61" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 61) }" @mouseup="e => { keyMouseUp(e, 61) }"
-                @mouseover="e => { keySlideOn(e, 61) }" @mouseout="e => { keySlideOff(e, 61) }"></div>
+              <div id="key60" class="key">
+                <div id="key61" class="black-key"></div>
               </div>
-              <div id="key62" class="key"
-              @mousedown="e => { keyMouseDown(e, 62) }" @mouseup="e => { keyMouseUp(e, 62) }"
-              @mouseover="e => { keySlideOn(e, 62) }" @mouseout="e => { keySlideOff(e, 62) }">
-                <div id="key63" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 63) }" @mouseup="e => { keyMouseUp(e, 63) }"
-                @mouseover="e => { keySlideOn(e, 63) }" @mouseout="e => { keySlideOff(e, 63) }"></div>
+              <div id="key62" class="key">
+                <div id="key63" class="black-key"></div>
               </div>
-              <div id="key64" class="key"
-              @mousedown="e => { keyMouseDown(e, 64) }" @mouseup="e => { keyMouseUp(e, 64) }"
-              @mouseover="e => { keySlideOn(e, 64) }" @mouseout="e => { keySlideOff(e, 64) }"></div>
-              <div id="key65" class="key"
-              @mousedown="e => { keyMouseDown(e, 65) }" @mouseup="e => { keyMouseUp(e, 65) }"
-              @mouseover="e => { keySlideOn(e, 65) }" @mouseout="e => { keySlideOff(e, 65) }">
-                <div id="key66" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 66) }" @mouseup="e => { keyMouseUp(e, 66) }"
-                @mouseover="e => { keySlideOn(e, 66) }" @mouseout="e => { keySlideOff(e, 66) }"></div>
+              <div id="key64" class="key"></div>
+              <div id="key65" class="key">
+                <div id="key66" class="black-key"></div>
               </div>
-              <div id="key67" class="key"
-              @mousedown="e => { keyMouseDown(e, 67) }" @mouseup="e => { keyMouseUp(e, 67) }"
-              @mouseover="e => { keySlideOn(e, 67) }" @mouseout="e => { keySlideOff(e, 67) }">
-                <div id="key68" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 68) }" @mouseup="e => { keyMouseUp(e, 68) }"
-                @mouseover="e => { keySlideOn(e, 68) }" @mouseout="e => { keySlideOff(e, 68) }"></div>
+              <div id="key67" class="key">
+                <div id="key68" class="black-key"></div>
               </div>
-              <div id="key69" class="key"
-              @mousedown="e => { keyMouseDown(e, 69) }" @mouseup="e => { keyMouseUp(e, 69) }"
-              @mouseover="e => { keySlideOn(e, 69) }" @mouseout="e => { keySlideOff(e, 69) }">
-                <div id="key70" class="black-key"
-                @mousedown="e => { keyMouseDown(e, 70) }" @mouseup="e => { keyMouseUp(e, 70) }"
-                @mouseover="e => { keySlideOn(e, 70) }" @mouseout="e => { keySlideOff(e, 70) }"></div>
+              <div id="key69" class="key">
+                <div id="key70" class="black-key"></div>
               </div>
-              <div id="key71" class="key"
-              @mousedown="e => { keyMouseDown(e, 71) }" @mouseup="e => { keyMouseUp(e, 71) }"
-              @mouseover="e => { keySlideOn(e, 71) }" @mouseout="e => { keySlideOff(e, 71) }"></div>
+              <div id="key71" class="key"></div>
               
             </div>
           </div>
@@ -292,6 +196,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
   // Lifecycle Hooks
 
   mounted() {
+    this.assignKeyboardListeners();
     this.$emit("deviceMounted");
   }
 
@@ -349,10 +254,36 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     this.sendMidi(message);
   }
 
+  private assignKeyboardListeners() {
+    // @mousedown="e => { keyMouseDown(e, 48) }" @mouseup="e => { keyMouseUp(e, 48) }"
+    // @mouseover="e => { keySlideOn(e, 48) }" @mouseout="e => { keySlideOff(e, 48) }"
+    // @touchstart="e => { keyMouseDown(e, 48) }" @touchend="e => { keyMouseUp(e, 48) }">
+    const keys = document.querySelectorAll("div.keyboard div.key, div.keyboard div.black-key");
+    for (const key of keys) {
+      key.addEventListener('mousedown', this.keyMouseDown);
+      key.addEventListener('mouseup', this.keyMouseUp);
+      key.addEventListener('mouseover', this.keySlideOn);
+      key.addEventListener('mouseout', this.keySlideOff);
+      key.addEventListener('touchstart', this.keyMouseDown);
+      key.addEventListener('touchend', this.keyMouseUp);
+      // todo: need to implement keySlideOn and keySlideOff for touch events - see: https://gist.github.com/VehpuS/6fd5dca2ea8cd0eb0471
+    }
+  }
+
+  private getKeyNum(e: Event) {
+    const el = e.target as HTMLElement;
+    return parseInt(el.id.replace('key', ''));
+  }
+
+  // private clearKeyboardListeners() {
+
+  // }
+
   // begin todo: could probably refactor these functions to share some logic
 
-  private keySlideOn(e: Event, keyNum: number) {
+  private keySlideOn(e: Event) {
     e.stopPropagation();
+    const keyNum = this.getKeyNum(e);
     if (this.mouseIsDown) {
       this.settings.chordTrigger.forEach((offset) => {
         const note = keyNum + offset;
@@ -373,8 +304,9 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     }
   }
 
-  private keySlideOff(e: Event, keyNum: number) {
+  private keySlideOff(e: Event) {
     e.stopPropagation();
+    const keyNum = this.getKeyNum(e);
     if (this.mouseIsDown) {
       this.settings.chordTrigger.forEach((offset) => {
         const note = keyNum + offset;
@@ -394,8 +326,9 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     }
   }
 
-  private keyMouseDown(e: Event, keyNum: number) {
+  private keyMouseDown(e: Event) {
     e.stopPropagation();
+    const keyNum = this.getKeyNum(e);
     this.mouseIsDown = true;
     this.settings.chordTrigger.forEach((offset) => {
       const note = keyNum + offset;
@@ -415,10 +348,10 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     });
   }
 
-  private keyMouseUp(e: Event, keyNum: number) {
+  private keyMouseUp(e: Event) {
     e.stopPropagation();
+    const keyNum = this.getKeyNum(e);
     this.mouseIsDown = false;
-
     this.settings.chordTrigger.forEach((offset) => {
       const note = keyNum + offset;
       const n =

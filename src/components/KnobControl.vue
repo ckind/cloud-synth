@@ -8,6 +8,7 @@
         class="knob-img"
         :class="[shadow ? 'knob-shadow' : '']"
         @mousedown="onKnobMouseDown"
+        @touchstart="onKnobMouseDown"
         @dblclick="onKnobDblClick"
       />
     </div>
@@ -86,13 +87,17 @@ export default class KnobControl extends Vue {
 
   private onKnobMouseDown(e: MouseEvent) {
     e.preventDefault ? e.preventDefault() : (e.returnValue = false);
-    document.addEventListener("mousemove", this.onKnobDrag);
+    document.addEventListener("mousemove", this.onKnobMouseDrag);
+    document.addEventListener("touchmove", this.onKnobTouchDrag);
     document.addEventListener("mouseup", this.onDocumentMouseUp);
+    document.addEventListener("touchend", this.onDocumentMouseUp);
   }
 
   private onDocumentMouseUp() {
-    document.removeEventListener("mousemove", this.onKnobDrag);
+    document.removeEventListener("mousemove", this.onKnobMouseDrag);
+    document.removeEventListener("touchmove", this.onKnobTouchDrag);
     document.removeEventListener("mouseup", this.onDocumentMouseUp);
+    document.removeEventListener("touchend", this.onDocumentMouseUp);
     this.prevY = -1;
   }
 
@@ -115,9 +120,9 @@ export default class KnobControl extends Vue {
       : roundedValue;
   }
 
-  private onKnobDrag(e: MouseEvent) {
+  private onKnobDrag(currY: number) {
     if (this.prevY >= 0) {
-      const diffY = this.prevY - e.pageY;
+      const diffY = this.prevY - currY;
       let knobValue =
         this.unsteppedValue + (diffY / this.dragRange) * (this.valueRange / 2);
       knobValue =
@@ -133,6 +138,15 @@ export default class KnobControl extends Vue {
           : this.roundToStep(this.unsteppedValue);
       this.$emit("input", this.valueCurve.getCurvedValue(steppedValue));
     }
+  }
+
+  private onKnobTouchDrag(e: TouchEvent) {
+    this.onKnobDrag(e.touches[0].pageY);
+    this.prevY = e.touches[0].pageY;
+  }
+
+  private onKnobMouseDrag(e: MouseEvent) {
+    this.onKnobDrag(e.pageY);
     this.prevY = e.pageY;
   }
 
