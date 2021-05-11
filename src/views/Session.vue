@@ -76,6 +76,13 @@ export default class Session extends Vue {
       }
     });
 
+    document.documentElement.addEventListener("touchstart", function() {
+      if (ToneContext.state !== "running") {
+        ToneContext.resume();
+        console.log("context resumed!");
+      }
+    });
+
     ToneTransport.bpm.value = this.bpm;
   }
 
