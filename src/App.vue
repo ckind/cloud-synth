@@ -1,20 +1,10 @@
 <template>
   <v-app class="cloudSynth-app">
     <v-app-bar class="cloudSynth-app-bar" app color="black" dark>
-      <div class="d-flex align-center">
-        <!-- <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        /> -->
-      </div>
-
       <h2 class="menu-link">
         <span class="nav-link" to="/">CloudSynth</span>
       </h2>
+       <p>v0.1.1</p>
 
       <h4 class="menu-link">
         <span class="menu-option" @click="showQuickStart = true">Quick Start</span>
