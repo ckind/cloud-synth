@@ -4,6 +4,7 @@
       <img
         :src="require(`../assets/knob-2.svg`)"
         :width="size"
+        :height="size"
         :style="`transform: rotate(${knobRotation}rad);`"
         class="knob-img"
         :class="[shadow ? 'knob-shadow' : '']"
@@ -185,10 +186,10 @@ export default class KnobControl extends Vue {
   display: flex;
 }
 .knob-img {
-  -webkit-border-radius: 50%;
+  /* -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
-  -khtml-border-radius: 50%;
-  border-radius: 50%;
+  -khtml-border-radius: 50%; */
+  /* border-radius: 50%; */
   user-select: none;
 }
 .knob-shadow {
