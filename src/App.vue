@@ -4,7 +4,7 @@
       <h2 class="menu-link">
         <span class="nav-link" to="/">CloudSynth</span>
       </h2>
-       <p>v0.1.2</p>
+       <p>v0.1.3</p>
 
       <h4 class="menu-link">
         <span class="menu-option" @click="showQuickStart = true">Quick Start</span>

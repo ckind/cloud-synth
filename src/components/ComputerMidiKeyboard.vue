@@ -1,7 +1,5 @@
 <template>
   <div>
-    <!-- todo: this is kind of messy...should generate keys in a loop -->
-    <!-- prettier-ignore -->
     <v-row class="wood-background justify-center">
       <!-- <div class="pa-0">
         <div class="metal-1-background control-panel">
@@ -43,8 +41,7 @@
         <v-row class="justify-center">
           <div class="keyboard">
             <div v-if="$vuetify.breakpoint.mdAndUp" class="octave-section">
-
-              <div id="key24" class="key"> 
+              <div id="key24" class="key">
                 <div id="key25" class="black-key"></div>
               </div>
               <div id="key26" class="key">
@@ -61,11 +58,9 @@
                 <div id="key34" class="black-key"></div>
               </div>
               <div id="key35" class="key"></div>
-
             </div>
 
             <div v-if="$vuetify.breakpoint.smAndUp" class="octave-section">
-
               <div id="key36" class="key">
                 <div id="key37" class="black-key"></div>
               </div>
@@ -83,11 +78,9 @@
                 <div id="key46" class="black-key"></div>
               </div>
               <div id="key47" class="key"></div>
-
             </div>
 
             <div class="octave-section">
-
               <div id="key48" class="key">
                 <div id="key49" class="black-key"></div>
               </div>
@@ -105,11 +98,9 @@
                 <div id="key58" class="black-key"></div>
               </div>
               <div id="key59" class="key"></div>
-
             </div>
 
             <div v-if="$vuetify.breakpoint.lgAndUp" class="octave-section">
-
               <div id="key60" class="key">
                 <div id="key61" class="black-key"></div>
               </div>
@@ -127,7 +118,6 @@
                 <div id="key70" class="black-key"></div>
               </div>
               <div id="key71" class="key"></div>
-              
             </div>
           </div>
         </v-row>
@@ -138,7 +128,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import { Draw, immediate } from "tone";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
@@ -228,6 +218,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     this.connections.length = 0;
     document.removeEventListener("keydown", this.userKeyPressed);
     document.removeEventListener("keyup", this.userKeyReleased);
+    this.clearKeyboardListeners();
   }
 
   sendMidi(message: IMidiMessage) {
@@ -254,32 +245,44 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     this.sendMidi(message);
   }
 
+  private resetKeyboardListeners() {
+    this.clearKeyboardListeners();
+    this.assignKeyboardListeners();
+  }
+
   private assignKeyboardListeners() {
-    // @mousedown="e => { keyMouseDown(e, 48) }" @mouseup="e => { keyMouseUp(e, 48) }"
-    // @mouseover="e => { keySlideOn(e, 48) }" @mouseout="e => { keySlideOff(e, 48) }"
-    // @touchstart="e => { keyMouseDown(e, 48) }" @touchend="e => { keyMouseUp(e, 48) }">
-    const keys = document.querySelectorAll("div.keyboard div.key, div.keyboard div.black-key");
+    const keys = document.querySelectorAll(
+      "div.keyboard div.key, div.keyboard div.black-key"
+    );
     for (const key of keys) {
-      key.addEventListener('mousedown', this.keyMouseDown);
-      key.addEventListener('mouseup', this.keyMouseUp);
-      key.addEventListener('mouseover', this.keySlideOn);
-      key.addEventListener('mouseout', this.keySlideOff);
-      key.addEventListener('touchstart', this.keyMouseDown);
-      key.addEventListener('touchend', this.keyMouseUp);
+      key.addEventListener("mousedown", this.keyMouseDown);
+      key.addEventListener("mouseup", this.keyMouseUp);
+      key.addEventListener("mouseover", this.keySlideOn);
+      key.addEventListener("mouseout", this.keySlideOff);
+      key.addEventListener("touchstart", this.keyMouseDown);
+      key.addEventListener("touchend", this.keyMouseUp);
       // todo: need to implement keySlideOn and keySlideOff for touch events - see: https://gist.github.com/VehpuS/6fd5dca2ea8cd0eb0471
+    }
+  }
+
+  private clearKeyboardListeners() {
+    const keys = document.querySelectorAll(
+      "div.keyboard div.key, div.keyboard div.black-key"
+    );
+    for (const key of keys) {
+      key.removeEventListener("mousedown", this.keyMouseDown);
+      key.removeEventListener("mouseup", this.keyMouseUp);
+      key.removeEventListener("mouseover", this.keySlideOn);
+      key.removeEventListener("mouseout", this.keySlideOff);
+      key.removeEventListener("touchstart", this.keyMouseDown);
+      key.removeEventListener("touchend", this.keyMouseUp);
     }
   }
 
   private getKeyNum(e: Event) {
     const el = e.target as HTMLElement;
-    return parseInt(el.id.replace('key', ''));
+    return parseInt(el.id.replace("key", ""));
   }
-
-  // private clearKeyboardListeners() {
-
-  // }
-
-  // begin todo: could probably refactor these functions to share some logic
 
   private keySlideOn(e: Event) {
     e.stopPropagation();
@@ -442,8 +445,6 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
     }
   }
 
-  // end todo
-
   private displayKeyDown(keyNumber: number) {
     const key: HTMLElement | null = document.querySelector(`#key${keyNumber}`);
     if (key != null) {
@@ -458,6 +459,13 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
         ? "black"
         : "white";
     }
+  }
+
+  // Watches
+
+  @Watch("$vuetify.breakpoint.name")
+  private onBreakpointChange(value: string) {
+    this.resetKeyboardListeners();
   }
 }
 </script>
