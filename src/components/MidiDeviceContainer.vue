@@ -42,6 +42,11 @@
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'Step Sequencer'"
       />
+      <step-sequencer-v-2
+        ref="stepSequencerV2"
+        @deviceMounted="newDeviceMounted"
+        v-if="currentDeviceName === 'Step Sequencer V2'"
+      />
     </div>
   </div>
 </template>
@@ -58,6 +63,7 @@ import DeviceDropdown from "./DeviceDropdown.vue";
 import ComputerMidiKeyboard from "./ComputerMidiKeyboard.vue";
 import ExternalMidiDevice from "./ExternalMidiDevice.vue";
 import StepSequencer from "./StepSequencer.vue";
+import StepSequencerV2 from "./StepSequencerV2.vue";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 
@@ -67,7 +73,8 @@ import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
     DeviceDropdown,
     ComputerMidiKeyboard,
     ExternalMidiDevice,
-    StepSequencer
+    StepSequencer,
+    StepSequencerV2
   }
 })
 export default class MidiDeviceContainer extends Vue
@@ -76,7 +83,7 @@ export default class MidiDeviceContainer extends Vue
   private currentPreset: IPreset;
   private currentBank: IPresetBank;
   private currentDeviceName: string;
-  private availableMidiDevices = ["Keypad", "Step Sequencer", "External"];
+  private availableMidiDevices = ["Keypad", "Step Sequencer", "Step Sequencer V2", "External"];
 
   private expanded = true;
 
@@ -84,11 +91,12 @@ export default class MidiDeviceContainer extends Vue
     keypad: ComputerMidiKeyboard;
     external: ExternalMidiDevice;
     stepSequencer: StepSequencer;
+    stepSequencerV2: StepSequencerV2;
   };
 
   public constructor() {
     super();
-    this.currentDeviceName = this.availableMidiDevices[0];
+    this.currentDeviceName = this.availableMidiDevices[2];
     this.presetService = PresetServiceFactory.getPresetService(
       this.currentDeviceName
     );
@@ -113,6 +121,9 @@ export default class MidiDeviceContainer extends Vue
         break;
       case "Step Sequencer":
         currentDevice = this.$refs.stepSequencer;
+        break;
+      case "Step Sequencer V2":
+        currentDevice = this.$refs.stepSequencerV2;
         break;
       case "External":
         currentDevice = this.$refs.external;
