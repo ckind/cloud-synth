@@ -37,15 +37,10 @@
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'External'"
       />
-      <step-sequencer
+      <step-sequencer-v-2
         ref="stepSequencer"
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'Step Sequencer'"
-      />
-      <step-sequencer-v-2
-        ref="stepSequencerV2"
-        @deviceMounted="newDeviceMounted"
-        v-if="currentDeviceName === 'Step Sequencer V2'"
       />
     </div>
   </div>
@@ -83,7 +78,7 @@ export default class MidiDeviceContainer extends Vue
   private currentPreset: IPreset;
   private currentBank: IPresetBank;
   private currentDeviceName: string;
-  private availableMidiDevices = ["Keypad", "Step Sequencer", "Step Sequencer V2", "External"];
+  private availableMidiDevices = ["Keypad", "Step Sequencer", "External"];
 
   private expanded = true;
 
@@ -96,7 +91,7 @@ export default class MidiDeviceContainer extends Vue
 
   public constructor() {
     super();
-    this.currentDeviceName = this.availableMidiDevices[2];
+    this.currentDeviceName = this.availableMidiDevices[1];
     this.presetService = PresetServiceFactory.getPresetService(
       this.currentDeviceName
     );
@@ -121,9 +116,6 @@ export default class MidiDeviceContainer extends Vue
         break;
       case "Step Sequencer":
         currentDevice = this.$refs.stepSequencer;
-        break;
-      case "Step Sequencer V2":
-        currentDevice = this.$refs.stepSequencerV2;
         break;
       case "External":
         currentDevice = this.$refs.external;

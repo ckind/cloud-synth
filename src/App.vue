@@ -4,23 +4,27 @@
       <h2 class="menu-link">
         <span class="nav-link" to="/">CloudSynth</span>
       </h2>
-       <p>v0.1.3</p>
+
+      <p>v0.1.3</p>
 
       <h4 class="menu-link">
-        <span class="menu-option" @click="showQuickStart = true">Quick Start</span>
+        <span class="menu-option" @click="showQuickStart = true"
+          >Quick Start</span
+        >
       </h4>
 
       <h4 class="menu-link">
-        <span class="menu-option" @click="showChangeLog = true">Change Log</span>
+        <span class="menu-option" @click="showChangeLog = true"
+          >Change Log</span
+        >
       </h4>
-
-      <h4 class="menu-link">
-        <span class="menu-option" @click="test">Tutorials</span>
-      </h4>
-
       <v-spacer></v-spacer>
 
-      <v-btn href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" text>
+      <v-btn
+        href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        target="_blank"
+        text
+      >
         <span class="mr-2">More Info</span>
         <v-icon>mdi-open-in-new</v-icon>
       </v-btn>
@@ -47,12 +51,12 @@ export default Vue.extend({
 
   components: {
     QuickStart,
-    ChangeLog
+    ChangeLog,
   },
 
   data: () => ({
     showQuickStart: true,
-    showChangeLog: false
+    showChangeLog: false,
   }),
 
   methods: {
@@ -65,8 +69,8 @@ export default Vue.extend({
       // f.dispose();
       const n = new VANoiseSynth("white");
       n.dispose();
-    }
-  }
+    },
+  },
 });
 </script>
 

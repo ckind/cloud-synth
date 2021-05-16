@@ -3,36 +3,36 @@
     <div class="sequencer">
       <div class="sequncer-controls">
         <div
-          @click="selectedGraph = 'notes'"
-          :class="[selectedGraph === 'notes' ? 'selected' : '']"
+          @click="selectedSequence = noteSequence"
+          :class="[selectedSequence === noteSequence ? 'selected' : '']"
           class="graph-option"
         >
           Note
         </div>
         <div
-          @click="selectedGraph = 'octaves'"
-          :class="[selectedGraph === 'octaves' ? 'selected' : '']"
+          @click="selectedSequence = octaveSequence"
+          :class="[selectedSequence === octaveSequence ? 'selected' : '']"
           class="graph-option"
         >
           Octave
         </div>
         <div
-          @click="selectedGraph = 'velocities'"
-          :class="[selectedGraph === 'velocities' ? 'selected' : '']"
+          @click="selectedSequence = velocitySequence"
+          :class="[selectedSequence === velocitySequence ? 'selected' : '']"
           class="graph-option"
         >
           Velocity
         </div>
         <div
-          @click="selectedGraph = 'lengths'"
-          :class="[selectedGraph === 'lengths' ? 'selected' : '']"
+          @click="selectedSequence = lengthSequence"
+          :class="[selectedSequence === lengthSequence ? 'selected' : '']"
           class="graph-option"
         >
           Length
         </div>
         <div
-          @click="selectedGraph = 'gates'"
-          :class="[selectedGraph === 'gates' ? 'selected' : '']"
+          @click="selectedSequence = gateSequence"
+          :class="[selectedSequence === gateSequence ? 'selected' : '']"
           class="graph-option"
         >
           Gate
@@ -42,60 +42,94 @@
       <div class="graph-container">
         <!-- NOTE -->
         <bar-graph-control
-          v-show="selectedGraph === 'notes'"
+          v-show="selectedSequence === noteSequence"
           @update="updateNote"
           :valueSteps="11"
-          :numColumns="numSteps"
+          :numColumns="maxNumSteps"
           :activeStep="noteSequence.currentStep"
         ></bar-graph-control>
         <!-- OCTAVE -->
         <bar-graph-control
-          v-show="selectedGraph === 'octaves'"
+          v-show="selectedSequence === octaveSequence"
           @update="updateOctave"
           :valueSteps="4"
-          :numColumns="numSteps"
+          :numColumns="maxNumSteps"
           :activeStep="octaveSequence.currentStep"
         ></bar-graph-control>
         <!-- VELOCITY -->
         <bar-graph-control
-          v-show="selectedGraph === 'velocities'"
+          v-show="selectedSequence === velocitySequence"
           @update="updateVelocity"
           :valueSteps="126"
-          :numColumns="numSteps"
+          :numColumns="maxNumSteps"
           :activeStep="velocitySequence.currentStep"
         ></bar-graph-control>
         <!-- LENGTH -->
         <bar-graph-control
-          v-show="selectedGraph === 'lengths'"
+          v-show="selectedSequence === lengthSequence"
           @update="updateLength"
           :valueSteps="126"
-          :numColumns="numSteps"
+          :numColumns="maxNumSteps"
           :activeStep="lengthSequence.currentStep"
         ></bar-graph-control>
         <!-- GATE/TRIGGER -->
         <bar-graph-control
-          v-show="selectedGraph === 'gates'"
+          v-show="selectedSequence === this.gateSequence"
           @update="updateGate"
           :valueSteps="1"
-          :numColumns="numSteps"
+          :numColumns="maxNumSteps"
           :activeStep="lengthSequence.currentStep"
         ></bar-graph-control>
       </div>
       <div class="sequncer-controls">
-        <select class="option-dropdown" v-model="transposeOption">
-          <option
-            v-for="(option, i) in transposeOptions"
-            :key="i"
-            :value="option"
-          >
-            {{ option.label }}
-          </option>
-        </select>
-        <select class="option-dropdown" v-model="scaleOption">
-          <option v-for="(option, i) in scaleOptions" :key="i" :value="option">
-            {{ option.label }}
-          </option>
-        </select>
+        <v-select
+          :items="transposeOptions"
+          v-model="transpose"
+          dense
+          dark
+          solo
+          full-width
+          item-value="note"
+          item-text="label"
+          label="Transpose"
+          hide-details
+        ></v-select>
+        <v-select
+          :items="scaleOptions"
+          v-model="scale"
+          dense
+          dark
+          solo
+          full-width
+          item-value="scale"
+          item-text="label"
+          label="Scale"
+          hide-details
+        ></v-select>
+        <v-text-field
+          v-model="selectedSequence.length"
+          name="length"
+          dense
+          dark
+          type="number"
+          full-width
+          solo
+          hide-details
+          min="1"
+          :max="maxNumSteps"
+        />
+        <v-select
+          :items="directionOptions"
+          v-model="selectedSequence.direction"
+          dense
+          dark
+          solo
+          full-width
+          return-object
+          item-text="label"
+          label="Direction"
+          hide-details
+        ></v-select>
       </div>
     </div>
   </div>
@@ -115,7 +149,7 @@ import {
   MidiFunction,
   IMidiMessage,
 } from "@/shared/interfaces/midi/IMidiMessage";
-import { ToneEvent } from "tone";
+import { Scale, ToneEvent } from "tone";
 import KnobControl from "@/components/KnobControl.vue";
 import PageSelector from "@/components/PageSelector.vue";
 import BarGraphControl from "@/components/BarGraphControl.vue";
@@ -132,7 +166,7 @@ interface PropertySequence<T> {
   steps: T[];
   length: number;
   currentStep: number;
-  getNextStep: SequencerAdvanceFunction;
+  direction: DirectionOption;
   getNextValue: () => T;
 }
 
@@ -145,12 +179,10 @@ interface DirectionOption {
   label: string;
   nextStepFunction: SequencerAdvanceFunction;
 }
-
 interface ScaleOption {
   label: string;
   scale: ScaleType;
 }
-
 interface TransposeOption {
   label: string;
   note: number;
@@ -167,28 +199,25 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
   name = "Step Sequencer V2";
   settings = {};
 
-  private numSteps = 8;
-  private sequenceLength: number;
-  private selectedPageIndex = 0;
+  private maxNumSteps = 12;
   private directionOptions: DirectionOption[];
   private scaleOptions: ScaleOption[];
   private transposeOptions: TransposeOption[];
-  private directionOption: DirectionOption;
-  private scaleOption: ScaleOption;
-  private transposeOption: TransposeOption;
-  private activeStepIndex: number;
+  private scale: ScaleType;
+  private transpose: number;
   private running = false;
-  private subdivision = 8;
+  private subdivision = 16;
   private sequencerEvent: ToneEvent;
   private connections: Array<IMidiReceiver>;
   private pingPongForward = true;
-  private selectedGraph = "notes";
 
   private noteSequence: PropertySequence<number>;
   private octaveSequence: PropertySequence<number>;
   private velocitySequence: PropertySequence<number>;
   private lengthSequence: PropertySequence<number>;
   private gateSequence: PropertySequence<boolean>;
+
+  private selectedSequence: PropertySequence<any>;
 
   public constructor() {
     super();
@@ -200,8 +229,6 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
       { label: "ping pong", nextStepFunction: this.getNextStepPingPong },
       { label: "random", nextStepFunction: this.getNextStepRandom },
     ];
-
-    this.directionOption = this.directionOptions[0];
 
     this.scaleOptions = [
       { label: "chromatic", scale: ScaleType.Chromatic },
@@ -216,7 +243,7 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
       { label: "blues", scale: ScaleType.Blues },
     ];
 
-    this.scaleOption = this.scaleOptions[3];
+    this.scale = this.scaleOptions[0].scale;
 
     this.transposeOptions = [
       { label: "C", note: KeySignature.C },
@@ -233,61 +260,60 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
       { label: "B", note: KeySignature.B },
     ];
 
-    this.transposeOption = this.transposeOptions[0];
+    this.transpose = this.transposeOptions[0].note;
 
     this.noteSequence = {
-      steps: new Array<number>(this.numSteps).fill(0),
-      getNextStep: this.getNextStepForward,
-      length: this.numSteps,
+      steps: new Array<number>(this.maxNumSteps).fill(0),
+      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
+      length: this.maxNumSteps,
       currentStep: 0,
       getNextValue() {
-        this.currentStep = ++this.currentStep % this.length;
-        return this.steps[this.getNextStep(this.currentStep, this.length)];
+        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
+        return this.steps[this.currentStep];
       },
     };
     this.octaveSequence = {
-      steps: new Array<number>(this.numSteps).fill(3),
-      getNextStep: this.getNextStepForward,
-      length: this.numSteps - 2,
+      steps: new Array<number>(this.maxNumSteps).fill(3),
+      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
+      length: this.maxNumSteps,
       currentStep: 0,
       getNextValue() {
-        this.currentStep = ++this.currentStep % this.length;
-        return this.steps[this.getNextStep(this.currentStep, this.length)];
+        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
+        return this.steps[this.currentStep];
       },
     };
     this.velocitySequence = {
-      steps: new Array<number>(this.numSteps).fill(67),
-      getNextStep: this.getNextStepForward,
-      length: this.numSteps,
+      steps: new Array<number>(this.maxNumSteps).fill(67),
+      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
+      length: this.maxNumSteps,
       currentStep: 0,
       getNextValue() {
-        this.currentStep = ++this.currentStep % this.length;
-        return this.steps[this.getNextStep(this.currentStep, this.length)];
+        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
+        return this.steps[this.currentStep];;
       },
     };
     this.lengthSequence = {
-      steps: new Array<number>(this.numSteps).fill(0.5),
-      getNextStep: this.getNextStepForward,
-      length: this.numSteps,
+      steps: new Array<number>(this.maxNumSteps).fill(0.5),
+      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
+      length: this.maxNumSteps,
       currentStep: 0,
       getNextValue() {
-        this.currentStep = ++this.currentStep % this.length;
-        return this.steps[this.getNextStep(this.currentStep, this.length)];
+        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
+        return this.steps[this.currentStep];
       },
     };
     this.gateSequence = {
-      steps: new Array<boolean>(this.numSteps).fill(true),
-      getNextStep: this.getNextStepForward,
-      length: this.numSteps,
+      steps: new Array<boolean>(this.maxNumSteps).fill(true),
+      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
+      length: this.maxNumSteps,
       currentStep: 0,
       getNextValue() {
-        this.currentStep = ++this.currentStep % this.length;
-        return this.steps[this.getNextStep(this.currentStep, this.length)];
+        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
+        return this.steps[this.currentStep];
       },
     };
 
-    this.activeStepIndex = this.numSteps - 1;
-    this.sequenceLength = this.numSteps;
+    this.selectedSequence = this.noteSequence;
 
     this.sequencerEvent = new ToneEvent((time) => {
       this.advanceSequencer(time);
@@ -311,7 +337,7 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
   // Computed
 
   get quantizeScale() {
-    const scale = getScale(this.scaleOption.scale, this.transposeOption.note);
+    const scale = getScale(this.scale, this.transpose);
     return scale;
   }
 
@@ -467,6 +493,7 @@ div.sequncer-controls {
   background: black;
   height: 100%;
   min-width: 100px;
+  max-width: 140px;
 }
 .graph-option {
   color: white;

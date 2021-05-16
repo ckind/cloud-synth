@@ -103,6 +103,7 @@ export function getScale(scaleType: ScaleType, key = 1) {
 export function quantizePitch(pitch: number, scale: number[]) {
   const octave = Math.floor(pitch / 12);
   const note = pitch % 12;
+  console.log(pitch, octave, note, scale);
   let quantizedNote = note;
   let diff = 9000;
   for (let i = 0; i < scale.length; i++) {
