@@ -78,7 +78,7 @@
           @update="updateGate"
           :valueSteps="1"
           :numColumns="maxNumSteps"
-          :activeStep="lengthSequence.currentStep"
+          :activeStep="gateSequence.currentStep"
         ></bar-graph-control>
       </div>
       <div class="sequncer-controls">
@@ -162,18 +162,28 @@ interface Step {
   gate: boolean;
 }
 
-interface PropertySequence<T> {
-  steps: T[];
-  length: number;
-  currentStep: number;
-  direction: DirectionOption;
-  getNextValue: () => T;
+class PropertySequence<T> {
+  public steps: T[];
+  public length: number;
+  public currentStep: number;
+  public direction: DirectionOption;
+  public pingPongForward: boolean;
+
+  constructor(_steps: T[], _length: number, _direction: DirectionOption) {
+    this.steps = _steps;
+    this.length = _length;
+    this.direction = _direction;
+    this.currentStep = this.steps.length - 1;
+    this.pingPongForward = true;
+  }
+
+  getNextValue(): T {
+    this.currentStep = this.direction.nextStepFunction(this);
+    return this.steps[this.currentStep];
+  }
 }
 
-type SequencerAdvanceFunction = (
-  currentStep: number,
-  sequenceLength: number
-) => number;
+type SequencerAdvanceFunction = (sequence: PropertySequence<any>) => number;
 
 interface DirectionOption {
   label: string;
@@ -209,7 +219,6 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
   private subdivision = 16;
   private sequencerEvent: ToneEvent;
   private connections: Array<IMidiReceiver>;
-  private pingPongForward = true;
 
   private noteSequence: PropertySequence<number>;
   private octaveSequence: PropertySequence<number>;
@@ -262,56 +271,31 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
 
     this.transpose = this.transposeOptions[0].note;
 
-    this.noteSequence = {
-      steps: new Array<number>(this.maxNumSteps).fill(0),
-      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
-      length: this.maxNumSteps,
-      currentStep: 0,
-      getNextValue() {
-        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
-        return this.steps[this.currentStep];
-      },
-    };
-    this.octaveSequence = {
-      steps: new Array<number>(this.maxNumSteps).fill(3),
-      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
-      length: this.maxNumSteps,
-      currentStep: 0,
-      getNextValue() {
-        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
-        return this.steps[this.currentStep];
-      },
-    };
-    this.velocitySequence = {
-      steps: new Array<number>(this.maxNumSteps).fill(67),
-      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
-      length: this.maxNumSteps,
-      currentStep: 0,
-      getNextValue() {
-        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
-        return this.steps[this.currentStep];;
-      },
-    };
-    this.lengthSequence = {
-      steps: new Array<number>(this.maxNumSteps).fill(0.5),
-      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
-      length: this.maxNumSteps,
-      currentStep: 0,
-      getNextValue() {
-        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
-        return this.steps[this.currentStep];
-      },
-    };
-    this.gateSequence = {
-      steps: new Array<boolean>(this.maxNumSteps).fill(true),
-      direction: { label: "forward", nextStepFunction: this.getNextStepForward },
-      length: this.maxNumSteps,
-      currentStep: 0,
-      getNextValue() {
-        this.currentStep = this.direction.nextStepFunction(this.currentStep, this.length);
-        return this.steps[this.currentStep];
-      },
-    };
+    this.noteSequence = new PropertySequence<number>(
+      new Array<number>(this.maxNumSteps).fill(0),
+      this.maxNumSteps,
+      this.directionOptions[0]
+    );
+    this.octaveSequence = new PropertySequence<number>(
+      new Array<number>(this.maxNumSteps).fill(3),
+      this.maxNumSteps,
+      this.directionOptions[0]
+    );
+    this.velocitySequence = new PropertySequence<number>(
+      new Array<number>(this.maxNumSteps).fill(67),
+      this.maxNumSteps,
+      this.directionOptions[0]
+    );
+    this.lengthSequence = new PropertySequence<number>(
+      new Array<number>(this.maxNumSteps).fill(0.5),
+      this.maxNumSteps,
+      this.directionOptions[0]
+    );
+    this.gateSequence = new PropertySequence<boolean>(
+      new Array<boolean>(this.maxNumSteps).fill(true),
+      this.maxNumSteps,
+      this.directionOptions[0]
+    );
 
     this.selectedSequence = this.noteSequence;
 
@@ -359,35 +343,35 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
     this.gateSequence.steps[i] = val === 1;
   }
 
-  getNextStepForward(currentStep: number, sequenceLength: number): number {
-    return currentStep + 1 >= sequenceLength ? 0 : currentStep + 1;
+  getNextStepForward(sequence: PropertySequence<any>): number {
+    return sequence.currentStep + 1 >= sequence.length
+      ? 0
+      : sequence.currentStep + 1;
   }
-
-  getNextStepReverse(currentStep: number, sequenceLength: number): number {
-    return currentStep - 1 < 0 ? sequenceLength - 1 : currentStep - 1;
+  getNextStepReverse(sequence: PropertySequence<any>): number {
+    return sequence.currentStep - 1 < 0
+      ? sequence.length - 1
+      : sequence.currentStep - 1;
   }
-
-  getNextStepPingPong(currentStep: number, sequenceLength: number): number {
-    // todo: each sequence needs to maintain it's own ping pong state
-    if (this.pingPongForward) {
-      if (currentStep >= sequenceLength - 1) {
-        this.pingPongForward = false;
-        return this.getNextStepReverse(currentStep, sequenceLength);
+  getNextStepPingPong(sequence: PropertySequence<any>): number {
+    if (sequence.pingPongForward) {
+      if (sequence.currentStep >= sequence.length - 1) {
+        sequence.pingPongForward = false;
+        return this.getNextStepReverse(sequence);
       } else {
-        return this.getNextStepForward(currentStep, sequenceLength);
+        return this.getNextStepForward(sequence);
       }
     } else {
-      if (currentStep <= 0) {
-        this.pingPongForward = true;
-        return this.getNextStepForward(currentStep, sequenceLength);
+      if (sequence.currentStep <= 0) {
+        sequence.pingPongForward = true;
+        return this.getNextStepForward(sequence);
       } else {
-        return this.getNextStepReverse(currentStep, sequenceLength);
+        return this.getNextStepReverse(sequence);
       }
     }
   }
-
-  getNextStepRandom(currentStep: number, sequenceLength: number): number {
-    return Math.floor(Math.random() * sequenceLength);
+  getNextStepRandom(sequence: PropertySequence<any>): number {
+    return Math.floor(Math.random() * sequence.length);
   }
 
   advanceSequencer(time: number) {
