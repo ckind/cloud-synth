@@ -1,5 +1,5 @@
 <template>
-  <v-app class="cloudSynth-app">
+  <v-app class="cloudSynth-app" style="background: rgba(0, 0, 0, 0)">
     <v-app-bar class="cloudSynth-app-bar" color="black" dark app>
       <h2 class="menu-link">
         <span class="nav-link" to="/">CloudSynth</span>
@@ -18,11 +18,25 @@
     <v-navigation-drawer v-model="drawer" dark app>
       <v-list nav>
         <v-list-item-group active-class="text--accent-4">
-          <v-list-item @click="() => { showQuickStart = true; drawer = false}">
+          <v-list-item
+            @click="
+              () => {
+                showQuickStart = true;
+                drawer = false;
+              }
+            "
+          >
             <v-list-item-title>Quick Start</v-list-item-title>
           </v-list-item>
 
-          <v-list-item @click="() => { showChangeLog = true; drawer = false}">
+          <v-list-item
+            @click="
+              () => {
+                showChangeLog = true;
+                drawer = false;
+              }
+            "
+          >
             <v-list-item-title>Change Log</v-list-item-title>
           </v-list-item>
         </v-list-item-group>
@@ -70,6 +84,13 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style>
+body {
+  background-image: url("./assets/space-2.jpg") !important;
+  background-size: 100%;
+}
+</style>
 
 <style scoped>
 .nav-link {

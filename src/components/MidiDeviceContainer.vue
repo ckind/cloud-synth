@@ -175,6 +175,8 @@ export default class MidiDeviceContainer extends Vue
 .device-window {
   border: 12px solid black;
   border-radius: 12px;
+  width: 100%;
+  max-width: 1400px;
 }
 .expand-icon {
   float: right;

@@ -237,6 +237,8 @@ export default class InstrumentContainer extends Vue
 .device-window {
   border: 12px solid black;
   border-radius: 12px;
+  width: 100%;
+  max-width: 1400px;
 }
 .cursor-pointer {
   cursor: pointer;

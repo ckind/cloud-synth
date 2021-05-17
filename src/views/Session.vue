@@ -9,7 +9,7 @@
       ref="midiDeviceContainer"
       @newDeviceMounted="newMidiDeviceMounted"
     />
-    <v-footer app class="session-footer">
+    <v-footer dark app class="session-footer" style="background: black;">
       <div class="text-center bpm-bar">
         <v-slider
           hide-details
@@ -128,7 +128,10 @@ export default class Session extends Vue {
 
 <style scoped>
 .session-container {
-  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 10px;
 }
 .session-footer {
   padding: 0px;
