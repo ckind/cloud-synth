@@ -10,8 +10,7 @@
       @newDeviceMounted="newMidiDeviceMounted"
     />
     <v-footer app class="session-footer">
-      <v-col cols="4" />
-      <v-col class="text-center" cols="3">
+      <div class="text-center bpm-bar">
         <v-slider
           hide-details
           dense
@@ -19,8 +18,8 @@
           min="40"
           v-model="bpm"
         ></v-slider>
-      </v-col>
-      <v-col class="text-center" cols="1">
+      </div>
+      <div class="text-center transport-controls">
         <v-icon
           @click="startStopTransport"
           :class="[transportRunning ? 'transport-running' : '']"
@@ -33,8 +32,7 @@
         >
           mdi-record
         </v-icon>
-      </v-col>
-      <v-col cols="4" />
+      </div>
     </v-footer>
   </div>
 </template>
@@ -135,7 +133,14 @@ export default class Session extends Vue {
 .session-footer {
   padding: 0px;
   margin: 0px;
+  display: flex;
+  justify-content: center;
+  height: 50px;
   border-top: 1px solid black;
+}
+.bpm-bar {
+  max-width: 600px;
+  width: 75%;
 }
 .transport-running {
   color: #2196f3;

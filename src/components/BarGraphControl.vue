@@ -1,5 +1,5 @@
 <template>
-  <div class="bar-graph-container">
+  <div class="bar-graph-container" ref="graphContainer" :style="cssVars">
     <div
       v-for="col in columns"
       :key="col.index"
@@ -27,14 +27,17 @@ import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 interface GraphColumn {
   index: number;
   height: number;
+  width: number;
+  margin: number;
   value: number;
 }
 
 @Component({})
-export default class KnobControl extends Vue {
-  private barHeight = 160;
-  private barWidth = 25;
+export default class BarGraphControl extends Vue {
+  private maxHeight = 160;
   private barColor = "#70bfff";
+  private activeBackgroundColor = "#243b4e";
+  private barMargin = 2;
   private columns: GraphColumn[];
   private leftClickDown = false;
 
@@ -45,7 +48,9 @@ export default class KnobControl extends Vue {
     for (let i = 0; i < this.numColumns; i++) {
       this.columns[i] = {
         index: i,
+        margin: 2,
         height: 0,
+        width: (this.graphWidth / this.numColumns) - 4, // subtract margin
         value: 0,
       };
     }
@@ -60,6 +65,9 @@ export default class KnobControl extends Vue {
   @Prop({ required: false, default: -1 })
   public activeStep!: number;
 
+  @Prop({ required: false, default: 768 })
+  public graphWidth!: number;
+
   // Lifecycle Hooks
 
   mounted() {
@@ -69,7 +77,18 @@ export default class KnobControl extends Vue {
   // Computed
 
   get stepSize() {
-    return this.barHeight / this.valueSteps;
+    return this.maxHeight / this.valueSteps;
+  }
+
+  get cssVars() {
+    return {
+      "--maxHeight": `${this.maxHeight}px`,
+      "--graphWidth": `${this.graphWidth}px`,
+      "--barMargin": `${this.barMargin}px`,
+      "--numColumns": `${this.numColumns}px`,
+      "--barColor": this.barColor,
+      "--activeBackgroundColor": this.activeBackgroundColor
+    }
   }
 
   // Methods
@@ -85,7 +104,7 @@ export default class KnobControl extends Vue {
 
   randomize() {
     this.columns.forEach((col) => {
-      col.value = this.SnapToStep(Math.floor(Math.random() * this.barHeight));
+      col.value = this.SnapToStep(Math.floor(Math.random() * this.maxHeight));
       col.height = col.value * this.stepSize;
 			this.$emit("update", col.index, col.value);
     });
@@ -111,7 +130,7 @@ export default class KnobControl extends Vue {
   private setColumnValue(e: MouseEvent, col: GraphColumn) {
     if (e.currentTarget instanceof HTMLElement) {
       const rect = e.currentTarget.getBoundingClientRect();
-      const clickY = this.barHeight - (e.clientY - rect.top); // flip it so y-axis goes from bottom to top
+      const clickY = this.maxHeight - (e.clientY - rect.top); // flip it so y-axis goes from bottom to top
       const steppedValue = this.SnapToStep(clickY);
 
       col.value = steppedValue;
@@ -131,12 +150,11 @@ export default class KnobControl extends Vue {
 <style scoped>
 .bar-graph-container {
   background: black;
-  height: 160px;
+  height: calc(var(--maxHeight) + 2*(var(--barMargin)));
   display: flex;
 }
 .bar-column {
-  height: 160px;
-  width: 60px;
+  height: calc(var(--maxHeight) + 2*(var(--barMargin)));
   display: flex;
   align-items: flex-end;
   cursor: pointer;
@@ -146,12 +164,12 @@ export default class KnobControl extends Vue {
   -o-user-drag: none;
 }
 .bar-column.active {
-  background: rgb(36, 59, 78);
+  background: var(--activeBackgroundColor);
 }
 .bar {
-  background: #70bfff;
-  width: 100%;
-  margin: 2px;
+  background: var(--barColor);
+  margin: var(--barMargin);
+  width: calc(((var(--graphWidth) - 4px) / 12) - 2*(var(--barMargin)));
   display: inline-block;
   -webkit-user-drag: none;
   -khtml-user-drag: none;

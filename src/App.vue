@@ -1,37 +1,33 @@
 <template>
   <v-app class="cloudSynth-app">
-    <v-app-bar class="cloudSynth-app-bar" app color="black" dark>
+    <v-app-bar class="cloudSynth-app-bar" color="black" dark app>
       <h2 class="menu-link">
         <span class="nav-link" to="/">CloudSynth</span>
       </h2>
 
       <p>v0.1.3</p>
 
-      <h4 class="menu-link">
-        <span class="menu-option" @click="showQuickStart = true"
-          >Quick Start</span
-        >
-      </h4>
-
-      <h4 class="menu-link">
-        <span class="menu-option" @click="showChangeLog = true"
-          >Change Log</span
-        >
-      </h4>
       <v-spacer></v-spacer>
 
-      <v-btn
-        href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">More Info</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
     </v-app-bar>
 
     <quick-start v-model="showQuickStart" />
     <change-log v-model="showChangeLog" />
+
+    <v-navigation-drawer v-model="drawer" dark app>
+      <v-list nav>
+        <v-list-item-group active-class="text--accent-4">
+          <v-list-item @click="() => { showQuickStart = true; drawer = false}">
+            <v-list-item-title>Quick Start</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item @click="() => { showChangeLog = true; drawer = false}">
+            <v-list-item-title>Change Log</v-list-item-title>
+          </v-list-item>
+        </v-list-item-group>
+      </v-list>
+    </v-navigation-drawer>
 
     <v-main>
       <router-view></router-view>
@@ -57,6 +53,7 @@ export default Vue.extend({
   data: () => ({
     showQuickStart: true,
     showChangeLog: false,
+    drawer: false,
   }),
 
   methods: {

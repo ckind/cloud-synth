@@ -1,13 +1,17 @@
 <template>
   <v-dialog v-model="value" dark max-width="600">
     <v-card>
-      <v-card-title class="headline">Change Log</v-card-title>
+      <v-card-title class="headline">{{ title }}</v-card-title>
 
       <v-card-text>
         <ul class="change-list">
-          <li v-for="(message, index) in commitMessages" :key="index">{{ message }}</li>
+          <li v-for="(message, index) in commitMessages" :key="index">
+            {{ message }}
+          </li>
         </ul>
-        <a href="https://github.com/ckind/JvaSynth" target="_blank">view source</a>
+        <a href="https://github.com/ckind/JvaSynth" target="_blank"
+          >view source</a
+        >
       </v-card-text>
 
       <v-card-actions>
@@ -31,15 +35,18 @@ export default class ChangeLog extends Vue {
 
   constructor() {
     super();
-    const octokit = new Octokit();
     this.commitMessages = [];
+  }
+
+  mounted() {
+    const octokit = new Octokit();
     octokit.repos
       .listCommits({
         owner: "ckind",
-        repo: "JvaSynth"
+        repo: "JvaSynth",
       })
-      .then(response => {
-        response.data.forEach(c => {
+      .then((response) => {
+        response.data.forEach((c) => {
           this.commitMessages.push(c.commit.message);
         });
       })

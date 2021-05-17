@@ -1,7 +1,10 @@
 <template>
-  <div class="sequencer-container">
+  <div class="sequencer-container" ref="container" :style="cssVars">
     <div class="sequencer">
-      <div class="sequncer-controls">
+      <div
+        class="sequencer-controls"
+        :class="[$vuetify.breakpoint.mobile ? 'top' : 'vertical']"
+      >
         <div
           @click="selectedSequence = noteSequence"
           :class="[selectedSequence === noteSequence ? 'selected' : '']"
@@ -47,6 +50,7 @@
           :valueSteps="11"
           :numColumns="maxNumSteps"
           :activeStep="noteSequence.currentStep"
+          :graphWidth="graphWidth"
         ></bar-graph-control>
         <!-- OCTAVE -->
         <bar-graph-control
@@ -55,6 +59,7 @@
           :valueSteps="4"
           :numColumns="maxNumSteps"
           :activeStep="octaveSequence.currentStep"
+          :graphWidth="graphWidth"
         ></bar-graph-control>
         <!-- VELOCITY -->
         <bar-graph-control
@@ -63,6 +68,7 @@
           :valueSteps="126"
           :numColumns="maxNumSteps"
           :activeStep="velocitySequence.currentStep"
+          :graphWidth="graphWidth"
         ></bar-graph-control>
         <!-- LENGTH -->
         <bar-graph-control
@@ -71,6 +77,7 @@
           :valueSteps="126"
           :numColumns="maxNumSteps"
           :activeStep="lengthSequence.currentStep"
+          :graphWidth="graphWidth"
         ></bar-graph-control>
         <!-- GATE/TRIGGER -->
         <bar-graph-control
@@ -79,20 +86,25 @@
           :valueSteps="1"
           :numColumns="maxNumSteps"
           :activeStep="gateSequence.currentStep"
+          :graphWidth="graphWidth"
         ></bar-graph-control>
       </div>
-      <div class="sequncer-controls">
+
+      <div
+        class="sequencer-controls"
+        :class="[$vuetify.breakpoint.mobile ? 'bottom' : 'vertical']"
+      >
         <v-select
           :items="transposeOptions"
           v-model="transpose"
           dense
           dark
           solo
-          full-width
           item-value="note"
           item-text="label"
           label="Transpose"
           hide-details
+          class="sequencer-select"
         ></v-select>
         <v-select
           :items="scaleOptions"
@@ -100,7 +112,6 @@
           dense
           dark
           solo
-          full-width
           item-value="scale"
           item-text="label"
           label="Scale"
@@ -112,7 +123,6 @@
           dense
           dark
           type="number"
-          full-width
           solo
           hide-details
           min="1"
@@ -124,7 +134,6 @@
           dense
           dark
           solo
-          full-width
           return-object
           item-text="label"
           label="Direction"
@@ -209,6 +218,7 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
   name = "Step Sequencer V2";
   settings = {};
 
+  private graphWidth = 768;
   private maxNumSteps = 12;
   private directionOptions: DirectionOption[];
   private scaleOptions: ScaleOption[];
@@ -219,14 +229,13 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
   private subdivision = 16;
   private sequencerEvent: ToneEvent;
   private connections: Array<IMidiReceiver>;
-
   private noteSequence: PropertySequence<number>;
   private octaveSequence: PropertySequence<number>;
   private velocitySequence: PropertySequence<number>;
   private lengthSequence: PropertySequence<number>;
   private gateSequence: PropertySequence<boolean>;
-
   private selectedSequence: PropertySequence<any>;
+  private resizeTimer?: ReturnType<typeof setTimeout>;
 
   public constructor() {
     super();
@@ -309,12 +318,18 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
   // Lifecycle Hooks
 
   mounted() {
+    this.sizeGraph();
+
+    window.addEventListener("resize", this.sizeGraphDebounce);
+
     this.$emit("deviceMounted");
     this.sequencerEvent.start();
     this.running = true;
   }
 
   beforeDestroy() {
+    window.removeEventListener("resize", this.sizeGraphDebounce);
+
     this.dispose();
   }
 
@@ -325,7 +340,29 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
     return scale;
   }
 
+  get cssVars() {
+    return {
+      "--graphWidth": `${this.graphWidth}px`,
+    };
+  }
+
   // Methods
+
+  sizeGraphDebounce() {
+    // window resize event only fires before resize is applied, so use this hack to get around that
+    if (this.resizeTimer) clearTimeout(this.resizeTimer);
+    this.resizeTimer = setTimeout(this.sizeGraph, 100);
+  }
+
+  sizeGraph() {
+    // todo: this is kinda buggy when resizing but not high priority since it works on first load
+    if (this.$vuetify.breakpoint.mobile) {
+      const el = this.$refs.container as Element;
+      this.graphWidth = el.getBoundingClientRect().width;
+    } else {
+      this.graphWidth = 768;
+    }
+  }
 
   updateNote(i: number, val: number) {
     this.noteSequence.steps[i] = val;
@@ -464,6 +501,7 @@ export default class StepSequencerV2 extends Vue implements IMidiDevice {
 <style scoped>
 div.sequencer-container {
   justify-content: center;
+  width: 100%;
   background-image: url("../assets/wood-2.png");
   background-repeat: repeat;
   position: relative;
@@ -472,12 +510,25 @@ div.sequencer-container {
 }
 div.sequencer {
   display: flex;
+  flex-wrap: wrap;
 }
-div.sequncer-controls {
+div.sequencer-controls {
   background: black;
+}
+div.sequencer-controls.vertical {
   height: 100%;
   min-width: 100px;
   max-width: 140px;
+}
+div.sequencer-controls.top {
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  width: var(--graphWidth);
+  height: 30px;
+}
+div.sequencer-controls.bottom {
+  width: var(--graphWidth);
 }
 .graph-option {
   color: white;

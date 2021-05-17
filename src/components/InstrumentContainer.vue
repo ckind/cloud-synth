@@ -1,6 +1,6 @@
 <template>
   <div class="device-window">
-    <v-row class="device-header">
+    <v-row class="device-header" v-show="!$vuetify.breakpoint.mobile">
       <v-col cols="2">
         <device-dropdown
           @deviceSelected="deviceSelected"
@@ -50,6 +50,20 @@
         />
       </v-col>
       <v-col cols="6">
+        <v-icon v-if="expanded" dark class="expand-icon" @click="expanded = false">
+          mdi-chevron-down
+        </v-icon>
+        <v-icon v-else dark class="expand-icon" @click="expanded = true">
+          mdi-chevron-left
+        </v-icon>
+      </v-col>
+    </v-row>
+    <v-row class="device-header" v-show="$vuetify.breakpoint.mobile">
+      <v-col cols="12">
+        <v-icon dark>
+          mdi-swap-horizontal
+        </v-icon>
+        {{ currentDeviceName }}
         <v-icon v-if="expanded" dark class="expand-icon" @click="expanded = false">
           mdi-chevron-down
         </v-icon>
