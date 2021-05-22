@@ -5,6 +5,10 @@
       @newDeviceMounted="newInstrumentDeviceMounted"
     >
     </instrument-container>
+    <effects-device-container
+      ref="effectsDeviceContainer"
+      @newDeviceMounted="newEffectsDeviceMounted"
+    />
     <midi-device-container
       ref="midiDeviceContainer"
       @newDeviceMounted="newMidiDeviceMounted"
@@ -46,11 +50,13 @@ import {
 } from "tone";
 import InstrumentContainer from "@/components/InstrumentContainer.vue";
 import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
+import EffectsDeviceContainer from "@/components/EffectsContainer.vue";
 
 @Component({
   components: {
     InstrumentContainer,
-    MidiDeviceContainer
+    MidiDeviceContainer,
+    EffectsDeviceContainer
   }
 })
 export default class Session extends Vue {
@@ -61,6 +67,7 @@ export default class Session extends Vue {
   $refs!: {
     midiDeviceContainer: MidiDeviceContainer;
     instrumentContainer: InstrumentContainer;
+    effectsDeviceContainer: EffectsDeviceContainer;
   };
 
   public constructor() {
@@ -87,17 +94,27 @@ export default class Session extends Vue {
   // Methods
 
   newInstrumentDeviceMounted() {
-    this.$refs.instrumentContainer.device.output.connect(ToneMaster); // relies on dispose method for disconnection
+    this.$refs.instrumentContainer.device.output.connect( // relies on internal dispose method for disconnection
+      this.$refs.effectsDeviceContainer.device.input
+    );
     this.$refs.midiDeviceContainer.device.connect(
       this.$refs.instrumentContainer.device
     );
   }
 
   newMidiDeviceMounted() {
-    this.$refs.midiDeviceContainer.device.connect(
+    this.$refs.midiDeviceContainer.device.connect( // relies on internal dispose method for disconnection
       this.$refs.instrumentContainer.device
     );
-    // don't worry about disconnect - this is cleaned up in the beforeDestroy hook for midi devices
+  }
+
+  newEffectsDeviceMounted() {
+    // todo: do we need to disconnect the input before destroy?
+
+    this.$refs.effectsDeviceContainer.device.output.connect(ToneMaster); // relies on internal dispose method for disconnection
+    this.$refs.instrumentContainer.device.output.connect( // relies on internal dispose method for disconnection
+      this.$refs.effectsDeviceContainer.device.input
+    ); 
   }
 
   startStopTransport() {

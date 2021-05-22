@@ -71,7 +71,7 @@ import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 import ComputerMidiKeyboard from "./ComputerMidiKeyboard.vue";
 import ExternalMidiDevice from "./ExternalMidiDevice.vue";
-import StepSequencerV2 from "./StepSequencerV2.vue";
+import StepSequencerV2 from "./StepSequencer.vue";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 

@@ -18,7 +18,7 @@ export class PresetServiceFactory {
       case "Step Sequencer":
         service = new KeypadPresetService(); // todo: implement
         break;
-      case "Step Sequencer V2":
+      case "Effects Chain":
         service = new KeypadPresetService(); // todo: implement
         break;
       default:

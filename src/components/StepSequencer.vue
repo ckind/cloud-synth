@@ -214,8 +214,8 @@ interface TransposeOption {
     BarGraphControl,
   },
 })
-export default class StepSequencerV2 extends Vue implements IMidiDevice {
-  name = "Step Sequencer V2";
+export default class StepSequencer extends Vue implements IMidiDevice {
+  name = "Step Sequencer";
   settings = {};
 
   private graphWidth = 768;

@@ -361,6 +361,7 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
   beforeDestroy() {
     this.dispose();
   }
+  
   // Methods
 
   dispose() {
