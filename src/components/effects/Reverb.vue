@@ -8,6 +8,7 @@
 			label="Mix"
 			id="dryWet"
 			size="50"
+      :shadowColor="'#3f3f3f'"
 		></knob-control>
 		<knob-control
 			v-model="toneReverb.decay"
@@ -16,6 +17,7 @@
 			label="Decay"
 			id="dryWet"
 			size="50"
+      :shadowColor="'#3f3f3f'"
 		></knob-control>
 	</div>
 </template>
@@ -83,6 +85,7 @@ export default class Reverb extends Vue implements IEffectsDevice {
   display: inline-block;
 	font-size: 10pt;
 	padding: 10px;
+  border: 1px solid black;
 }
 
 .center-x {

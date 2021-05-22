@@ -8,6 +8,7 @@
 			label="Mix"
 			id="dryWet"
 			size="50"
+      :shadowColor="'#3f3f3f'"
 		></knob-control>
 		<knob-control
 			v-model="delayTimeSignal.value"
@@ -16,6 +17,7 @@
 			label="Time"
 			id="time"
 			size="50"
+      :shadowColor="'#3f3f3f'"
 		></knob-control>
 		<knob-control
 			v-model="feedbackSignal.value"
@@ -24,6 +26,7 @@
 			label="Feedback"
 			id="feedback"
 			size="50"
+      :shadowColor="'#3f3f3f'"
 		></knob-control>
   </div>
 </template>
@@ -102,6 +105,7 @@ export default class Delay extends Vue implements IEffectsDevice {
   display: inline-block;
   font-size: 10pt;
   padding: 10px;
+  border: 1px solid black;
 }
 
 .center-x {

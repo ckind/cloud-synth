@@ -41,7 +41,7 @@
       </v-col>
     </v-row>
     <div v-show="expanded">
-      <effects-chain ref="effectsChain" @deviceMounted="newDeviceMounted" />
+      <effects-rack ref="effectsRack" @deviceMounted="newDeviceMounted" />
     </div>
   </div>
 </template>
@@ -53,11 +53,11 @@ import { IPreset } from "../shared/interfaces/presets/IPreset";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
-import EffectsChain from "@/components/EffectsChain.vue";
+import EffectsRack from "@/components/EffectsRack.vue";
 
 @Component({
   components: {
-    EffectsChain,
+    EffectsRack,
   },
 })
 export default class EffectsDeviceContainer
@@ -71,7 +71,7 @@ export default class EffectsDeviceContainer
   private expanded = true;
 
   $refs!: {
-    effectsChain: EffectsChain;
+    effectsRack: EffectsRack;
   };
 
   public constructor() {
@@ -91,7 +91,7 @@ export default class EffectsDeviceContainer
   // Computed
 
   get device() {
-    return this.$refs.effectsChain;
+    return this.$refs.effectsRack;
   }
 
   // Methods

@@ -1,5 +1,5 @@
 <template>
-  <div class="control-container">
+  <div class="control-container" :style="cssVars">
     <div class="knob-row">
       <img
         :src="require(`../assets/knob-2.svg`)"
@@ -73,6 +73,15 @@ export default class KnobControl extends Vue {
 
   @Prop({ required: false, default: true })
   public shadow!: boolean;
+
+  @Prop({ required: false, default: "black" })
+  public shadowColor!: string;
+
+  get cssVars() {
+    return {
+      "--shadowColor": this.shadowColor
+    }
+  }
 
   public constructor() {
     super();
@@ -193,7 +202,7 @@ export default class KnobControl extends Vue {
   user-select: none;
 }
 .knob-shadow {
-  -webkit-box-shadow: 0 0 12px black;
-  box-shadow: 0 0 12px black;
+  -webkit-box-shadow: 0 0 10px var(--shadowColor);
+  box-shadow: 0 0 10px var(--shadowColor);
 }
 </style>
