@@ -89,6 +89,7 @@ export default Vue.extend({
 body {
   background-image: url("./assets/space-2.jpg") !important;
   background-size: 100%;
+  background-repeat: repeat-y;
 }
 </style>
 

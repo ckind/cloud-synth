@@ -30,10 +30,10 @@ export default class Visualizer extends Vue implements IEffectsDevice {
     analyserCanvas: HTMLCanvasElement
   };
 
-	@Prop({ required: false, default: 240 })
+	@Prop({ required: false, default: 208 })
   public width!: number;
 
-  @Prop({ required: false, default: 150 })
+  @Prop({ required: false, default: 130 })
   public height!: number;
 
 	get cssVars() {

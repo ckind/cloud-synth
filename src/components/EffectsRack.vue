@@ -11,9 +11,35 @@ import Reverb from "@/components/effects/Reverb.vue";
 import DigitalDelay from "@/components/effects/DigitalDelay.vue";
 import BBDelay from "@/components/effects/BBDelay.vue";
 import Visualizer from "@/components/effects/Visualizer.vue";
+import Distortion from "@/components/effects/Distortion.vue";
 import { ToneAudioNode, Gain as ToneGain } from "tone";
 
 interface IEffectsComponent extends IEffectsDevice, Vue {}
+
+type EffectsComponentType =
+  | "DigitalDelay"
+  | "BBDelay"
+  | "Visualizer"
+  | "Reverb"
+  | "Distortion";
+
+// factory method
+function createEffectsComponent(type: EffectsComponentType): IEffectsComponent {
+  switch (type) {
+    case "DigitalDelay":
+      return new DigitalDelay();
+    case "BBDelay":
+      return new BBDelay();
+    case "Reverb":
+      return new Reverb();
+    case "Visualizer":
+      return new Visualizer();
+    case "Distortion":
+      return new Distortion();
+    default:
+      throw "invalid EffectsComponentType argument";
+  }
+}
 
 class EffectsChain {
   public components: IEffectsComponent[];
@@ -59,6 +85,7 @@ class EffectsChain {
     DigitalDelay,
     BBDelay,
     Visualizer,
+    Distortion
   },
 })
 export default class EffectsRack extends Vue implements IEffectsDevice {
@@ -77,10 +104,11 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
     super();
 
     this.chain = new EffectsChain([
-      new Visualizer(),
-      new DigitalDelay(),
-      new BBDelay(),
-      new Reverb(),
+      createEffectsComponent("Distortion"),
+      createEffectsComponent("Visualizer"),
+      createEffectsComponent("DigitalDelay"),
+      createEffectsComponent("BBDelay"),
+      createEffectsComponent("Reverb")
     ]);
 
     this.name = "Effects Chain";
@@ -115,5 +143,6 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
 <style scoped>
 .effects-rack {
   display: flex;
+  flex-wrap: wrap;
 }
 </style>
