@@ -1,6 +1,6 @@
 <template>
-  <div class="reverb-container">
-    <h3 class="center-x mb-2">Reverb</h3>
+  <div class="delay-container">
+    <h3 class="center-x mb-2">BBDelay</h3>
     <knob-control
       v-model="wethack"
       :minValue="0"
@@ -11,22 +11,21 @@
       :shadowColor="'#3f3f3f'"
     ></knob-control>
     <knob-control
-      v-model="toneReverb.decay"
-      :minValue="0"
-      :maxValue="20"
-      label="Decay"
-      id="dryWet"
+      v-model="delayTimeSignal.value"
+      :minValue="0.001"
+      :maxValue="1"
+      label="Time"
+      id="time"
       size="50"
       :shadowColor="'#3f3f3f'"
     ></knob-control>
     <knob-control
-      v-model="filterCutoffSignal.value"
-      :minValue="500"
-      :maxValue="18000"
-      label="Filter"
-      id="filter"
+      v-model="feedbackSignal.gain.value"
+      :minValue="0"
+      :maxValue="1.05"
+      label="Feedback"
+      id="feedback"
       size="50"
-      scale="exponential"
       :shadowColor="'#3f3f3f'"
     ></knob-control>
   </div>
@@ -35,14 +34,15 @@
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
-import KnobControl from "@/components/KnobControl.vue";
 import { DryWetMixer } from "@/shared/classes/utility/DryWetMixer";
+import KnobControl from "@/components/KnobControl.vue";
 import {
   ToneAudioNode,
   Gain as ToneGain,
-  Reverb as ToneReverb,
+  Delay as ToneDelay,
   Signal as ToneSignal,
   Filter as ToneFilter,
+  Distortion as ToneDistortion,
 } from "tone";
 
 @Component({
@@ -50,18 +50,20 @@ import {
     KnobControl,
   },
 })
-export default class Reverb extends Vue implements IEffectsDevice {
+export default class BBDelay extends Vue implements IEffectsDevice {
   public output: ToneAudioNode;
   public input: ToneAudioNode;
   public name: string;
   public settings: any;
 
-  private toneReverb: ToneReverb;
-  private filter: ToneFilter;
-  private filterCutoffSignal: ToneSignal;
+  private toneDelay: ToneDelay;
+  private delayTimeSignal: ToneSignal;
+  private feedbackSignal: ToneGain;
   private dryWetMixer: DryWetMixer;
   private drySignal: ToneGain;
   private wetSignal: ToneGain;
+  private filter: ToneFilter;
+  private distortion: ToneDistortion;
 
   private wethack: number;
 
@@ -70,22 +72,35 @@ export default class Reverb extends Vue implements IEffectsDevice {
 
     this.output = new ToneGain(1);
     this.input = new ToneGain(1);
-    this.name = "Reverb";
+    this.name = "BBDelay";
     this.settings = {};
 
-    this.toneReverb = new ToneReverb(2);
-    this.toneReverb.wet.value = 1;
-    this.filter = new ToneFilter(4000, "lowpass");
-    this.filterCutoffSignal = new ToneSignal(4000);
+    this.toneDelay = new ToneDelay();
+    this.feedbackSignal = new ToneGain(0.5);
+    this.delayTimeSignal = new ToneSignal(0.2);
+
+    this.distortion = new ToneDistortion(0.05);
+
     this.drySignal = new ToneGain(1);
     this.wetSignal = new ToneGain(1);
     this.dryWetMixer = new DryWetMixer(this.drySignal, this.wetSignal);
 
+    this.filter = new ToneFilter(4000, "lowpass");
+
     this.wethack = 0.5;
 
+    this.delayTimeSignal.connect(this.toneDelay.delayTime);
+
+    this.input.chain(
+      this.toneDelay,
+      this.distortion,
+      this.filter,
+      this.feedbackSignal,
+      this.toneDelay,
+      this.wetSignal
+    );
     this.input.chain(this.drySignal);
-    this.input.chain(this.toneReverb, this.filter, this.wetSignal);
-    this.filterCutoffSignal.connect(this.filter.frequency);
+
     this.dryWetMixer.output.connect(this.output);
   }
 
@@ -98,11 +113,10 @@ export default class Reverb extends Vue implements IEffectsDevice {
   }
 
   dispose() {
-    this.input.disconnect(this.toneReverb);
-    this.toneReverb.disconnect(this.output);
+    this.input.disconnect(this.toneDelay);
+    this.toneDelay.disconnect(this.output);
 
-    this.toneReverb.dispose();
-    this.filter.dispose();
+    this.toneDelay.dispose();
     this.input.dispose();
     this.output.dispose();
   }
@@ -116,7 +130,7 @@ export default class Reverb extends Vue implements IEffectsDevice {
 </script>
 
 <style scoped>
-.reverb-container {
+.delay-container {
   background-image: url("../../assets/metal-1.png");
   background-repeat: repeat;
   display: inline-block;

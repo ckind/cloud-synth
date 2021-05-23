@@ -8,7 +8,9 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
 import Reverb from "@/components/effects/Reverb.vue";
-import Delay from "@/components/effects/Delay.vue";
+import DigitalDelay from "@/components/effects/DigitalDelay.vue";
+import BBDelay from "@/components/effects/BBDelay.vue";
+import Visualizer from "@/components/effects/Visualizer.vue";
 import { ToneAudioNode, Gain as ToneGain } from "tone";
 
 interface IEffectsComponent extends IEffectsDevice, Vue {}
@@ -54,7 +56,9 @@ class EffectsChain {
 @Component({
   components: {
     Reverb,
-    Delay,
+    DigitalDelay,
+    BBDelay,
+    Visualizer,
   },
 })
 export default class EffectsRack extends Vue implements IEffectsDevice {
@@ -66,13 +70,18 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   private chain: EffectsChain;
 
   $refs!: {
-    rack: HTMLElement
+    rack: HTMLElement;
   };
 
   constructor() {
     super();
 
-    this.chain = new EffectsChain([new Delay(), new Reverb()]);
+    this.chain = new EffectsChain([
+      new Visualizer(),
+      new DigitalDelay(),
+      new BBDelay(),
+      new Reverb(),
+    ]);
 
     this.name = "Effects Chain";
     this.output = this.chain.output;
@@ -81,7 +90,7 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   }
 
   mounted() {
-    this.chain.components.forEach(c => {
+    this.chain.components.forEach((c) => {
       const el = document.getElementById(c.name);
       if (el) c.$mount(el);
     });

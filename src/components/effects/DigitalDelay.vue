@@ -47,7 +47,7 @@ import {
     KnobControl,
   },
 })
-export default class Delay extends Vue implements IEffectsDevice {
+export default class DigitalDelay extends Vue implements IEffectsDevice {
   public output: ToneAudioNode;
   public input: ToneAudioNode;
   public name: string;
@@ -63,7 +63,7 @@ export default class Delay extends Vue implements IEffectsDevice {
 
     this.output = new ToneGain(1);
     this.input = new ToneGain(1);
-    this.name = "Reverb";
+    this.name = "Digital Delay";
     this.settings = {};
 
     this.toneDelay = new ToneFeedbackDelay();
