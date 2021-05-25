@@ -162,6 +162,7 @@ import { Scale, ToneEvent } from "tone";
 import KnobControl from "@/components/KnobControl.vue";
 import PageSelector from "@/components/PageSelector.vue";
 import BarGraphControl from "@/components/BarGraphControl.vue";
+import { v4 as uuidv4 } from "uuid";
 
 interface Step {
   note: number;
@@ -215,6 +216,7 @@ interface TransposeOption {
   },
 })
 export default class StepSequencer extends Vue implements IMidiDevice {
+  guid: string;
   name = "Step Sequencer";
   settings = {};
 
@@ -239,6 +241,8 @@ export default class StepSequencer extends Vue implements IMidiDevice {
 
   public constructor() {
     super();
+
+    this.guid = uuidv4();
     this.connections = [];
 
     this.directionOptions = [

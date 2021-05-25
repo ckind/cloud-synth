@@ -13,6 +13,7 @@ import BBDelay from "@/components/effects/BBDelay.vue";
 import Visualizer from "@/components/effects/Visualizer.vue";
 import Distortion from "@/components/effects/Distortion.vue";
 import { ToneAudioNode, Gain as ToneGain } from "tone";
+import { v4 as uuidv4 } from "uuid";
 
 interface IEffectsComponent extends IEffectsDevice, Vue {}
 
@@ -89,6 +90,7 @@ class EffectsChain {
   },
 })
 export default class EffectsRack extends Vue implements IEffectsDevice {
+  public guid: string;
   public output: ToneAudioNode;
   public input: ToneAudioNode;
   public name: string;
@@ -102,6 +104,8 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
 
   constructor() {
     super();
+
+    this.guid = uuidv4();
 
     this.chain = new EffectsChain([
       createEffectsComponent("Distortion"),

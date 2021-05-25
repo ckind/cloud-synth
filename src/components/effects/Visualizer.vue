@@ -1,61 +1,83 @@
 <template>
   <div class="analyser-container" :style="cssVars">
-    <canvas ref="analyserCanvas" :height="height" :width="width" class="analyser-canvas"> </canvas>
+    <h3 class="center-x mb-2">{{ name }}</h3>
+    <canvas
+      ref="analyserCanvas"
+      :height="height"
+      :width="width"
+      class="analyser-canvas"
+    >
+    </canvas>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
-import {
-  ToneAudioNode,
-  Gain as ToneGain,
-  context as ToneContext,
-} from "tone";
+import { v4 as uuidv4 } from "uuid";
+import { ToneAudioNode, Gain as ToneGain, context as ToneContext } from "tone";
 
 @Component({})
 export default class Visualizer extends Vue implements IEffectsDevice {
+  public guid: string;
   public output: ToneAudioNode;
   public input: ToneAudioNode;
   public name: string;
   public settings: any;
 
   private analyser: AnalyserNode;
-	private dataArray: Float32Array;
-	private bufferLength: number;
-	private canvasContext!: CanvasRenderingContext2D; // tell the typescript compiler to take a chill pill - we'll set it in mounted()
-	private continueDrawing = true;
+  private dataArray: Float32Array;
+  private bufferLength: number;
+  private canvasContext!: CanvasRenderingContext2D; // tell the typescript compiler to take a chill pill - we'll set it in mounted()
+  private continueDrawing = true;
 
-	$refs!: {
-    analyserCanvas: HTMLCanvasElement
+  $refs!: {
+    analyserCanvas: HTMLCanvasElement;
   };
 
-	@Prop({ required: false, default: 208 })
+  @Prop({ required: false, default: 208 })
   public width!: number;
 
   @Prop({ required: false, default: 130 })
   public height!: number;
 
-	get cssVars() {
-		return {
-			"--shadowColor": "#3f3f3f"
-		}
-	}
+  get cssVars() {
+    return {
+      "--shadowColor": "#3f3f3f",
+    };
+  }
 
   constructor() {
     super();
 
+    this.guid = uuidv4();
     this.output = new ToneGain(1);
     this.input = new ToneGain(1);
     this.name = "Visualizer";
     this.settings = {};
 
     this.analyser = ToneContext.createAnalyser();
-		this.bufferLength = this.analyser.frequencyBinCount;
-		this.dataArray = new Float32Array(this.bufferLength);
+    this.bufferLength = this.analyser.frequencyBinCount;
+    this.dataArray = new Float32Array(this.bufferLength);
 
     this.input.chain(this.analyser, this.output);
   }
+
+  // Lifecycle Hooks
+  
+  mounted() {
+    this.canvasContext = this.$refs.analyserCanvas.getContext("2d")!;
+    window.requestAnimationFrame(this.draw);
+
+    this.$emit('effectsDeviceMounted', this.guid);
+  }
+
+  beforeDestroy() {
+    this.continueDrawing = false;
+    this.dispose();
+  }
+
+  // Methods
 
   draw() {
     this.analyser.getFloatTimeDomainData(this.dataArray);
@@ -87,19 +109,9 @@ export default class Visualizer extends Vue implements IEffectsDevice {
     this.canvasContext.lineTo(this.width, this.height / 2);
     this.canvasContext.stroke();
 
-		if (this.continueDrawing) {
-			window.requestAnimationFrame(this.draw);
-		}
-  }
-
-	mounted() {
-		this.canvasContext = this.$refs.analyserCanvas.getContext("2d")!;
-		window.requestAnimationFrame(this.draw);
-	}
-
-  beforeDestroy() {
-		this.continueDrawing = false;
-    this.dispose();
+    if (this.continueDrawing) {
+      window.requestAnimationFrame(this.draw);
+    }
   }
 
   applySettings(settings: any) {
@@ -119,10 +131,11 @@ export default class Visualizer extends Vue implements IEffectsDevice {
   background-repeat: repeat;
   display: inline-block;
   font-size: 10pt;
-  padding: 20px;
+  padding: 10px;
   border: 1px solid black;
 }
 .analyser-canvas {
+  margin: 10px;
   border: 1px solid grey;
 }
 .center-x {

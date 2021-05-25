@@ -52,9 +52,11 @@ import { Gain as ToneGain, Filter as ToneFilter, Transport as ToneTransport, imm
 import { IMidiMessage, MidiFunction } from "@/shared/interfaces/midi/IMidiMessage";
 import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
 import webmidi, { InputEventNoteoff, InputEventNoteon, Output, INoteParam } from "webmidi";
+import { v4 as uuidv4 } from "uuid";
 
 @Component({})
 export default class ExternalInstrument extends Vue implements IInstrumentDevice {
+  guid: string;
   name = "External";
   output: ToneGain;
   settings = {};
@@ -67,6 +69,9 @@ export default class ExternalInstrument extends Vue implements IInstrumentDevice
 
   public constructor() {
     super();
+
+    this.guid = uuidv4();
+
     webmidi.enable(err => {
       if (err) {
         this.webmidiSupported = false;

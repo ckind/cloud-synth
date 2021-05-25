@@ -3,5 +3,8 @@ module.exports = {
     hot: false,
     liveReload: false
   },
+  configureWebpack: {
+    devtool: 'source-map'
+  },
   transpileDependencies: ["vuetify"]
 };

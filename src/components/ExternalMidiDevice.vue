@@ -125,9 +125,11 @@ import {
   IMidiMessage
 } from "@/shared/interfaces/midi/IMidiMessage";
 import webmidi, { InputEventNoteoff, InputEventNoteon } from "webmidi";
+import { v4 as uuidv4 } from "uuid";
 
 @Component({})
 export default class ExternalMidiDevice extends Vue implements IMidiDevice {
+  guid: string;
   name = "External Midi Device";
   settings = {}; // todo: settings for external?
 
@@ -141,7 +143,10 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
 
   public constructor() {
     super();
+
+    this.guid = uuidv4();
     this.connections = [];
+
     webmidi.enable(err => {
       if (err) {
         this.webmidiSupported = false;

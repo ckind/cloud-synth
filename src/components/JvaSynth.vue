@@ -289,6 +289,7 @@ import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
 import { IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
 import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
+import { v4 as uuidv4 } from "uuid";
 
 @Component({
   components: {
@@ -299,11 +300,7 @@ import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice
   },
 })
 export default class JvaSynth extends Vue implements IInstrumentDevice {
-  /**
-   * Important: define audio devices outside of the constructor so vue doesn't
-   * apply reactivity to them. Reactivity can interfere with the dispose methods
-   * of some Tone/WebAudio devices
-   */
+  guid: string;
   name = "Jva Poly";
   output!: ToneGain;
   settings: IJvaSettings;
@@ -322,6 +319,7 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
   public constructor() {
     super();
 
+    this.guid = uuidv4();
     this.settings = getDefaultJvaSettings();
 
     this.filterTypes = new Array<BiquadFilterType>(2);
@@ -333,6 +331,12 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
   // Lifecycle Hooks
 
   created() {
+    /**
+     * Important: define web audio objects outside of the constructor so vue doesn't
+     * apply reactivity to them. Reactivity can interfere with the dispose methods
+     * of some Tone/WebAudio objects
+     */
+
     this.synth = new VAPolySynth(6, 3, "sawtooth");
 
     this.filterLFO = new ToneLFO();

@@ -139,6 +139,7 @@ import {
 import { IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
 import { getDefaultKeypadSettings } from "@/services/OfflinePresetService";
 import KnobControl from "@/components/KnobControl.vue";
+import { v4 as uuidv4 } from "uuid";
 
 @Component({
   components: {
@@ -146,6 +147,7 @@ import KnobControl from "@/components/KnobControl.vue";
   },
 })
 export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
+  guid: string;
   name = "Computer Keyboard";
   settings: IComputerMidiKeyboardSettings;
 
@@ -174,6 +176,7 @@ export default class ComputerMidiKeyboard extends Vue implements IMidiDevice {
 
   public constructor() {
     super();
+    this.guid = uuidv4();
     this.connections = [];
     this.keysPressed = new Array<boolean>(127);
     this.keysPressed.fill(false);
