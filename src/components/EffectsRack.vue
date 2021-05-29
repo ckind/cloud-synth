@@ -115,10 +115,10 @@ class EffectsChain {
     this.components.splice(index, 0, component);
   }
 
-  removeComponent(component: IEffectsComponent): IEffectsComponent | null {
+  removeComponent(component: IEffectsComponent) {
     const index = this.components.findIndex((c) => c === component);
 
-    if (index < 0) return null;
+    if (index < 0) throw "component not found in chain";
 
     const prevNode: ToneAudioNode =
       index === 0 ? this.input : this.components[index - 1].output;
@@ -131,7 +131,7 @@ class EffectsChain {
     component.output.disconnect(nextNode);
     prevNode.connect(nextNode);
 
-    return this.components.splice(index, 1)[0];
+    this.components.splice(index, 1);
   }
 
   dispose() {
@@ -196,8 +196,10 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   mounted() {
     this.rack = document.getElementById("effectsRack");
 
-    this.addEffect("BBDelay");
-    this.addEffect("BBDelay");
+    this.addEffect("Distortion");
+    this.addEffect("Visualizer");
+    this.addEffect("Visualizer");
+    this.addEffect("Visualizer");
 
     this.$emit("deviceMounted");
   }
@@ -217,39 +219,49 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
       component.$on("deleteComponent", this.removeEffect);
       component.$on("elementDropped", this.moveEffect);
       component.$on("componentDragstart", this.setCurrentDragComponent);
-      // component.$on("componentDragend", (c: IEffectsComponent) => this.currentDragComponent = undefined); // assumes that only one component will be dragged at time
       component.$mount(el);
     }
   }
 
   removeEffect(component: IEffectsComponent) {
-    if (this.chain.removeComponent(component)) {
-      component.$destroy();
-    }
+    this.chain.removeComponent(component);
+    component.$destroy();
   }
 
   moveEffect(destinationComponent: IEffectsComponent) {
-    const index = this.chain.components.findIndex(
+    if (!this.currentDragComponent) return;
+    const sourceComponent = this.currentDragComponent;
+
+    const srcIndex = this.chain.components.findIndex(
+      (c) => c === sourceComponent
+    );
+    const dstIndex = this.chain.components.findIndex(
       (c) => c === destinationComponent
     );
-    if (
-      index > -1 &&
-      this.currentDragComponent &&
-      destinationComponent.guid != this.currentDragComponent.guid &&
-      this.chain.removeComponent(this.currentDragComponent)
-    ) {
-      const rack = document.getElementById("effectsRack");
-      if (rack) {
-        rack.removeChild(this.currentDragComponent.$el);
-        rack.insertBefore(
-          this.currentDragComponent.$el,
-          destinationComponent.$el
-        );
-        this.chain.addComponent(this.currentDragComponent, index);
-      }
+
+    if (srcIndex < 0) throw "source component not found in chain";
+    if (dstIndex < 0) throw "destination component not found in chain";
+
+    if (destinationComponent.guid != sourceComponent.guid) {
+
+      // dstIndex will now fall to the right of our destination component because we spliced out the source component
+      this.chain.removeComponent(sourceComponent);
+
+      document.getElementById("effectsRack")!.removeChild(sourceComponent.$el);
+
+      // todo: since we always insert after the destination
+      // the source will just end up in the same place if the
+      // destination is left adjacent 
+
+      destinationComponent.$el.insertAdjacentElement(
+        "afterend",
+        sourceComponent.$el
+      );
+      this.chain.addComponent(sourceComponent, dstIndex);
     }
 
     this.currentDragComponent = undefined;
+    // todo: this.currentDragComponent will stay defined if the drag ends somewhere else
   }
 
   setCurrentDragComponent(component: IEffectsComponent) {
