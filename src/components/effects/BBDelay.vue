@@ -1,5 +1,16 @@
 <template>
-  <div class="flex">
+  <div
+    class="flex"
+    draggable
+    @dragstart="this.componentDragstart"
+    @dragend="this.componentDragend"
+    @drop="elementDropped"
+    @dragover="
+      (e) => {
+        e.preventDefault();
+      }
+    "
+  >
     <v-menu>
       <template v-slot:activator="{ on }">
         <div
@@ -74,7 +85,7 @@ interface IBBDelaySettings {
 @Component({
   components: {
     KnobControl,
-  }
+  },
 })
 export default class BBDelay extends Vue implements IEffectsDevice {
   public guid: string;
@@ -140,6 +151,18 @@ export default class BBDelay extends Vue implements IEffectsDevice {
 
   deleteComponent() {
     this.$emit("deleteComponent", this);
+  }
+
+  componentDragstart() {
+    this.$emit("componentDragstart", this);
+  }
+
+  componentDragend() {
+    this.$emit("componentDragend", this);
+  }
+
+  elementDropped() {
+    this.$emit("elementDropped", this);
   }
 
   applySettings(settings: any) {

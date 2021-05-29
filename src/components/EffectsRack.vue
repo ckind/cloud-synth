@@ -115,10 +115,10 @@ class EffectsChain {
     this.components.splice(index, 0, component);
   }
 
-  removeComponent(component: IEffectsComponent) {
+  removeComponent(component: IEffectsComponent): IEffectsComponent | null {
     const index = this.components.findIndex((c) => c === component);
 
-    if (index < 0) throw "effects component not found in chain";
+    if (index < 0) return null;
 
     const prevNode: ToneAudioNode =
       index === 0 ? this.input : this.components[index - 1].output;
@@ -131,7 +131,7 @@ class EffectsChain {
     component.output.disconnect(nextNode);
     prevNode.connect(nextNode);
 
-    this.components.splice(index, 1);
+    return this.components.splice(index, 1)[0];
   }
 
   dispose() {
@@ -166,6 +166,7 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   private chain: EffectsChain;
   private rack?: HTMLElement | null;
   private effectsOptions: string[];
+  private currentDragComponent: IEffectsComponent | undefined;
 
   $refs!: {
     rack: HTMLElement;
@@ -195,6 +196,9 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   mounted() {
     this.rack = document.getElementById("effectsRack");
 
+    this.addEffect("BBDelay");
+    this.addEffect("BBDelay");
+
     this.$emit("deviceMounted");
   }
 
@@ -211,13 +215,45 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
       const component = createEffectsComponent(type);
       this.chain.addComponent(component, this.chain.components.length);
       component.$on("deleteComponent", this.removeEffect);
+      component.$on("elementDropped", this.moveEffect);
+      component.$on("componentDragstart", this.setCurrentDragComponent);
+      // component.$on("componentDragend", (c: IEffectsComponent) => this.currentDragComponent = undefined); // assumes that only one component will be dragged at time
       component.$mount(el);
     }
   }
 
   removeEffect(component: IEffectsComponent) {
-    this.chain.removeComponent(component);
-    component.$destroy();
+    if (this.chain.removeComponent(component)) {
+      component.$destroy();
+    }
+  }
+
+  moveEffect(destinationComponent: IEffectsComponent) {
+    const index = this.chain.components.findIndex(
+      (c) => c === destinationComponent
+    );
+    if (
+      index > -1 &&
+      this.currentDragComponent &&
+      destinationComponent.guid != this.currentDragComponent.guid &&
+      this.chain.removeComponent(this.currentDragComponent)
+    ) {
+      const rack = document.getElementById("effectsRack");
+      if (rack) {
+        rack.removeChild(this.currentDragComponent.$el);
+        rack.insertBefore(
+          this.currentDragComponent.$el,
+          destinationComponent.$el
+        );
+        this.chain.addComponent(this.currentDragComponent, index);
+      }
+    }
+
+    this.currentDragComponent = undefined;
+  }
+
+  setCurrentDragComponent(component: IEffectsComponent) {
+    this.currentDragComponent = component;
   }
 
   applySettings(settings: any): void {
