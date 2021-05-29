@@ -200,6 +200,7 @@ export default class KnobControl extends Vue {
   -khtml-border-radius: 50%;
   border-radius: 50%;
   user-select: none;
+  cursor: default;
 }
 .knob-shadow {
   -webkit-box-shadow: 0 0 10px var(--shadowColor);

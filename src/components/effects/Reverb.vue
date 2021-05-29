@@ -1,34 +1,54 @@
 <template>
-  <div class="reverb-container">
-    <h3 class="center-x mb-2">{{ name }}</h3>
-    <knob-control
-      v-model="settings.mix"
-      :minValue="0"
-      :maxValue="1"
-      label="Mix"
-      id="dryWet"
-      size="50"
-      :shadowColor="'#3f3f3f'"
-    ></knob-control>
-    <knob-control
-      v-model="settings.decay"
-      :minValue="0"
-      :maxValue="20"
-      label="Decay"
-      id="dryWet"
-      size="50"
-      :shadowColor="'#3f3f3f'"
-    ></knob-control>
-    <knob-control
-      v-model="settings.filterCutoff"
-      :minValue="500"
-      :maxValue="20000"
-      label="Filter"
-      id="filter"
-      size="50"
-      scale="exponential"
-      :shadowColor="'#3f3f3f'"
-    ></knob-control>
+  <div class="flex">
+    <v-menu>
+      <template v-slot:activator="{ on }">
+        <div
+          class="reverb-container"
+          @contextmenu="
+            (e) => {
+              e.preventDefault();
+              on.click(e);
+            }
+          "
+        >
+          <h3 class="center-x mb-2">{{ name }}</h3>
+          <knob-control
+            v-model="settings.mix"
+            :minValue="0"
+            :maxValue="1"
+            label="Mix"
+            id="dryWet"
+            size="50"
+            :shadowColor="'#3f3f3f'"
+          ></knob-control>
+          <knob-control
+            v-model="settings.decay"
+            :minValue="0"
+            :maxValue="20"
+            label="Decay"
+            id="dryWet"
+            size="50"
+            :shadowColor="'#3f3f3f'"
+          ></knob-control>
+          <knob-control
+            v-model="settings.filterCutoff"
+            :minValue="500"
+            :maxValue="20000"
+            label="Filter"
+            id="filter"
+            size="50"
+            scale="exponential"
+            :shadowColor="'#3f3f3f'"
+          ></knob-control>
+        </div>
+      </template>
+
+      <v-list dark>
+        <v-list-item link @click.stop="deleteComponent">
+          <v-list-item-title>delete</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </div>
 </template>
 
@@ -59,8 +79,8 @@ interface IReverbSettings {
 })
 export default class Reverb extends Vue implements IEffectsDevice {
   public guid: string;
-  public output!: ToneAudioNode;
   public input!: ToneAudioNode;
+  public output!: ToneAudioNode;
   public name: string;
   public settings: IReverbSettings;
 
@@ -86,11 +106,6 @@ export default class Reverb extends Vue implements IEffectsDevice {
   // Lifecycle hooks
 
   created() {
-    /**
-     * Important: define web audio objects outside of the constructor so vue doesn't
-     * apply reactivity to them. Reactivity can interfere with the dispose methods
-     * of some Tone/WebAudio objects
-     */
     this.output = new ToneGain(1);
     this.input = new ToneGain(1);
     this.toneReverb = new ToneReverb(2);
@@ -114,6 +129,10 @@ export default class Reverb extends Vue implements IEffectsDevice {
   }
 
   // Methods
+
+  deleteComponent() {
+    this.$emit("deleteComponent", this);
+  }
 
   applySettings(settings: IReverbSettings) {
     this.settings = settings;
@@ -160,14 +179,5 @@ export default class Reverb extends Vue implements IEffectsDevice {
   font-size: 10pt;
   padding: 10px;
   border: 1px solid black;
-}
-
-.center-x {
-  display: flex;
-  justify-content: center;
-}
-.center-y {
-  display: flex;
-  align-items: center;
 }
 </style>

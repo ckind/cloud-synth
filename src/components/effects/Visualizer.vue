@@ -1,13 +1,34 @@
 <template>
-  <div class="analyser-container" :style="cssVars">
-    <h3 class="center-x mb-2">{{ name }}</h3>
-    <canvas
-      ref="analyserCanvas"
-      :height="height"
-      :width="width"
-      class="analyser-canvas"
-    >
-    </canvas>
+  <div class="flex">
+    <v-menu>
+      <template v-slot:activator="{ on }">
+        <div
+          class="analyser-container"
+          :style="cssVars"
+          @contextmenu="
+            (e) => {
+              e.preventDefault();
+              on.click(e);
+            }
+          "
+        >
+          <h3 class="center-x mb-2">{{ name }}</h3>
+          <canvas
+            ref="analyserCanvas"
+            :height="height"
+            :width="width"
+            class="analyser-canvas"
+          >
+          </canvas>
+        </div>
+      </template>
+
+      <v-list dark>
+        <v-list-item link @click.stop="deleteComponent">
+          <v-list-item-title>delete</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </div>
 </template>
 
@@ -64,12 +85,12 @@ export default class Visualizer extends Vue implements IEffectsDevice {
   }
 
   // Lifecycle Hooks
-  
+
   mounted() {
     this.canvasContext = this.$refs.analyserCanvas.getContext("2d")!;
     window.requestAnimationFrame(this.draw);
 
-    this.$emit('effectsDeviceMounted', this.guid);
+    this.$emit("effectsDeviceMounted", this.guid);
   }
 
   beforeDestroy() {
@@ -78,6 +99,10 @@ export default class Visualizer extends Vue implements IEffectsDevice {
   }
 
   // Methods
+
+  deleteComponent() {
+    this.$emit("deleteComponent", this);
+  }
 
   draw() {
     this.analyser.getFloatTimeDomainData(this.dataArray);
@@ -137,13 +162,5 @@ export default class Visualizer extends Vue implements IEffectsDevice {
 .analyser-canvas {
   margin: 10px;
   border: 1px solid grey;
-}
-.center-x {
-  display: flex;
-  justify-content: center;
-}
-.center-y {
-  display: flex;
-  align-items: center;
 }
 </style>

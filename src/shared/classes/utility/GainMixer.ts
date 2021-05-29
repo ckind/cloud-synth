@@ -16,9 +16,11 @@ export class GainMixer implements SignalMixer {
   dispose() {
     this.channels.forEach(channel => {
       if (channel) {
+        channel.disconnect(this.output);
         channel.dispose();
       }
     });
+
     this.output.dispose();
   }
 

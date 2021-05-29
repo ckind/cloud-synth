@@ -1,6 +1,38 @@
 <template>
-  <div class="effects-rack">
-    <div v-for="(c, i) in chain.components" :key="i" :id="c.name"></div>
+  <div class="effects-rack-container">
+    <!-- new effects will be mounted here -->
+    <div class="effects-rack" id="effectsRack"></div>
+
+    <div class="add-new center-y center-x">
+      <v-menu top :offset-x="true">
+        <template v-slot:activator="{ on, attrs }">
+          <v-icon
+            large
+            dark
+            v-bind="attrs"
+            v-on="on"
+            @contextmenu="
+              (e) => {
+                e.preventDefault();
+                on.click(e);
+              }
+            "
+          >
+            mdi-plus
+          </v-icon>
+        </template>
+
+        <v-list dark>
+          <v-list-item v-for="(item, index) in effectsOptions" :key="index">
+            <v-list-item-title
+              class="effects-option"
+              @click="addEffect(item)"
+              >{{ item }}</v-list-item-title
+            >
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </div>
   </div>
 </template>
 
@@ -12,6 +44,7 @@ import DigitalDelay from "@/components/effects/DigitalDelay.vue";
 import BBDelay from "@/components/effects/BBDelay.vue";
 import Visualizer from "@/components/effects/Visualizer.vue";
 import Distortion from "@/components/effects/Distortion.vue";
+import Vuetify from "vuetify";
 import { ToneAudioNode, Gain as ToneGain } from "tone";
 import { v4 as uuidv4 } from "uuid";
 
@@ -26,20 +59,28 @@ type EffectsComponentType =
 
 // factory method
 function createEffectsComponent(type: EffectsComponentType): IEffectsComponent {
+  let component: IEffectsComponent;
   switch (type) {
     case "DigitalDelay":
-      return new DigitalDelay();
+      component = new DigitalDelay();
+      break;
     case "BBDelay":
-      return new BBDelay();
+      component = new BBDelay();
+      break;
     case "Reverb":
-      return new Reverb();
+      component = new Reverb();
+      break;
     case "Visualizer":
-      return new Visualizer();
+      component = new Visualizer();
+      break;
     case "Distortion":
-      return new Distortion();
+      component = new Distortion();
+      break;
     default:
       throw "invalid EffectsComponentType argument";
   }
+  component.$vuetify = Vuetify.framework; // todo: this is kinda hacky - find a better way
+  return component;
 }
 
 class EffectsChain {
@@ -47,21 +88,50 @@ class EffectsChain {
   public input: ToneGain;
   public output: ToneGain;
 
-  constructor(components: IEffectsComponent[] = []) {
-    this.components = components;
+  constructor() {
+    this.components = [];
+
     this.input = new ToneGain(1);
     this.output = new ToneGain(1);
 
-    if (components.length > 0) {
-      this.input.connect(this.components[0].input);
-      this.components[this.components.length - 1].output.connect(this.output);
-    } else {
-      this.input.connect(this.output);
-    }
+    this.input.connect(this.output);
+  }
 
-    for (let i = 0; i < this.components.length - 1; i++) {
-      this.components[i].output.connect(this.components[i + 1].input);
-    }
+  addComponent(component: IEffectsComponent, index: number) {
+    if (index < 0 || index > this.components.length)
+      throw "effects component index out of range";
+
+    const prevNode: ToneAudioNode =
+      index === 0 ? this.input : this.components[index - 1].output;
+    const nextNode: ToneAudioNode =
+      index === this.components.length
+        ? this.output
+        : this.components[index].input;
+
+    prevNode.disconnect(nextNode);
+    prevNode.connect(component.input);
+    component.output.connect(nextNode);
+
+    this.components.splice(index, 0, component);
+  }
+
+  removeComponent(component: IEffectsComponent) {
+    const index = this.components.findIndex((c) => c === component);
+
+    if (index < 0) throw "effects component not found in chain";
+
+    const prevNode: ToneAudioNode =
+      index === 0 ? this.input : this.components[index - 1].output;
+    const nextNode: ToneAudioNode =
+      index === this.components.length - 1
+        ? this.output
+        : this.components[index + 1].input;
+
+    prevNode.disconnect(component.input);
+    component.output.disconnect(nextNode);
+    prevNode.connect(nextNode);
+
+    this.components.splice(index, 1);
   }
 
   dispose() {
@@ -70,10 +140,7 @@ class EffectsChain {
 
     for (let i = 0; i < this.components.length - 1; i++) {
       this.components[i].output.disconnect(this.components[i + 1].input);
-      this.components[i].dispose();
     }
-
-    this.components[this.components.length - 1].dispose();
 
     this.input.dispose();
     this.output.dispose();
@@ -86,7 +153,7 @@ class EffectsChain {
     DigitalDelay,
     BBDelay,
     Visualizer,
-    Distortion
+    Distortion,
   },
 })
 export default class EffectsRack extends Vue implements IEffectsDevice {
@@ -97,6 +164,8 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   public settings: any;
 
   private chain: EffectsChain;
+  private rack?: HTMLElement | null;
+  private effectsOptions: string[];
 
   $refs!: {
     rack: HTMLElement;
@@ -106,14 +175,14 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
     super();
 
     this.guid = uuidv4();
-
-    this.chain = new EffectsChain([
-      createEffectsComponent("Distortion"),
-      createEffectsComponent("Visualizer"),
-      createEffectsComponent("DigitalDelay"),
-      createEffectsComponent("BBDelay"),
-      createEffectsComponent("Reverb")
-    ]);
+    this.chain = new EffectsChain();
+    this.effectsOptions = [
+      "DigitalDelay",
+      "BBDelay",
+      "Visualizer",
+      "Reverb",
+      "Distortion",
+    ];
 
     this.name = "Effects Chain";
     this.output = this.chain.output;
@@ -121,17 +190,34 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
     this.settings = {};
   }
 
+  // Lifecycle Hooks
+
   mounted() {
-    this.chain.components.forEach((c) => {
-      const el = document.getElementById(c.name);
-      if (el) c.$mount(el);
-    });
+    this.rack = document.getElementById("effectsRack");
 
     this.$emit("deviceMounted");
   }
 
   beforeDestroy() {
     this.dispose();
+  }
+
+  // Methods
+
+  addEffect(type: EffectsComponentType) {
+    const el = document.createElement("div");
+
+    if (this.rack?.appendChild(el)) {
+      const component = createEffectsComponent(type);
+      this.chain.addComponent(component, this.chain.components.length);
+      component.$on("deleteComponent", this.removeEffect);
+      component.$mount(el);
+    }
+  }
+
+  removeEffect(component: IEffectsComponent) {
+    this.chain.removeComponent(component);
+    component.$destroy();
   }
 
   applySettings(settings: any): void {
@@ -145,8 +231,37 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
 </script>
 
 <style scoped>
+.effects-rack-container {
+  display: flex;
+  justify-content: stretch;
+  flex-wrap: wrap;
+}
+
 .effects-rack {
   display: flex;
   flex-wrap: wrap;
+}
+
+.effects-option {
+  cursor: pointer;
+}
+
+.add-new {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px;
+}
+</style>
+
+<style>
+.center-x {
+  display: flex;
+  justify-content: center;
+}
+.center-y {
+  display: flex;
+  align-items: center;
+}
+.flex {
+  display: flex;
 }
 </style>
