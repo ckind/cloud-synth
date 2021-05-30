@@ -196,9 +196,6 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   mounted() {
     this.rack = document.getElementById("effectsRack");
 
-    this.addEffect("Distortion");
-    this.addEffect("Visualizer");
-    this.addEffect("Visualizer");
     this.addEffect("Visualizer");
 
     this.$emit("deviceMounted");
@@ -243,20 +240,24 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
     if (dstIndex < 0) throw "destination component not found in chain";
 
     if (destinationComponent.guid != sourceComponent.guid) {
-
-      // dstIndex will now fall to the right of our destination component because we spliced out the source component
       this.chain.removeComponent(sourceComponent);
+      // dstIndex will now fall to the right of our destination component
+      // because we spliced out the source component
 
       document.getElementById("effectsRack")!.removeChild(sourceComponent.$el);
 
-      // todo: since we always insert after the destination
-      // the source will just end up in the same place if the
-      // destination is left adjacent 
+      if (dstIndex < srcIndex) {
+        destinationComponent.$el.insertAdjacentElement(
+          "beforebegin",
+          sourceComponent.$el
+        );
+      } else {
+        destinationComponent.$el.insertAdjacentElement(
+          "afterend",
+          sourceComponent.$el
+        );
+      }
 
-      destinationComponent.$el.insertAdjacentElement(
-        "afterend",
-        sourceComponent.$el
-      );
       this.chain.addComponent(sourceComponent, dstIndex);
     }
 
