@@ -45,7 +45,7 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import {
   context as ToneContext,
-  Master as ToneMaster,
+  Destination as ToneDestination,
   Transport as ToneTransport
 } from "tone";
 import InstrumentContainer from "@/components/InstrumentContainer.vue";
@@ -111,7 +111,7 @@ export default class Session extends Vue {
   newEffectsDeviceMounted() {
     // todo: do we need to disconnect the input before destroy?
 
-    this.$refs.effectsDeviceContainer.device.output.connect(ToneMaster); // relies on internal dispose method for disconnection
+    this.$refs.effectsDeviceContainer.device.output.connect(ToneDestination); // relies on internal dispose method for disconnection
     this.$refs.instrumentContainer.device.output.connect( // relies on internal dispose method for disconnection
       this.$refs.effectsDeviceContainer.device.input
     ); 

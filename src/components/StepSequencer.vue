@@ -158,7 +158,7 @@ import {
   MidiFunction,
   IMidiMessage,
 } from "@/shared/interfaces/midi/IMidiMessage";
-import { Scale, ToneEvent } from "tone";
+import { ToneEvent, Transport as ToneTransport } from "tone";
 import KnobControl from "@/components/KnobControl.vue";
 import PageSelector from "@/components/PageSelector.vue";
 import BarGraphControl from "@/components/BarGraphControl.vue";
@@ -222,6 +222,7 @@ export default class StepSequencer extends Vue implements IMidiDevice {
 
   private graphWidth = 768;
   private maxNumSteps = 12;
+  private previousPitch?: number;
   private directionOptions: DirectionOption[];
   private scaleOptions: ScaleOption[];
   private transposeOptions: TransposeOption[];
@@ -230,6 +231,7 @@ export default class StepSequencer extends Vue implements IMidiDevice {
   private running = false;
   private subdivision = 16;
   private sequencerEvent: ToneEvent;
+  private noteOffEventId?: number;
   private connections: Array<IMidiReceiver>;
   private noteSequence: PropertySequence<number>;
   private octaveSequence: PropertySequence<number>;
@@ -342,6 +344,11 @@ export default class StepSequencer extends Vue implements IMidiDevice {
   get quantizeScale() {
     const scale = getScale(this.scale, this.transpose);
     return scale;
+  }
+
+  get maxTrigLengthInSeconds() {
+    // todo: should this be relative to the tempo somehow?
+    return 0.1;
   }
 
   get cssVars() {
@@ -459,38 +466,62 @@ export default class StepSequencer extends Vue implements IMidiDevice {
     // does nothing for now
   }
 
+  triggerPreviousNoteRelease(time?: number) {
+    if (this.previousPitch && this.noteOffEventId) {
+      ToneTransport.clear(this.noteOffEventId);
+      this.noteOffEventId = undefined;
+      this.sendMidi(
+        {
+          midiFunction: MidiFunction.noteoff,
+          noteNumber: this.previousPitch,
+          noteVelocity: 0, // shouldn't be applicable for this action
+        },
+        time
+      );
+    }
+  }
+
   toggleSequence() {
     if (this.sequencerEvent.state === "stopped") {
       this.sequencerEvent.start();
       this.running = true;
     } else {
+      this.triggerPreviousNoteRelease();
       this.sequencerEvent.stop();
       this.running = false;
     }
   }
 
   triggerStep(step: Step, time: number) {
-    const noteNumber = quantizePitch(
-      step.note + 12 * step.octave,
-      this.quantizeScale
-    );
     if (step.gate) {
+
+      const currrentPitch = quantizePitch(
+        step.note + 12 * step.octave,
+        this.quantizeScale
+      );
+
+      // this.triggerPreviousNoteRelease(time);
+
       this.sendMidi(
         {
           midiFunction: MidiFunction.noteon,
-          noteNumber: noteNumber,
+          noteNumber: currrentPitch,
           noteVelocity: step.velocity,
         },
         time
       );
+
+      // todo: need be able to cancel this if the next note comes first
       this.sendMidi(
         {
           midiFunction: MidiFunction.noteoff,
-          noteNumber: noteNumber,
+          noteNumber: currrentPitch,
           noteVelocity: step.velocity,
         },
-        time + 0.1
+        time + this.maxTrigLengthInSeconds
       );
+
+      this.previousPitch = currrentPitch;
     }
   }
 

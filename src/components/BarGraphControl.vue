@@ -1,21 +1,26 @@
 <template>
-  <div class="bar-graph-container" ref="graphContainer" :style="cssVars">
+  <div
+    class="bar-graph-container"
+    ref="graphContainer"
+    :style="cssVars"
+    draggable="false"
+  >
     <div
       v-for="col in columns"
       :key="col.index"
       class="bar-column"
       :class="[activeStep >= 0 && activeStep == col.index ? 'active' : '']"
       @mousedown="BarColumnMouseDown"
-      @mouseover="BarColumnMouseOver($event, col)"
+      @mousemove="BarColumnMouseMove($event, col)"
       @click="BarColumnClick($event, col)"
-			draggable="false"
+      draggable="false"
     >
       <div
         class="bar"
         :style="{
           height: `${col.height}px`,
         }"
-				draggable="false"
+        draggable="false"
       ></div>
     </div>
   </div>
@@ -40,6 +45,7 @@ export default class BarGraphControl extends Vue {
   private barMargin = 2;
   private columns: GraphColumn[];
   private leftClickDown = false;
+  private prevY: number | undefined;
 
   public constructor() {
     super();
@@ -50,7 +56,7 @@ export default class BarGraphControl extends Vue {
         index: i,
         margin: 2,
         height: 0,
-        width: (this.graphWidth / this.numColumns) - 4, // subtract margin
+        width: this.graphWidth / this.numColumns - 4, // subtract margin
         value: 0,
       };
     }
@@ -87,8 +93,8 @@ export default class BarGraphControl extends Vue {
       "--barMargin": `${this.barMargin}px`,
       "--numColumns": `${this.numColumns}px`,
       "--barColor": this.barColor,
-      "--activeBackgroundColor": this.activeBackgroundColor
-    }
+      "--activeBackgroundColor": this.activeBackgroundColor,
+    };
   }
 
   // Methods
@@ -106,11 +112,11 @@ export default class BarGraphControl extends Vue {
     this.columns.forEach((col) => {
       col.value = this.SnapToStep(Math.floor(Math.random() * this.maxHeight));
       col.height = col.value * this.stepSize;
-			this.$emit("update", col.index, col.value);
+      this.$emit("update", col.index, col.value);
     });
   }
 
-  BarColumnMouseOver(e: MouseEvent, col: GraphColumn) {
+  BarColumnMouseMove(e: MouseEvent, col: GraphColumn) {
     e.stopPropagation();
     if (this.leftClickDown) {
       this.setColumnValue(e, col);
@@ -150,11 +156,11 @@ export default class BarGraphControl extends Vue {
 <style scoped>
 .bar-graph-container {
   background: black;
-  height: calc(var(--maxHeight) + 2*(var(--barMargin)));
+  height: calc(var(--maxHeight) + 2 * (var(--barMargin)));
   display: flex;
 }
 .bar-column {
-  height: calc(var(--maxHeight) + 2*(var(--barMargin)));
+  height: calc(var(--maxHeight) + 2 * (var(--barMargin)));
   display: flex;
   align-items: flex-end;
   cursor: pointer;
@@ -169,7 +175,7 @@ export default class BarGraphControl extends Vue {
 .bar {
   background: var(--barColor);
   margin: var(--barMargin);
-  width: calc(((var(--graphWidth) - 4px) / 12) - 2*(var(--barMargin)));
+  width: calc(((var(--graphWidth) - 4px) / 12) - 2 * (var(--barMargin)));
   display: inline-block;
   -webkit-user-drag: none;
   -khtml-user-drag: none;

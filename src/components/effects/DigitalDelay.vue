@@ -179,7 +179,7 @@ export default class DigitalDelay extends Vue implements IEffectsDevice {
 
   @Watch("settings.delayTime")
   private setDelayTime(value: number) {
-    this.delayTimeSignal.value = value;
+    this.delayTimeSignal.linearRampTo(value, 0.1);
   }
 
   @Watch("settings.feedback")
