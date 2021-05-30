@@ -102,7 +102,7 @@ export default class MidiDeviceContainer extends Vue
 
   public constructor() {
     super();
-    this.currentDeviceName = this.availableMidiDevices[1];
+    this.currentDeviceName = this.availableMidiDevices[0];
     this.presetService = PresetServiceFactory.getPresetService(
       this.currentDeviceName
     );

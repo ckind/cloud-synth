@@ -75,7 +75,7 @@ export default class Visualizer extends Vue implements IEffectsDevice {
 
   get cssVars() {
     return {
-      "--shadowColor": "#3f3f3f",
+      "--shadowColor": "#5e5e5e",
     };
   }
 

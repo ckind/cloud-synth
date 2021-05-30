@@ -30,7 +30,7 @@
             label="Mix"
             id="dryWet"
             size="50"
-            :shadowColor="'#3f3f3f'"
+            :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
             v-model="settings.drive"
@@ -39,7 +39,7 @@
             label="Drive"
             id="Drive"
             size="50"
-            :shadowColor="'#3f3f3f'"
+            :shadowColor="'#5e5e5e'"
           ></knob-control>
         </div>
       </template>

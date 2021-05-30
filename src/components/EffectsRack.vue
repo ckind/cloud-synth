@@ -23,12 +23,15 @@
         </template>
 
         <v-list dark>
-          <v-list-item v-for="(item, index) in effectsOptions" :key="index">
-            <v-list-item-title
-              class="effects-option"
-              @click="addEffect(item)"
-              >{{ item }}</v-list-item-title
-            >
+          <v-list-item
+            link
+            v-for="(item, index) in effectsOptions"
+            :key="index"
+            @click="addEffect(item)"
+          >
+            <v-list-item-title class="effects-option">{{
+              item
+            }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -44,27 +47,31 @@ import DigitalDelay from "@/components/effects/DigitalDelay.vue";
 import BBDelay from "@/components/effects/BBDelay.vue";
 import Visualizer from "@/components/effects/Visualizer.vue";
 import Distortion from "@/components/effects/Distortion.vue";
+import Phaser from "@/components/effects/Phaser.vue";
+import Chorus from "@/components/effects/Chorus.vue";
 import Vuetify from "vuetify";
-import { ToneAudioNode, Gain as ToneGain } from "tone";
+import { ToneAudioNode, Gain as ToneGain, Destination as ToneDestination } from "tone";
 import { v4 as uuidv4 } from "uuid";
 
 interface IEffectsComponent extends IEffectsDevice, Vue {}
 
 type EffectsComponentType =
-  | "DigitalDelay"
-  | "BBDelay"
+  | "Digital Delay"
+  | "Analog Delay"
   | "Visualizer"
   | "Reverb"
-  | "Distortion";
+  | "Distortion"
+  | "Phaser"
+  | "Chorus";
 
 // factory method
 function createEffectsComponent(type: EffectsComponentType): IEffectsComponent {
   let component: IEffectsComponent;
   switch (type) {
-    case "DigitalDelay":
+    case "Digital Delay":
       component = new DigitalDelay();
       break;
-    case "BBDelay":
+    case "Analog Delay":
       component = new BBDelay();
       break;
     case "Reverb":
@@ -75,6 +82,12 @@ function createEffectsComponent(type: EffectsComponentType): IEffectsComponent {
       break;
     case "Distortion":
       component = new Distortion();
+      break;
+    case "Phaser":
+      component = new Phaser();
+      break;
+    case "Chorus":
+      component = new Chorus();
       break;
     default:
       throw "invalid EffectsComponentType argument";
@@ -108,11 +121,15 @@ class EffectsChain {
         ? this.output
         : this.components[index].input;
 
+    ToneDestination.mute = true; //  mute while connecting in case of glitches
+
     prevNode.disconnect(nextNode);
     prevNode.connect(component.input);
     component.output.connect(nextNode);
 
     this.components.splice(index, 0, component);
+
+    ToneDestination.mute = false;
   }
 
   removeComponent(component: IEffectsComponent) {
@@ -154,6 +171,8 @@ class EffectsChain {
     BBDelay,
     Visualizer,
     Distortion,
+    Phaser,
+    Chorus
   },
 })
 export default class EffectsRack extends Vue implements IEffectsDevice {
@@ -178,11 +197,13 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
     this.guid = uuidv4();
     this.chain = new EffectsChain();
     this.effectsOptions = [
-      "DigitalDelay",
-      "BBDelay",
+      "Digital Delay",
+      "Analog Delay",
       "Visualizer",
       "Reverb",
       "Distortion",
+      "Phaser",
+      // "Chorus" - commenting this out for now because it sounds kinda crappy
     ];
 
     this.name = "Effects Chain";

@@ -30,7 +30,7 @@
             label="Mix"
             id="dryWet"
             size="50"
-            :shadowColor="'#3f3f3f'"
+            :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
             v-model="settings.delayTime"
@@ -39,7 +39,7 @@
             label="Time"
             id="time"
             size="50"
-            :shadowColor="'#3f3f3f'"
+            :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
             v-model="settings.feedback"
@@ -48,7 +48,7 @@
             label="Feedback"
             id="feedback"
             size="50"
-            :shadowColor="'#3f3f3f'"
+            :shadowColor="'#5e5e5e'"
           ></knob-control>
         </div>
       </template>

@@ -14,7 +14,7 @@
     <v-menu>
       <template v-slot:activator="{ on }">
         <div
-          class="reverb-container"
+          class="chorus-container"
           @contextmenu="
             (e) => {
               e.preventDefault();
@@ -28,27 +28,27 @@
             :minValue="0"
             :maxValue="1"
             label="Mix"
-            id="dryWet"
+            id="mix"
             size="50"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
-            v-model="settings.decay"
-            :minValue="0"
+            v-model="settings.frequency"
+            :minValue="0.1"
             :maxValue="20"
-            label="Decay"
-            id="dryWet"
+            label="Frequency"
+            id="frequency"
             size="50"
+						scale="exponential"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
-            v-model="settings.filterCutoff"
-            :minValue="500"
-            :maxValue="20000"
-            label="Filter"
-            id="filter"
+            v-model="settings.depth"
+            :minValue="0.01"
+            :maxValue="1.0"
+            label="Depth"
+            id="depth"
             size="50"
-            scale="exponential"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
         </div>
@@ -67,20 +67,15 @@
 import { Component, Vue, Watch } from "vue-property-decorator";
 import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
 import KnobControl from "@/components/KnobControl.vue";
-import { DryWetMixer } from "@/shared/classes/utility/DryWetMixer";
 import { v4 as uuidv4 } from "uuid";
-import {
-  ToneAudioNode,
-  Gain as ToneGain,
-  Reverb as ToneReverb,
-  Signal as ToneSignal,
-  Filter as ToneFilter,
-} from "tone";
+import { ToneAudioNode, Gain as ToneGain, Chorus as ToneChorus } from "tone";
 
-interface IReverbSettings {
+interface IPhaserSettings {
   mix: number;
-  decay: number;
-  filterCutoff: number;
+  frequency: number;
+  delayTime: number;
+  depth: number;
+	feedback: number
 }
 
 @Component({
@@ -88,29 +83,27 @@ interface IReverbSettings {
     KnobControl,
   },
 })
-export default class Reverb extends Vue implements IEffectsDevice {
+export default class Chorus extends Vue implements IEffectsDevice {
+	// todo: this effects sounds kinda crappy - write our own?
   public guid: string;
   public input!: ToneAudioNode;
   public output!: ToneAudioNode;
   public name: string;
-  public settings: IReverbSettings;
+  public settings: IPhaserSettings;
 
-  private toneReverb!: ToneReverb;
-  private filter!: ToneFilter;
-  private filterCutoffSignal!: ToneSignal;
-  private dryWetMixer!: DryWetMixer;
-  private drySignal!: ToneGain;
-  private wetSignal!: ToneGain;
+  private toneChorus!: ToneChorus;
 
   constructor() {
     super();
 
     this.guid = uuidv4();
-    this.name = "Reverb";
+    this.name = "Chorus";
     this.settings = {
       mix: 0.5,
-      decay: 4,
-      filterCutoff: 4000,
+      frequency: 2,
+      delayTime: 10,
+      depth: 0.2,
+			feedback: 0.5
     };
   }
 
@@ -119,20 +112,15 @@ export default class Reverb extends Vue implements IEffectsDevice {
   created() {
     this.output = new ToneGain(1);
     this.input = new ToneGain(1);
-    this.toneReverb = new ToneReverb(2);
-    this.toneReverb.wet.value = 1;
-    this.filter = new ToneFilter(4000, "lowpass");
-    this.filterCutoffSignal = new ToneSignal(4000);
-    this.drySignal = new ToneGain(1);
-    this.wetSignal = new ToneGain(1);
-    this.dryWetMixer = new DryWetMixer(this.drySignal, this.wetSignal);
+    this.toneChorus = new ToneChorus();
 
-    this.input.chain(this.drySignal);
-    this.input.chain(this.toneReverb, this.filter, this.wetSignal);
-    this.filterCutoffSignal.connect(this.filter.frequency);
-    this.dryWetMixer.output.connect(this.output);
+    this.onMixChange(this.settings.mix);
+    this.onFrequencyChange(this.settings.frequency);
+    this.onDelayTimeChange(this.settings.delayTime);
+    this.onDepthChange(this.settings.depth);
+		this.onFeedbackChange(this.settings.feedback);
 
-    this.onFilterCutoffChange(this.settings.filterCutoff);
+    this.input.chain(this.toneChorus, this.output);
   }
 
   beforeDestroy() {
@@ -157,45 +145,48 @@ export default class Reverb extends Vue implements IEffectsDevice {
     this.$emit("elementDropped", this);
   }
 
-  applySettings(settings: IReverbSettings) {
+  applySettings(settings: IPhaserSettings) {
     this.settings = settings;
   }
 
   dispose() {
-    this.input.disconnect(this.drySignal);
-    this.input.disconnect(this.toneReverb);
-    this.toneReverb.disconnect(this.filter);
-    this.filter.disconnect(this.wetSignal);
-    this.filterCutoffSignal.disconnect(this.filter.frequency);
-    this.dryWetMixer.output.disconnect(this.output);
+    this.input.disconnect();
+    this.toneChorus.disconnect();
 
-    this.filterCutoffSignal.dispose();
-    this.dryWetMixer.dispose();
-    this.toneReverb.dispose();
-    this.filter.dispose();
     this.input.dispose();
     this.output.dispose();
+    this.toneChorus.dispose();
   }
 
   @Watch("settings.mix")
   private onMixChange(value: number) {
-    this.dryWetMixer.wetness = value;
+    this.toneChorus.wet.value = value;
   }
 
-  @Watch("settings.decay")
-  private onDecayChange(value: number) {
-    this.toneReverb.decay = value;
+  @Watch("settings.frequency")
+  private onFrequencyChange(value: number) {
+    this.toneChorus.frequency.value = value;
   }
 
-  @Watch("settings.filterCutoff")
-  private onFilterCutoffChange(value: number) {
-    this.filterCutoffSignal.value = value;
+  @Watch("settings.delayTime")
+  private onDelayTimeChange(value: number) {
+    this.toneChorus.delayTime = value;
+  }
+
+	@Watch("settings.feedback")
+  private onFeedbackChange(value: number) {
+    this.toneChorus.feedback.value = value;
+  }
+
+  @Watch("settings.depth")
+  private onDepthChange(value: number) {
+    this.toneChorus.depth = value;
   }
 }
 </script>
 
 <style scoped>
-.reverb-container {
+.chorus-container {
   background-image: url("../../assets/metal-1.png");
   background-repeat: repeat;
   display: inline-block;
