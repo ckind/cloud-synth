@@ -38,8 +38,8 @@
             <v-col class="col-6 py-0 my-0">
               <knob-control
                 v-model="settings.modRate"
-                :minValue="0.1"
-                :maxValue="10"
+                :minValue="minDelayTimeModRate"
+                :maxValue="maxDelayTimeModRate"
                 label="Mod"
                 id="modRate"
                 size="50"
@@ -63,8 +63,8 @@
               <knob-control
                 v-show="!settings.sync"
                 v-model="settings.delayTime"
-                :minValue="0.001"
-                :maxValue="1"
+                :minValue="minDelayTime"
+                :maxValue="maxDelayTime"
                 label="Time"
                 id="time"
                 size="50"
@@ -74,8 +74,8 @@
             <v-col class="col-6 py-0 my-0">
               <knob-control
                 v-model="settings.modAmount"
-                :minValue="0"
-                :maxValue="0.2"
+                :minValue="minDelayTimeModAmount"
+                :maxValue="maxDelayTimeModAmount"
                 label="Depth"
                 id="modAmount"
                 size="50"
@@ -129,6 +129,7 @@ import {
   Filter as ToneFilter,
   Distortion as ToneDistortion,
   Transport as ToneTransport,
+  LFO as ToneLFO,
 } from "tone";
 
 interface IBBDelaySettings {
@@ -154,6 +155,13 @@ export default class BBDelay extends Vue implements IEffectsDevice {
   public settings: IBBDelaySettings;
   public selected = false;
 
+  private minDelayTime = 0.001;
+  private maxDelayTime = 1;
+  private minDelayTimeModAmount = 0;
+  private maxDelayTimeModAmount = 0.01;
+  private minDelayTimeModRate = 0.01;
+  private maxDelayTimeModRate = 10;
+
   private toneDelay!: ToneDelay;
   private delayTimeSignal!: ToneSignal;
   private feedbackSignal!: ToneGain;
@@ -162,6 +170,8 @@ export default class BBDelay extends Vue implements IEffectsDevice {
   private wetSignal!: ToneGain;
   private filter!: ToneFilter;
   private distortion!: ToneDistortion;
+  private delayTimeLFO!: ToneLFO;
+  private delayTimeLFOGain!: ToneGain;
 
   private delayTimeSmoothing = 0.05;
 
@@ -180,7 +190,7 @@ export default class BBDelay extends Vue implements IEffectsDevice {
       delayTime: 0.2,
       delayTimeSynced: 0.75,
       modRate: 2,
-      modAmount: 0.01,
+      modAmount: 0.005,
       feedback: 0.5,
     };
   }
@@ -198,6 +208,12 @@ export default class BBDelay extends Vue implements IEffectsDevice {
     this.wetSignal = new ToneGain(1);
     this.dryWetMixer = new DryWetMixer(this.drySignal, this.wetSignal);
     this.filter = new ToneFilter(4000, "lowpass");
+    this.delayTimeLFO = new ToneLFO(
+      this.settings.modRate,
+      this.minDelayTime,
+      this.maxDelayTime
+    );
+    this.delayTimeLFOGain = new ToneGain(this.settings.modAmount);
 
     this.delayTimeSignal.connect(this.toneDelay.delayTime);
     this.input.chain(
@@ -208,8 +224,11 @@ export default class BBDelay extends Vue implements IEffectsDevice {
       this.toneDelay,
       this.wetSignal
     );
+    this.delayTimeLFO.chain(this.delayTimeLFOGain, this.toneDelay.delayTime);
     this.input.chain(this.drySignal);
     this.dryWetMixer.output.connect(this.output);
+
+    this.delayTimeLFO.start();
   }
 
   beforeDestroy() {
@@ -239,6 +258,8 @@ export default class BBDelay extends Vue implements IEffectsDevice {
   }
 
   dispose() {
+    this.delayTimeLFO.stop();
+
     this.input.disconnect();
     this.toneDelay.disconnect();
     this.distortion.disconnect();
@@ -248,6 +269,8 @@ export default class BBDelay extends Vue implements IEffectsDevice {
     this.wetSignal.disconnect();
     this.drySignal.disconnect();
     this.dryWetMixer.output.disconnect();
+    this.delayTimeLFO.disconnect();
+    this.delayTimeLFOGain.disconnect();
     // this.output.disconnect(); todo: should we handle this here?
 
     this.input.dispose();
@@ -259,6 +282,8 @@ export default class BBDelay extends Vue implements IEffectsDevice {
     this.wetSignal.dispose();
     this.drySignal.dispose();
     this.output.dispose();
+    this.delayTimeLFO.dispose();
+    this.delayTimeLFOGain.dispose();
   }
 
   // Watches
@@ -294,6 +319,16 @@ export default class BBDelay extends Vue implements IEffectsDevice {
     if (this.settings.sync) {
       this.delayTimeSignal.linearRampTo(value * this.bpmInterval, 0.3);
     }
+  }
+
+  @Watch("settings.modRate")
+  private setModRate(value: number) {
+    this.delayTimeLFO.frequency.value = value;
+  }
+
+  @Watch("settings.modAmount")
+  private setModAmount(value: number) {
+    this.delayTimeLFOGain.gain.value = value;
   }
 }
 </script>
