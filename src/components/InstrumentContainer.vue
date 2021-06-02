@@ -46,11 +46,16 @@
           @change="applyCustomSettings"
           type="file"
           id="uploadSettingsInput"
-          style="display:none"
+          style="display: none"
         />
       </v-col>
       <v-col cols="6">
-        <v-icon v-if="expanded" dark class="expand-icon" @click="expanded = false">
+        <v-icon
+          v-if="expanded"
+          dark
+          class="expand-icon"
+          @click="expanded = false"
+        >
           mdi-chevron-down
         </v-icon>
         <v-icon v-else dark class="expand-icon" @click="expanded = true">
@@ -60,11 +65,16 @@
     </v-row>
     <v-row class="device-header" v-show="$vuetify.breakpoint.mobile">
       <v-col cols="12">
-        <v-icon dark>
+        <v-icon dark @click="(e) => (showModal = true)">
           mdi-swap-horizontal
         </v-icon>
         {{ currentDeviceName }}
-        <v-icon v-if="expanded" dark class="expand-icon" @click="expanded = false">
+        <v-icon
+          v-if="expanded"
+          dark
+          class="expand-icon"
+          @click="expanded = false"
+        >
           mdi-chevron-down
         </v-icon>
         <v-icon v-else dark class="expand-icon" @click="expanded = true">
@@ -84,6 +94,12 @@
         v-if="currentDeviceName === 'External'"
       />
     </div>
+    <instrument-container-modal
+      :currentPresetBank="currentBank"
+      :currentPreset="currentPreset"
+      @presetSelected="presetSelected"
+      v-model="showModal"
+    />
   </div>
 </template>
 
@@ -99,16 +115,19 @@ import JvaSynth from "./JvaSynth.vue";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 import ExternalInstrument from "./ExternalInstrument.vue";
+import InstrumentContainerModal from "./InstrumentContainerModal.vue";
 
 @Component({
   components: {
     JvaSynth,
     ExternalInstrument,
     PresetDropdown,
-    DeviceDropdown
-  }
+    DeviceDropdown,
+    InstrumentContainerModal,
+  },
 })
-export default class InstrumentContainer extends Vue
+export default class InstrumentContainer
+  extends Vue
   implements IInstrumentContainer {
   currentPreset: IPreset;
   currentBank: IPresetBank;
@@ -117,6 +136,7 @@ export default class InstrumentContainer extends Vue
   currentDeviceName: string;
 
   private expanded = true;
+  private showModal = false;
 
   $refs!: {
     jvaPoly: JvaSynth;
@@ -209,14 +229,14 @@ export default class InstrumentContainer extends Vue
     if (!input.files) return;
     const file = input.files[0];
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = (e) => {
       const jsonSettings = e.target!.result as string;
       this.device.applySettings(JSON.parse(jsonSettings));
       this.currentPreset = {
         name: file.name,
         version: 0,
         private: true,
-        settings: this.device.settings
+        settings: this.device.settings,
       };
     };
     reader.readAsText(file);

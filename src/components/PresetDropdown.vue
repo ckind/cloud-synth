@@ -1,5 +1,12 @@
 <template>
-  <v-menu :close-on-content-click="false" dark bottom offset-y nudge-top="10">
+  <v-menu
+    v-model="showMenu"
+    :close-on-content-click="false"
+    dark
+    bottom
+    offset-y
+    nudge-top="10"
+  >
     <template v-slot:activator="{ on }">
       <v-text-field
         dense
@@ -16,9 +23,9 @@
         <v-list-item link>
           <v-menu
             dark
-            :close-on-content-click="false"
             bottom
             offset-x
+            close-on-click
             open-on-hover
             nudge-top="12"
           >
@@ -59,11 +66,14 @@ export default class PresetDropdown extends Vue {
   @Prop({ required: true })
   public label!: string;
 
+  private showMenu = false;
+
   constructor() {
     super();
   }
 
   presetSelected(p: IPreset) {
+    this.showMenu = false;
     this.$emit("presetSelected", p);
   }
 }

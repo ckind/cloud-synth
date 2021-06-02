@@ -1,5 +1,10 @@
 <template>
-  <v-dialog v-model="value" dark max-width="600">
+  <v-dialog
+    :value="value"
+    @input="(val) => $emit('input', val)"
+    dark
+    max-width="600"
+  >
     <v-card>
       <v-card-title class="headline">{{ title }}</v-card-title>
 

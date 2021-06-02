@@ -1,5 +1,10 @@
 <template>
-  <v-dialog v-model="value" dark max-width="600">
+  <v-dialog
+    :value="value"
+    @input="(val) => $emit('input', val)"
+    dark
+    max-width="600"
+  >
     <v-card>
       <v-card-title class="headline">Quick Start</v-card-title>
 
@@ -41,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 
 @Component({})
 export default class QuickStart extends Vue {
@@ -52,7 +57,7 @@ export default class QuickStart extends Vue {
     super();
   }
 
-  private closeDialog() {
+  closeDialog() {
     this.$emit("input", false);
   }
 }
