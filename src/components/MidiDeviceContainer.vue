@@ -18,7 +18,12 @@
         />
       </v-col>
       <v-col cols="8">
-        <v-icon v-if="expanded" dark class="expand-icon" @click="expanded = false">
+        <v-icon
+          v-if="expanded"
+          dark
+          class="expand-icon"
+          @click="expanded = false"
+        >
           mdi-chevron-down
         </v-icon>
         <v-icon v-else dark class="expand-icon" @click="expanded = true">
@@ -28,11 +33,16 @@
     </v-row>
     <v-row class="device-header" v-show="$vuetify.breakpoint.mobile">
       <v-col cols="12">
-        <v-icon dark>
-          mdi-swap-horizontal
-        </v-icon>
-        {{ currentDeviceName }}
-        <v-icon v-if="expanded" dark class="expand-icon" @click="expanded = false">
+        <span class="modal-link" @click="(e) => (showModal = true)">
+          <v-icon dark> mdi-swap-horizontal </v-icon>
+          {{ currentDeviceName }}
+        </span>
+        <v-icon
+          v-if="expanded"
+          dark
+          class="expand-icon"
+          @click="expanded = false"
+        >
           mdi-chevron-down
         </v-icon>
         <v-icon v-else dark class="expand-icon" @click="expanded = true">
@@ -57,6 +67,15 @@
         v-if="currentDeviceName === 'Step Sequencer'"
       />
     </div>
+    <device-container-modal
+      :currentPresetBank="currentBank"
+      :currentPreset="currentPreset"
+      @presetSelected="presetSelected"
+      :currentDeviceName="currentDeviceName"
+      :availableDevices="availableMidiDevices"
+      @deviceSelected="deviceSelected"
+      v-model="showModal"
+    />
   </div>
 </template>
 
@@ -74,6 +93,7 @@ import ExternalMidiDevice from "./ExternalMidiDevice.vue";
 import StepSequencerV2 from "./StepSequencer.vue";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
+import DeviceContainerModal from "./DeviceContainerModal.vue";
 
 @Component({
   components: {
@@ -81,10 +101,12 @@ import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
     DeviceDropdown,
     ComputerMidiKeyboard,
     ExternalMidiDevice,
-    StepSequencerV2
-  }
+    StepSequencerV2,
+    DeviceContainerModal,
+  },
 })
-export default class MidiDeviceContainer extends Vue
+export default class MidiDeviceContainer
+  extends Vue
   implements IMidiDeviceContainer {
   private presetService: IPresetService;
   private currentPreset: IPreset;
@@ -93,6 +115,7 @@ export default class MidiDeviceContainer extends Vue
   private availableMidiDevices = ["Keypad", "Step Sequencer", "External"];
 
   private expanded = true;
+  private showModal = false;
 
   $refs!: {
     keypad: ComputerMidiKeyboard;
@@ -180,5 +203,8 @@ export default class MidiDeviceContainer extends Vue
 }
 .expand-icon {
   float: right;
+}
+.modal-link:active {
+  opacity: 0.5;
 }
 </style>

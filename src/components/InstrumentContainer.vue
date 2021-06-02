@@ -65,10 +65,10 @@
     </v-row>
     <v-row class="device-header" v-show="$vuetify.breakpoint.mobile">
       <v-col cols="12">
-        <v-icon dark @click="(e) => (showModal = true)">
-          mdi-swap-horizontal
-        </v-icon>
-        {{ currentDeviceName }}
+        <span class="modal-link" @click="(e) => (showModal = true)">
+          <v-icon dark> mdi-swap-horizontal </v-icon>
+          {{ currentDeviceName }}
+        </span>
         <v-icon
           v-if="expanded"
           dark
@@ -94,10 +94,13 @@
         v-if="currentDeviceName === 'External'"
       />
     </div>
-    <instrument-container-modal
+    <device-container-modal
       :currentPresetBank="currentBank"
       :currentPreset="currentPreset"
       @presetSelected="presetSelected"
+      :currentDeviceName="currentDeviceName"
+      :availableDevices="availableDevices"
+      @deviceSelected="deviceSelected"
       v-model="showModal"
     />
   </div>
@@ -115,7 +118,7 @@ import JvaSynth from "./JvaSynth.vue";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 import ExternalInstrument from "./ExternalInstrument.vue";
-import InstrumentContainerModal from "./InstrumentContainerModal.vue";
+import DeviceContainerModal from "./DeviceContainerModal.vue";
 
 @Component({
   components: {
@@ -123,7 +126,7 @@ import InstrumentContainerModal from "./InstrumentContainerModal.vue";
     ExternalInstrument,
     PresetDropdown,
     DeviceDropdown,
-    InstrumentContainerModal,
+    DeviceContainerModal,
   },
 })
 export default class InstrumentContainer
@@ -269,5 +272,8 @@ export default class InstrumentContainer
 }
 .expand-icon {
   float: right;
+}
+.modal-link:active {
+  opacity: 0.5;
 }
 </style>
