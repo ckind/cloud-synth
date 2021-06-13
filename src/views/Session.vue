@@ -13,7 +13,7 @@
       ref="midiDeviceContainer"
       @newDeviceMounted="newMidiDeviceMounted"
     />
-    <v-footer dark app class="session-footer" style="background: black;">
+    <v-footer dark app class="session-footer" style="background: black">
       <div class="text-center bpm-bar">
         <v-slider
           hide-details
@@ -46,23 +46,27 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import {
   context as ToneContext,
   Destination as ToneDestination,
-  Transport as ToneTransport
+  Transport as ToneTransport,
+  Recorder as ToneRecorder
 } from "tone";
 import InstrumentContainer from "@/components/InstrumentContainer.vue";
 import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
 import EffectsDeviceContainer from "@/components/EffectsContainer.vue";
+import { createAudioContext } from "tone/build/esm/core/context/AudioContext";
 
 @Component({
   components: {
     InstrumentContainer,
     MidiDeviceContainer,
-    EffectsDeviceContainer
-  }
+    EffectsDeviceContainer,
+  },
 })
 export default class Session extends Vue {
   private bpm = 120;
   private transportRunning = false;
   private recording = false;
+  private recorder: MediaRecorder;
+  private recorderChunks: BlobPart[];
 
   $refs!: {
     midiDeviceContainer: MidiDeviceContainer;
@@ -74,19 +78,37 @@ export default class Session extends Vue {
     super();
 
     // hack for making sure audio context starts right away
-    document.documentElement.addEventListener("mousedown", function() {
+    document.documentElement.addEventListener("mousedown", function () {
       if (ToneContext.state !== "running") {
         ToneContext.resume();
         console.log("context resumed!");
       }
     });
 
-    document.documentElement.addEventListener("touchstart", function() {
+    document.documentElement.addEventListener("touchstart", function () {
       if (ToneContext.state !== "running") {
         ToneContext.resume();
         console.log("context resumed!");
       }
     });
+
+    const recorderStreamDestination = ToneContext.createMediaStreamDestination();
+    ToneDestination.connect(recorderStreamDestination);
+    this.recorder = new MediaRecorder(recorderStreamDestination.stream, {mimeType: "audio/webm"});
+    this.recorderChunks = [] as BlobPart[];
+    this.recorder.ondataavailable = (e) => {
+      this.recorderChunks.push(e.data);
+    }
+    this.recorder.onstop = (e) => {
+      // todo: wav download
+      const recording = new Blob(this.recorderChunks, {"type": "audio/webm"});
+      const url = (window.URL ? window.URL : window.webkitURL).createObjectURL(recording);
+      const anchor = document.createElement("a");
+      anchor.download = "cloudsynth.webm";
+      anchor.href = url;
+      anchor.click();
+      this.recorderChunks = [];
+    }
 
     ToneTransport.bpm.value = this.bpm;
   }
@@ -94,7 +116,8 @@ export default class Session extends Vue {
   // Methods
 
   newInstrumentDeviceMounted() {
-    this.$refs.instrumentContainer.device.output.connect( // relies on internal dispose method for disconnection
+    this.$refs.instrumentContainer.device.output.connect(
+      // relies on internal dispose method for disconnection
       this.$refs.effectsDeviceContainer.device.input
     );
     this.$refs.midiDeviceContainer.device.connect(
@@ -103,7 +126,8 @@ export default class Session extends Vue {
   }
 
   newMidiDeviceMounted() {
-    this.$refs.midiDeviceContainer.device.connect( // relies on internal dispose method for disconnection
+    this.$refs.midiDeviceContainer.device.connect(
+      // relies on internal dispose method for disconnection
       this.$refs.instrumentContainer.device
     );
   }
@@ -112,9 +136,10 @@ export default class Session extends Vue {
     // todo: do we need to disconnect the input before destroy?
 
     this.$refs.effectsDeviceContainer.device.output.connect(ToneDestination); // relies on internal dispose method for disconnection
-    this.$refs.instrumentContainer.device.output.connect( // relies on internal dispose method for disconnection
+    this.$refs.instrumentContainer.device.output.connect(
+      // relies on internal dispose method for disconnection
       this.$refs.effectsDeviceContainer.device.input
-    ); 
+    );
   }
 
   startStopTransport() {
@@ -127,10 +152,12 @@ export default class Session extends Vue {
     }
   }
 
-  startStopRecording() {
+  async startStopRecording() {
     if (this.recording) {
+      this.recorder.stop();
       this.recording = false;
     } else {
+      this.recorder.start();
       this.recording = true;
     }
   }

@@ -190,7 +190,7 @@ export default class BBDelay extends Vue implements IEffectsDevice {
       delayTime: 0.2,
       delayTimeSynced: 0.75,
       modRate: 2,
-      modAmount: 0.005,
+      modAmount: 0.001,
       feedback: 0.5,
     };
   }

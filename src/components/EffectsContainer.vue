@@ -9,6 +9,22 @@
           label="presets"
         /> -->
       </v-col>
+      <v-col cols="2">
+        <!-- <preset-dropdown
+          @presetSelected="presetSelected"
+          :bank="currentBank"
+          :selectedPreset="currentPreset"
+          label="presets"
+        /> -->
+      </v-col>
+      <v-col cols="2">
+        <!-- <preset-dropdown
+          @presetSelected="presetSelected"
+          :bank="currentBank"
+          :selectedPreset="currentPreset"
+          label="presets"
+        /> -->
+      </v-col>
       <v-col cols="6">
         <v-icon
           v-if="expanded"
@@ -77,7 +93,9 @@ export default class EffectsDeviceContainer
   public constructor() {
     super();
     this.currentDeviceName = "Effects Chain";
-    this.presetService = PresetServiceFactory.getPresetService(this.currentDeviceName);
+    this.presetService = PresetServiceFactory.getPresetService(
+      this.currentDeviceName
+    );
     this.currentBank = this.presetService.getLocalBank();
     this.currentPreset = this.currentBank.categories[0].presets[0];
   }

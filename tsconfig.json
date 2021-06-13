@@ -14,7 +14,8 @@
     "resolveJsonModule": true,
     "types": [
       "webpack-env",
-      "vuetify"
+      "vuetify",
+      "dom-mediacapture-record"
     ],
     "paths": {
       "@/*": [
