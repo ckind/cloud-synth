@@ -61,6 +61,18 @@
           :stroke="anchorColor"
           :fill="anchorColor"
         />
+        <!-- Attack -->
+        <circle
+          class="anchor"
+          id="attackAnchorGhost"
+          @mousedown="attackAnchorMouseDown"
+          @touchstart="attackAnchorMouseDown"
+          :cx="attackPeakX"
+          :cy="attackPeakY"
+          :r="ghostAnchorRadius"
+          :stroke="'rgba(0, 0, 0, 0)'"
+          :fill="'rgba(0, 0, 0, 0)'"
+        />
         <circle
           class="anchor"
           id="attackAnchor"
@@ -72,6 +84,18 @@
           :stroke="anchorColor"
           :fill="anchorColor"
         />
+        <!-- Decay/Sustain -->
+        <circle
+          class="anchor"
+          id="decaySustainAnchorGhost"
+          @mousedown="decaySustainAnchorMouseDown"
+          @touchstart="decaySustainAnchorMouseDown"
+          :cx="decayEndX"
+          :cy="decayEndY"
+          :r="ghostAnchorRadius"
+          :stroke="'rgba(0, 0, 0, 0)'"
+          :fill="'rgba(0, 0, 0, 0)'"
+        />
         <circle
           class="anchor"
           id="decaySustainAnchor"
@@ -82,6 +106,18 @@
           :r="anchorRadius"
           :stroke="anchorColor"
           :fill="anchorColor"
+        />
+        <!-- Release -->
+        <circle
+          class="anchor"
+          id="releaseAnchorGhost"
+          @mousedown="releaseAnchorMouseDown"
+          @touchstart="releaseAnchorMouseDown"
+          :cx="releaseEndX"
+          :cy="releaseEndY"
+          :r="ghostAnchorRadius"
+          :stroke="'rgba(0, 0, 0, 0)'"
+          :fill="'rgba(0, 0, 0, 0)'"
         />
         <circle
           class="anchor"
@@ -121,6 +157,7 @@ export default class AdsrGraph extends Vue {
   private envelopeColor = "#70bfff";
   private anchorColor = "#70bfff";
   private anchorRadius = 4;
+  private ghostAnchorRadius = 12;
 
   private attackWidthRatio = 0.25;
   private decayWidthRatio = 0.4;
@@ -386,13 +423,13 @@ export default class AdsrGraph extends Vue {
 svg {
   display: block;
 }
-#attackAnchor {
+#attackAnchorGhost, #attackAnchor {
   cursor: e-resize;
 }
-#decaySustainAnchor {
+#decaySustainAnchorGhost, #decaySustainAnchor {
   cursor: move;
 }
-#releaseAnchor {
+#releaseAnchorGhost, #releaseAnchor {
   cursor: e-resize;
 }
 .dragging {
