@@ -157,7 +157,7 @@ export default class AdsrGraph extends Vue {
   private envelopeColor = "#70bfff";
   private anchorColor = "#70bfff";
   private anchorRadius = 4;
-  private ghostAnchorRadius = 12;
+  private ghostAnchorRadius = 16;
 
   private attackWidthRatio = 0.25;
   private decayWidthRatio = 0.4;
@@ -439,6 +439,7 @@ svg {
   display: block;
   float: left;
   padding: 0 10px 0 10px;
+  user-select: none;
 }
 .component-container {
   justify-content: center;
