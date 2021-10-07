@@ -62,6 +62,9 @@ export default class Visualizer extends Vue implements IEffectsDevice {
   private bufferLength: number;
   private canvasContext!: CanvasRenderingContext2D; // tell the typescript compiler to take a chill pill - we'll set it in mounted()
   private continueDrawing = true;
+  private fillColor = "#70bfff";
+  private nyquistFrequency: number;
+  private fftSize = 1024;
 
   $refs!: {
     analyserCanvas: HTMLCanvasElement;
@@ -89,8 +92,10 @@ export default class Visualizer extends Vue implements IEffectsDevice {
     this.settings = {};
 
     this.analyser = ToneContext.createAnalyser();
+    this.analyser.fftSize = this.fftSize;
     this.bufferLength = this.analyser.frequencyBinCount;
     this.dataArray = new Float32Array(this.bufferLength);
+    this.nyquistFrequency = ToneContext.sampleRate / 2;
 
     this.input.chain(this.analyser, this.output);
   }
@@ -99,7 +104,8 @@ export default class Visualizer extends Vue implements IEffectsDevice {
 
   mounted() {
     this.canvasContext = this.$refs.analyserCanvas.getContext("2d")!;
-    window.requestAnimationFrame(this.draw);
+    // window.requestAnimationFrame(this.drawFrequencyDomain);
+    window.requestAnimationFrame(this.drawTimeDomain);
 
     this.$emit("effectsDeviceMounted", this.guid);
   }
@@ -127,18 +133,19 @@ export default class Visualizer extends Vue implements IEffectsDevice {
     this.$emit("elementDropped", this);
   }
 
-  draw() {
+  drawTimeDomain() {
     this.analyser.getFloatTimeDomainData(this.dataArray);
 
     this.canvasContext.fillStyle = "black";
     this.canvasContext.fillRect(0, 0, this.width, this.height);
 
     this.canvasContext.lineWidth = 2.5;
-    this.canvasContext.strokeStyle = "#70bfff";
+    this.canvasContext.strokeStyle = this.fillColor;
 
     this.canvasContext.beginPath();
 
-    const sliceWidth = (this.width * 1.0) / this.bufferLength;
+    const sliceWidth = this.width / this.bufferLength;
+
     let x = 0;
 
     for (let i = 0; i < this.bufferLength; i++) {
@@ -158,7 +165,34 @@ export default class Visualizer extends Vue implements IEffectsDevice {
     this.canvasContext.stroke();
 
     if (this.continueDrawing) {
-      window.requestAnimationFrame(this.draw);
+      window.requestAnimationFrame(this.drawTimeDomain);
+    }
+  }
+
+  drawFrequencyDomain() {
+    this.analyser.getFloatFrequencyData(this.dataArray);
+
+    this.canvasContext.fillStyle = "black";
+    this.canvasContext.fillRect(0, 0, this.width, this.height);
+
+    for (let i = 0; i < this.bufferLength; i++) {
+      const freq = i * (this.nyquistFrequency / this.fftSize);
+
+      const x = i * (this.width/this.bufferLength);
+      const barWidth = 1;
+      const barHeight = this.dataArray[i] + 140;
+
+      this.canvasContext.fillStyle = this.fillColor;
+      this.canvasContext.fillRect(
+        x,
+        this.height - barHeight,
+        barWidth,
+        barHeight
+      );
+    }
+
+    if (this.continueDrawing) {
+      window.requestAnimationFrame(this.drawFrequencyDomain);
     }
   }
 
