@@ -73,10 +73,10 @@ export default class Piano extends Vue implements IInstrumentDevice {
   receiveMidi(message: IMidiMessage, time?: number) {
     switch (message.midiFunction) {
       case MidiFunction.noteon:
-        this.piano.keyDown({ note: Midi(message.noteNumber).toNote(), time: time, velocity: message.noteVelocity / 127 });
+        this.piano.keyDown({ note: Midi(message.noteNumber).toNote(), time: time, velocity: message.noteVelocity / 127});
         break;
       case MidiFunction.noteoff:
-         this.piano.keyUp({ note: Midi(message.noteNumber).toNote(), time: time, velocity: message.noteVelocity / 127 });
+        this.piano.keyUp({ note: Midi(message.noteNumber).toNote(), time: time, velocity: message.noteVelocity / 127});
         break;
     }
   }

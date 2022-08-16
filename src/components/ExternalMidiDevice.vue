@@ -191,6 +191,7 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
 
   connect(receiver: IMidiReceiver) {
     this.connections.push(receiver);
+    console.log("conntected");
   }
 
   disconnect(receiver: IMidiReceiver) {
@@ -242,7 +243,7 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
     this.sendMidi({
       midiFunction: MidiFunction.noteon,
       noteNumber: e.note.number,
-      noteVelocity: e.velocity
+      noteVelocity: Math.round(e.velocity * 127)
     });
     this.displayKeyDown(e.note.number);
   }
@@ -251,7 +252,7 @@ export default class ExternalMidiDevice extends Vue implements IMidiDevice {
     this.sendMidi({
       midiFunction: MidiFunction.noteoff,
       noteNumber: e.note.number,
-      noteVelocity: e.velocity
+      noteVelocity: Math.round(e.velocity * 127)
     });
     this.displayKeyUp(e.note.number);
   }
