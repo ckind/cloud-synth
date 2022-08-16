@@ -378,15 +378,17 @@ export default class JvaSynth extends Vue implements IInstrumentDevice {
     this.ampLFO.stop().disconnect(this.synth.ampModulation);
     this.pitchLFO.stop().disconnect(this.synth.pitchModulation);
 
-    this.filterLFO.dispose();
-    this.ampLFO.dispose();
-    this.pitchLFO.dispose();
+    // todo: this is causing errors when switching instruments
 
-    this.noiseVolume.dispose();
-    this.noise.dispose();
-    this.synth.dispose();
-    this.volume.dispose();
-    this.output.dispose();
+    // this.filterLFO.dispose();
+    // this.ampLFO.dispose();
+    // this.pitchLFO.dispose();
+
+    // this.noiseVolume.dispose();
+    // this.noise.dispose();
+    // this.synth.dispose();
+    // this.volume.dispose();
+    // this.output.dispose();
   }
 
   receiveMidi(message: IMidiMessage, time?: number) {

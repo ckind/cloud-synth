@@ -88,6 +88,11 @@
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'Jva Poly'"
       />
+      <piano
+        ref="piano"
+        @deviceMounted="newDeviceMounted"
+        v-if="currentDeviceName === 'Piano'"
+      />
       <external-instrument
         ref="external"
         @deviceMounted="newDeviceMounted"
@@ -119,11 +124,13 @@ import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 import ExternalInstrument from "./ExternalInstrument.vue";
 import DeviceContainerModal from "./DeviceContainerModal.vue";
+import Piano from "./Piano.vue";
 
 @Component({
   components: {
     JvaSynth,
     ExternalInstrument,
+    Piano,
     PresetDropdown,
     DeviceDropdown,
     DeviceContainerModal,
@@ -144,11 +151,12 @@ export default class InstrumentContainer
   $refs!: {
     jvaPoly: JvaSynth;
     external: ExternalInstrument;
+    piano: Piano;
   };
 
   public constructor() {
     super();
-    this.availableDevices = ["Jva Poly", "External"];
+    this.availableDevices = ["Jva Poly", "Piano", "External"];
     this.currentDeviceName = this.availableDevices[0];
     this.presetService = PresetServiceFactory.getPresetService(
       this.currentDeviceName
@@ -173,7 +181,10 @@ export default class InstrumentContainer
         currentDevice = this.$refs.jvaPoly;
         break;
       case "External":
-        currentDevice = this.$refs.external; // todo: create external instrument component
+        currentDevice = this.$refs.external; 
+        break;
+      case "Piano":
+        currentDevice = this.$refs.piano;
         break;
       default:
         throw `Invalid Device Name ${this.currentDeviceName}`;
