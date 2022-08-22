@@ -213,11 +213,11 @@ export default class InstrumentContainer
 
   newDeviceMounted() {
     this.loadFactoryPresets().then(() => {
-      console.log(
-        `loaded ${this.device.name} preset bank ${this.currentBank._id}`
-      );
+      // console.log(
+      //   `loaded ${this.device.name} preset bank ${this.currentBank._id}`
+      // );
     });
-    this.$emit("newDeviceMounted");
+    this.$emit("newDeviceMounted", this.device);
     console.log(`mounted device ${this.device.name}`);
   }
 

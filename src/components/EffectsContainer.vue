@@ -134,10 +134,10 @@ export default class EffectsDeviceContainer
   newDeviceMounted() {
     this.loadFactoryPresets().then(() => {
       console.log(
-        `loaded ${this.device.name} preset bank ${this.currentBank._id}`
+        // `loaded ${this.device.name} preset bank ${this.currentBank._id}`
       );
     });
-    this.$emit("newDeviceMounted");
+    this.$emit("newDeviceMounted", this.device);
     console.log(`mounted device ${this.device.name}`);
   }
 

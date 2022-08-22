@@ -80,8 +80,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { IMidiDeviceContainer } from "../shared/interfaces/containers/IMidiDeviceContainer";
+import { defineComponent, ref, computed, onMounted } from "vue";
+import { Component, Vue } from "vue-property-decorator";
 import { IPreset } from "../shared/interfaces/presets/IPreset";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import { IPresetService } from "../shared/interfaces/presets/IPresetService";
@@ -94,8 +94,13 @@ import StepSequencerV2 from "./StepSequencer.vue";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import DeviceContainerModal from "./DeviceContainerModal.vue";
+import { context } from "tone";
 
-@Component({
+//#region Composition API
+
+// defineComponent({
+export default defineComponent({
+  emits: ["newDeviceMounted"],
   components: {
     PresetDropdown,
     DeviceDropdown,
@@ -104,90 +109,85 @@ import DeviceContainerModal from "./DeviceContainerModal.vue";
     StepSequencerV2,
     DeviceContainerModal,
   },
-})
-export default class MidiDeviceContainer
-  extends Vue
-  implements IMidiDeviceContainer {
-  private presetService: IPresetService;
-  private currentPreset: IPreset;
-  private currentBank: IPresetBank;
-  private currentDeviceName: string;
-  private availableMidiDevices = ["Keypad", "Step Sequencer", "External"];
+  setup(props, context) {
+    const availableMidiDevices = ref(["Keypad", "Step Sequencer", "External"]);
+    const currentDeviceName = ref(availableMidiDevices.value[0]);
+    const currentBank = ref(getDefaultKeypadBank()); // todo: load from local json file);
+    const currentPreset = ref(currentBank.value.categories[0].presets[0]);
+    const expanded = ref(true);
+    const showModal = ref(false);
 
-  private expanded = true;
-  private showModal = false;
+    const presetService = PresetServiceFactory.getPresetService(currentDeviceName.value);
 
-  $refs!: {
-    keypad: ComputerMidiKeyboard;
-    external: ExternalMidiDevice;
-    stepSequencer: StepSequencerV2;
-  };
+    // declare a ref to hold the element reference
+    // the name must match template ref value
+    const keypad = ref<IMidiDevice | null>(null)
+    const stepSequencer = ref<IMidiDevice | null>(null)
+    const external = ref<IMidiDevice | null>(null)
 
-  public constructor() {
-    super();
-    this.currentDeviceName = this.availableMidiDevices[0];
-    this.presetService = PresetServiceFactory.getPresetService(
-      this.currentDeviceName
-    );
-    this.currentBank = getDefaultKeypadBank(); // todo: load from local json file
-    this.currentPreset = this.currentBank.categories[0].presets[0];
-  }
-
-  // Lifecycle Hooks
-
-  mounted() {
-    this.device.applySettings(this.currentPreset.settings);
-  }
-
-  // Computed
-
-  get device() {
-    // todo: better implementation than switch?
-    let currentDevice: IMidiDevice;
-    switch (this.currentDeviceName) {
-      case "Keypad":
-        currentDevice = this.$refs.keypad;
-        break;
-      case "Step Sequencer":
-        currentDevice = this.$refs.stepSequencer;
-        break;
-      case "External":
-        currentDevice = this.$refs.external;
-        break;
-      default:
-        throw `Invalid Device Name ${this.currentDeviceName}`;
-    }
-    return currentDevice;
-  }
-
-  // Methods
-
-  async loadFactoryPresets() {
-    this.currentBank = await this.presetService.getFactoryBank();
-    this.currentPreset = this.currentBank.categories[0].presets[0];
-    this.device.applySettings(this.currentPreset.settings);
-  }
-
-  presetSelected(p: IPreset) {
-    // todo: apply settings to midi device
-  }
-
-  deviceSelected(deviceName: string) {
-    if (this.currentDeviceName != deviceName) {
-      this.currentDeviceName = deviceName;
-    }
-  }
-
-  newDeviceMounted() {
-    this.loadFactoryPresets().then(() => {
-      console.log(
-        `loaded ${this.device.name} preset bank ${this.currentBank._id}`
-      );
+    const device = computed(() => {
+      let currentDevice: IMidiDevice | null;
+      switch (currentDeviceName.value) {
+        case "Keypad":
+          currentDevice = keypad.value;
+          break;
+        case "Step Sequencer":
+          currentDevice = stepSequencer.value;
+          break;
+        case "External":
+          currentDevice = external.value;
+          break;
+        default:
+          throw `Invalid Device Name ${currentDeviceName.value}`;
+      }
+      return currentDevice;
     });
-    this.$emit("newDeviceMounted");
-    console.log(`mounted device ${this.device.name}`);
+
+    onMounted(() => {
+      device.value?.applySettings(currentPreset.value.settings);
+    });
+
+    async function loadFactoryPresets() {
+      currentBank.value = await presetService.getFactoryBank();
+      currentPreset.value = currentBank.value.categories[0].presets[0];
+      device.value?.applySettings(currentPreset.value.settings);
+    }
+
+    function presetSelected(p: IPreset) {
+      // todo: apply settings to midi device
+    }
+
+    function deviceSelected(deviceName: string) {
+      if (currentDeviceName.value != deviceName) {
+        currentDeviceName.value = deviceName;
+      }
+    }
+
+    function newDeviceMounted() {
+      loadFactoryPresets().then(() => {
+        // console.log(`loaded ${device?.value?.name} preset bank ${currentBank.value._id}`)
+      });
+      context.emit("newDeviceMounted", device.value);
+      console.log(`mounted device ${device?.value?.name}`);
+    }
+
+    return {
+      deviceSelected,
+      presetSelected,
+      newDeviceMounted,
+      availableMidiDevices,
+      currentDeviceName,
+      currentBank,
+      currentPreset,
+      expanded,
+      showModal,
+      keypad,
+      stepSequencer,
+      external
+    }
   }
-}
+});
+
 </script>
 
 <style scoped>

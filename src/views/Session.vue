@@ -52,7 +52,9 @@ import {
 import InstrumentContainer from "@/components/InstrumentContainer.vue";
 import MidiDeviceContainer from "@/components/MidiDeviceContainer.vue";
 import EffectsDeviceContainer from "@/components/EffectsContainer.vue";
-import { createAudioContext } from "tone/build/esm/core/context/AudioContext";
+import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
+import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
+import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
 
 @Component({
   components: {
@@ -67,9 +69,12 @@ export default class Session extends Vue {
   private recording = false;
   private recorder: MediaRecorder;
   private recorderChunks: BlobPart[];
+  private currentMidiDevice?: IMidiDevice;
+  private currentInstrumentDevice?: IInstrumentDevice;
+  private currentEffectsDevice?: IEffectsDevice;
 
   $refs!: {
-    midiDeviceContainer: MidiDeviceContainer;
+    midiDeviceContainer: Vue;
     instrumentContainer: InstrumentContainer;
     effectsDeviceContainer: EffectsDeviceContainer;
   };
@@ -115,31 +120,38 @@ export default class Session extends Vue {
 
   // Methods
 
-  newInstrumentDeviceMounted() {
-    this.$refs.instrumentContainer.device.output.connect(
-      // relies on internal dispose method for disconnection
-      this.$refs.effectsDeviceContainer.device.input
-    );
-    this.$refs.midiDeviceContainer.device.connect(
-      this.$refs.instrumentContainer.device
-    );
+  newInstrumentDeviceMounted(device: IInstrumentDevice) {
+    this.currentInstrumentDevice = device;
+    this.reconnectDevices();
   }
 
-  newMidiDeviceMounted() {
-    this.$refs.midiDeviceContainer.device.connect(
-      // relies on internal dispose method for disconnection
-      this.$refs.instrumentContainer.device
-    );
+  newMidiDeviceMounted(device: IMidiDevice) {
+    this.currentMidiDevice = device;
+    this.reconnectDevices();
   }
 
-  newEffectsDeviceMounted() {
-    // todo: do we need to disconnect the input before destroy?
+  newEffectsDeviceMounted(device: IEffectsDevice) {
+    this.currentEffectsDevice = device;
+    this.reconnectDevices();
+  }
 
-    this.$refs.effectsDeviceContainer.device.output.connect(ToneDestination); // relies on internal dispose method for disconnection
-    this.$refs.instrumentContainer.device.output.connect(
-      // relies on internal dispose method for disconnection
-      this.$refs.effectsDeviceContainer.device.input
-    );
+  reconnectDevices() {
+    // todo: could connect same devices multiple times
+    // for now this is ok since each device only has one input
+    // https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/connect
+
+    if (this.currentMidiDevice && this.currentInstrumentDevice && this.currentEffectsDevice) {
+      // throws exceptions if already disconnected
+      
+      // this.currentMidiDevice.disconnect(this.currentInstrumentDevice);
+      this.currentMidiDevice.connect(this.currentInstrumentDevice);
+
+      // this.currentInstrumentDevice.output.disconnect(this.currentEffectsDevice.input);
+      this.currentInstrumentDevice.output.connect(this.currentEffectsDevice.input);
+
+      // this.currentEffectsDevice.output.disconnect(ToneDestination);
+      this.currentEffectsDevice.output.connect(ToneDestination);
+    }
   }
 
   startStopTransport() {
