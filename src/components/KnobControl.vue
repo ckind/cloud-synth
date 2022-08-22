@@ -81,6 +81,10 @@ export default defineComponent({
     shadowColor: { type: String, required: false, default: "black"}
   },
   setup(props, context) {
+    const rotationMax = (3 * Math.PI) / 4;
+    const dragRange = 70;
+    let prevY = -1;
+
     // reactive data
     const valueCurve = ref(CurvedRangeFactory.getCurvedRange(
       props.scale,
@@ -90,9 +94,7 @@ export default defineComponent({
     const linearValue = ref(props.value);
     const curvedValue = ref(valueCurve.value.getCurvedValue(props.value));
     const unsteppedValue = ref(curvedValue.value);
-    const prevY = ref(-1);
-    const rotationMax = ref((3 * Math.PI) / 4);
-    const dragRange = ref(70);
+
 
     // computed
     const cssVars = computed(() => {
@@ -111,7 +113,7 @@ export default defineComponent({
 
     const knobRotation = computed(() => {
       const offset = linearValue.value - midValue.value;
-      return (offset / (valueRange.value / 2)) * rotationMax.value;
+      return (offset / (valueRange.value / 2)) * rotationMax;
     });
 
     // methods
@@ -130,9 +132,9 @@ export default defineComponent({
     }
 
     function onKnobDrag(currY: number) {
-      if (prevY.value >= 0) {
-        const diffY = prevY.value - currY;
-        let knobValue = unsteppedValue.value + (diffY / dragRange.value) * (valueRange.value / 2);
+      if (prevY >= 0) {
+        const diffY = prevY - currY;
+        let knobValue = unsteppedValue.value + (diffY / dragRange) * (valueRange.value / 2);
         knobValue = knobValue > props.maxValue
             ? props.maxValue
             : knobValue < props.minValue
@@ -149,12 +151,12 @@ export default defineComponent({
 
     function onKnobTouchDrag(e: TouchEvent) {
       onKnobDrag(e.touches[0].pageY);
-      prevY.value = e.touches[0].pageY;
+      prevY = e.touches[0].pageY;
     }
 
     function onKnobMouseDrag(e: MouseEvent) {
       onKnobDrag(e.pageY);
-      prevY.value = e.pageY;
+      prevY = e.pageY;
     }
 
     function onDocumentMouseUp() {
@@ -162,7 +164,7 @@ export default defineComponent({
       document.removeEventListener("touchmove", onKnobTouchDrag);
       document.removeEventListener("mouseup", onDocumentMouseUp);
       document.removeEventListener("touchend", onDocumentMouseUp);
-      prevY.value = -1;
+      prevY = -1;
     }
 
     function onKnobMouseDown(e: MouseEvent) {

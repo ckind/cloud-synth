@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { defineComponent, ref, computed, onMounted } from "vue";
 
 interface GraphColumn {
   index: number;
@@ -37,120 +37,122 @@ interface GraphColumn {
   value: number;
 }
 
-@Component({})
-export default class BarGraphControl extends Vue {
-  private maxHeight = 160;
-  private barColor = "#70bfff";
-  private activeBackgroundColor = "#243b4e";
-  private barMargin = 2;
-  private columns: GraphColumn[];
-  private leftClickDown = false;
-  private prevY: number | undefined;
+export default defineComponent({
+  emits: ["update"],
+  props: {
+    valueSteps: { type: Number, required: true },
+    numColumns: { type: Number, required: true },
+    activeStep: { type: Number, required: false, default: -1 },
+    graphWidth: { type: Number, required: false, default: 768 }
+  },
+  setup(props, context) {
+    const maxHeight = 160;
+    const barColor = "#70bfff";
+    const activeBackgroundColor = "#243b4e";
+    const barMargin = 2;
+    let leftClickDown = false;
 
-  public constructor() {
-    super();
+    const columns = ref(new Array<GraphColumn>(props.numColumns));
 
-    this.columns = new Array<GraphColumn>(this.numColumns);
-    for (let i = 0; i < this.numColumns; i++) {
-      this.columns[i] = {
+    for (let i = 0; i < props.numColumns; i++) {
+      columns.value[i] = {
         index: i,
         margin: 2,
         height: 0,
-        width: this.graphWidth / this.numColumns - 4, // subtract margin
+        width: props.graphWidth / props.numColumns - 4, // subtract margin
         value: 0,
       };
     }
-  }
 
-  @Prop({ required: true })
-  public valueSteps!: number;
-
-  @Prop({ required: true })
-  public numColumns!: number;
-
-  @Prop({ required: false, default: -1 })
-  public activeStep!: number;
-
-  @Prop({ required: false, default: 768 })
-  public graphWidth!: number;
-
-  // Lifecycle Hooks
-
-  mounted() {
-    this.randomize();
-  }
-
-  // Computed
-
-  get stepSize() {
-    return this.maxHeight / this.valueSteps;
-  }
-
-  get cssVars() {
-    return {
-      "--maxHeight": `${this.maxHeight}px`,
-      "--graphWidth": `${this.graphWidth}px`,
-      "--barMargin": `${this.barMargin}px`,
-      "--numColumns": `${this.numColumns}px`,
-      "--barColor": this.barColor,
-      "--activeBackgroundColor": this.activeBackgroundColor,
-    };
-  }
-
-  // Methods
-
-  private SnapToStep(input: number): number {
-    const stepDeviation = input % this.stepSize;
-    const inputFloor = Math.floor(input / this.stepSize);
-    const value =
-      stepDeviation > this.stepSize / 2 ? inputFloor + 1 : inputFloor;
-
-    return value;
-  }
-
-  randomize() {
-    this.columns.forEach((col) => {
-      col.value = this.SnapToStep(Math.floor(Math.random() * this.maxHeight));
-      col.height = col.value * this.stepSize;
-      this.$emit("update", col.index, col.value);
+    const stepSize = computed(() => {
+      return maxHeight / props.valueSteps;
     });
-  }
 
-  BarColumnMouseMove(e: MouseEvent, col: GraphColumn) {
-    e.stopPropagation();
-    if (this.leftClickDown) {
-      this.setColumnValue(e, col);
+    const cssVars = computed(() => {
+      return {
+        "--maxHeight": `${maxHeight}px`,
+        "--graphWidth": `${props.graphWidth}px`,
+        "--barMargin": `${barMargin}px`,
+        "--numColumns": `${props.numColumns}px`,
+        "--barColor": barColor,
+        "--activeBackgroundColor": activeBackgroundColor,
+      }; 
+    });
+
+    function RefreshGraph() {
+      // re-assign array for reactivity
+      columns.value = [...columns.value];
+    }
+
+    function SnapToStep(input: number): number {
+      const stepDeviation = input % stepSize.value;
+      const inputFloor = Math.floor(input / stepSize.value);
+      const value = stepDeviation > stepSize.value / 2
+        ? inputFloor + 1
+        : inputFloor;
+
+      return value;
+    }
+
+    function randomize() {
+      columns.value.forEach((col) => {
+        col.value = SnapToStep(Math.floor(Math.random() * maxHeight));
+        col.height = col.value * stepSize.value;
+        context.emit("update", col.index, col.value);
+      });
+
+      RefreshGraph();
+    }
+
+    function setColumnValue(e: MouseEvent, col: GraphColumn) {
+      if (e.currentTarget instanceof HTMLElement) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickY = maxHeight - (e.clientY - rect.top); // flip it so y-axis goes from bottom to top
+        const steppedValue = SnapToStep(clickY);
+
+        col.value = steppedValue;
+        col.height = col.value * stepSize.value;
+
+        context.emit("update", col.index, col.value);
+
+        RefreshGraph();
+      }
+    }
+
+    function BarColumnMouseMove(e: MouseEvent, col: GraphColumn) {
+      e.stopPropagation();
+      if (leftClickDown) {
+        setColumnValue(e, col);
+      }
+    }
+
+    function DocumentMouseUp() {
+      leftClickDown = false;
+      document.removeEventListener("mouseup", DocumentMouseUp);
+    }
+
+    function BarColumnMouseDown() {
+      leftClickDown = true;
+      document.addEventListener("mouseup", DocumentMouseUp);
+    }
+
+    function BarColumnClick(e: MouseEvent, col: GraphColumn) {
+      e.stopPropagation();
+      setColumnValue(e, col);
+    }
+
+    onMounted(() => randomize());
+
+    return {
+      cssVars,
+      columns,
+      BarColumnMouseDown,
+      BarColumnMouseMove,
+      BarColumnClick
     }
   }
+});
 
-  BarColumnMouseDown() {
-    this.leftClickDown = true;
-    document.addEventListener("mouseup", this.DocumentMouseUp);
-  }
-
-  DocumentMouseUp() {
-    this.leftClickDown = false;
-    document.removeEventListener("mouseup", this.DocumentMouseUp);
-  }
-
-  private setColumnValue(e: MouseEvent, col: GraphColumn) {
-    if (e.currentTarget instanceof HTMLElement) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const clickY = this.maxHeight - (e.clientY - rect.top); // flip it so y-axis goes from bottom to top
-      const steppedValue = this.SnapToStep(clickY);
-
-      col.value = steppedValue;
-      col.height = col.value * this.stepSize;
-
-      this.$emit("update", col.index, col.value);
-    }
-  }
-
-  private BarColumnClick(e: MouseEvent, col: GraphColumn) {
-    e.stopPropagation();
-    this.setColumnValue(e, col);
-  }
-}
 </script>
 
 <style scoped>
@@ -158,6 +160,7 @@ export default class BarGraphControl extends Vue {
   background: black;
   height: calc(var(--maxHeight) + 2 * (var(--barMargin)));
   display: flex;
+  cursor: url("../assets/edit-icon.png"), auto;
 }
 .bar-column {
   height: calc(var(--maxHeight) + 2 * (var(--barMargin)));
