@@ -23,7 +23,7 @@
             :maxValue="12"
             :step="1"
             :id="`oscillator1TransposeControl`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3">
@@ -32,7 +32,7 @@
             :minValue="-50"
             :maxValue="50"
             :id="`oscillator1FineTuningControl`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3">
@@ -42,7 +42,7 @@
             :maxValue="0"
             :default="-12"
             :id="`oscillator1Volume`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3" class="center-x center-y">
@@ -57,7 +57,7 @@
             :maxValue="12"
             :step="1"
             :id="`oscillator2TransposeControl`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3">
@@ -66,7 +66,7 @@
             :minValue="-50"
             :maxValue="50"
             :id="`oscillator2FineTuningControl`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3">
@@ -76,7 +76,7 @@
             :maxValue="0"
             :default="-12"
             :id="`oscillator2Volume`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3" class="center-x center-y">
@@ -91,7 +91,7 @@
             :maxValue="12"
             :step="1"
             :id="`oscillator3TransposeControl`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3">
@@ -100,7 +100,7 @@
             :minValue="-50"
             :maxValue="50"
             :id="`oscillator1FineTuningControl`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3">
@@ -110,7 +110,7 @@
             :maxValue="0"
             :default="-12"
             :id="`oscillator3Volume`"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3" class="center-x center-y">
@@ -125,7 +125,7 @@
             :maxValue="1"
             id="oscillatorSpreadKnob"
             label="Spread"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3" />
@@ -136,7 +136,7 @@
             :maxValue="0"
             id="noiseLevelKnob"
             label="Noise"
-            size="50"
+            :size="50"
           ></knob-control>
         </v-col>
         <v-col cols="3" class="center-x center-y">
@@ -162,7 +162,7 @@
                 id="filterFrequencyKnob"
                 label="Cutoff"
                 scale="exponential"
-                size="50"
+                :size="50"
               ></knob-control>
             </v-col>
             <v-col cols="3">
@@ -172,7 +172,7 @@
                 :maxValue="10"
                 id="filterQKnob"
                 label="Q"
-                size="50"
+                :size="50"
               ></knob-control>
             </v-col>
             <v-col cols="3">
@@ -182,7 +182,7 @@
                 :maxValue="1"
                 id="envAmtKnob"
                 label="Env Amt"
-                size="50"
+                :size="50"
               ></knob-control>
             </v-col>
             <v-col cols="3">
@@ -193,7 +193,7 @@
                 :step="1"
                 id="filterTypeKnob"
                 label="Type"
-                size="50"
+                :size="50"
               ></knob-control>
             </v-col>
           </v-row>
@@ -206,7 +206,7 @@
             v-model="settings.filter.modulationAmount"
             :minValue="0"
             :maxValue="1"
-            size="50"
+            :size="50"
             scale="quadratic bezier"
             id="filterModKnob"
             label="Filter Mod"
@@ -217,7 +217,7 @@
             v-model="settings.filter.modulationRate"
             :minValue="0"
             :maxValue="10"
-            size="50"
+            :size="50"
             scale="quadratic bezier"
             id="filterModRateKnob"
             label="Mod Rate"
@@ -237,7 +237,7 @@
             v-model="settings.pitch.modulationAmount"
             :minValue="0"
             :maxValue="0.005"
-            size="50"
+            :size="50"
             id="pitchModKnob"
             label="Pitch Mod"
           ></knob-control>
@@ -247,7 +247,7 @@
             v-model="settings.pitch.modulationRate"
             :minValue="0"
             :maxValue="10"
-            size="50"
+            :size="50"
             id="pitchModRateKnob"
             label="Mod Rate"
           ></knob-control>
@@ -259,7 +259,7 @@
             v-model="settings.volume"
             :minValue="-60"
             :maxValue="0"
-            size="50"
+            :size="50"
             id="volumeLevelKnob"
             label="Volume"
           ></knob-control>

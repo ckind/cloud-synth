@@ -10,8 +10,8 @@ import Session from "@/views/Session.vue";
 
 @Component({
   components: {
-    Session,
-  },
+    Session
+  }
 })
 export default class Home extends Vue {
   public constructor() {
@@ -28,6 +28,4 @@ export default class Home extends Vue {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

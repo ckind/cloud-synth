@@ -12,10 +12,13 @@
     "sourceMap": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
+    "typeRoots": [
+      "src/customTypes",
+      "node_modules/@types"
+    ],
     "types": [
       "webpack-env",
-      "vuetify",
-      "dom-mediacapture-record"
+      "vuetify"
     ],
     "paths": {
       "@/*": [
@@ -34,7 +37,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "tests/**/*.tsx", "src/shared/chords.js"
+    "tests/**/*.tsx",
+    "src/shared/chords.js"
   ],
   "exclude": [
     "node_modules"

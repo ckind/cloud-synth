@@ -60,167 +60,145 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { CurvedRange } from "@/shared/interfaces/utility/CurvedRange";
-import {
-  CurvedRangeFactory,
-  CurvedRangeType,
-} from "@/shared/factories/CurvedRangeFactory";
+import { defineComponent, computed, ref, watch } from "vue";
+import type { PropType } from "vue"
+import { CurvedRangeFactory, CurvedRangeType } from "@/shared/factories/CurvedRangeFactory";
 
-@Component({})
-export default class KnobControl extends Vue {
-  private curvedValue: number;
-  private linearValue: number;
-  private unsteppedValue: number;
-  private rotationMax = (3 * Math.PI) / 4;
-  private dragRange = 70;
-  private prevY = -1;
-  private valueCurve: CurvedRange;
+export default defineComponent({
+  emits: ["input"],
+  props: {
+    value: { type: Number, required: true },
+    minValue: { type: Number, required: true },
+    maxValue: { type: Number, required: true },
+    id: { type: String, required: true },
+    scale: { type: String as PropType<CurvedRangeType>, required: false, default: "linear" },
+    step: { type: Number, required: false, default: 0 },
+    label: { type: String, required: false, default: "" },
+    units: { type: String, required: false, default: "" },
+    size: { type: Number, required: false, default: 100 },
+    default: { type: Number, required: false },
+    shadow: { type: Boolean, required: false },
+    shadowColor: { type: String, required: false, default: "black"}
+  },
+  setup(props, context) {
+    // reactive data
+    const valueCurve = ref(CurvedRangeFactory.getCurvedRange(
+      props.scale,
+      props.minValue,
+      props.maxValue
+    ));
+    const linearValue = ref(props.value);
+    const curvedValue = ref(valueCurve.value.getCurvedValue(props.value));
+    const unsteppedValue = ref(curvedValue.value);
+    const prevY = ref(-1);
+    const rotationMax = ref((3 * Math.PI) / 4);
+    const dragRange = ref(70);
 
-  // for some reason vue complains about this if its required
-  // even if you have v-model
-  @Prop({ required: false })
-  public value!: number;
+    // computed
+    const cssVars = computed(() => {
+      return {
+        "--shadowColor": props.shadowColor,
+      };
+    });
 
-  @Prop({ required: true })
-  public minValue!: number;
+    const valueRange = computed(() => {
+      return props.maxValue - props.minValue;
+    });
 
-  @Prop({ required: true })
-  public maxValue!: number;
+    const midValue = computed(() => {
+      return props.minValue + valueRange.value / 2;
+    });
 
-  @Prop({ required: true })
-  public id!: string;
+    const knobRotation = computed(() => {
+      const offset = linearValue.value - midValue.value;
+      return (offset / (valueRange.value / 2)) * rotationMax.value;
+    });
 
-  @Prop({ required: false, default: "linear" })
-  public scale!: CurvedRangeType;
+    // methods
+    function roundToStep(x: number) {
+      if (props.step === 0) {
+        throw "step is zero or undefined";
+      }
 
-  @Prop({ required: false, default: 0 })
-  public step!: number;
+      const roundedValue = Math.round(x / props.step) * props.step;
 
-  @Prop({ required: false, default: "" })
-  public label!: string;
+      return roundedValue < props.minValue
+        ? props.minValue
+        : roundedValue > props.maxValue
+          ? props.maxValue
+          : roundedValue;
+    }
 
-  @Prop({ required: false, default: "" })
-  public units!: string;
+    function onKnobDrag(currY: number) {
+      if (prevY.value >= 0) {
+        const diffY = prevY.value - currY;
+        let knobValue = unsteppedValue.value + (diffY / dragRange.value) * (valueRange.value / 2);
+        knobValue = knobValue > props.maxValue
+            ? props.maxValue
+            : knobValue < props.minValue
+              ? props.minValue
+              : knobValue;
+        unsteppedValue.value = knobValue;
+        const steppedValue =
+          props.step === 0
+            ? unsteppedValue.value
+            : roundToStep(unsteppedValue.value);
+        context.emit("input", valueCurve.value.getCurvedValue(steppedValue));
+      }
+    }
 
-  @Prop({ required: false, default: 100 })
-  public size!: number;
+    function onKnobTouchDrag(e: TouchEvent) {
+      onKnobDrag(e.touches[0].pageY);
+      prevY.value = e.touches[0].pageY;
+    }
 
-  @Prop({ required: false })
-  public default?: number;
+    function onKnobMouseDrag(e: MouseEvent) {
+      onKnobDrag(e.pageY);
+      prevY.value = e.pageY;
+    }
 
-  @Prop({ required: false, default: true })
-  public shadow!: boolean;
+    function onDocumentMouseUp() {
+      document.removeEventListener("mousemove", onKnobMouseDrag);
+      document.removeEventListener("touchmove", onKnobTouchDrag);
+      document.removeEventListener("mouseup", onDocumentMouseUp);
+      document.removeEventListener("touchend", onDocumentMouseUp);
+      prevY.value = -1;
+    }
 
-  @Prop({ required: false, default: "black" })
-  public shadowColor!: string;
+    function onKnobMouseDown(e: MouseEvent) {
+      e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+      document.addEventListener("mousemove", onKnobMouseDrag);
+      document.addEventListener("touchmove", onKnobTouchDrag);
+      document.addEventListener("mouseup", onDocumentMouseUp);
+      document.addEventListener("touchend", onDocumentMouseUp);
+    }
 
-  get cssVars() {
+    function onKnobDblClick() {
+      const value = typeof props.default === "undefined"
+        ? midValue.value
+        : props.default;
+      unsteppedValue.value = value;
+      context.emit("input", valueCurve.value.getCurvedValue(value));
+    }
+
+    watch(() => props.value, function (newValue: number) {
+      curvedValue.value = newValue;
+      unsteppedValue.value = valueCurve.value.getLinearValue(curvedValue.value);
+      linearValue.value =
+        props.step === 0
+          ? unsteppedValue.value
+          : roundToStep(unsteppedValue.value);
+    });
+
     return {
-      "--shadowColor": this.shadowColor,
-    };
-  }
-
-  public constructor() {
-    super();
-    this.valueCurve = CurvedRangeFactory.getCurvedRange(
-      this.scale,
-      this.minValue,
-      this.maxValue
-    );
-    this.linearValue = this.value;
-    this.curvedValue = this.valueCurve.getCurvedValue(this.value);
-    this.unsteppedValue = this.curvedValue;
-  }
-
-  private onKnobMouseDown(e: MouseEvent) {
-    e.preventDefault ? e.preventDefault() : (e.returnValue = false);
-    document.addEventListener("mousemove", this.onKnobMouseDrag);
-    document.addEventListener("touchmove", this.onKnobTouchDrag);
-    document.addEventListener("mouseup", this.onDocumentMouseUp);
-    document.addEventListener("touchend", this.onDocumentMouseUp);
-  }
-
-  private onDocumentMouseUp() {
-    document.removeEventListener("mousemove", this.onKnobMouseDrag);
-    document.removeEventListener("touchmove", this.onKnobTouchDrag);
-    document.removeEventListener("mouseup", this.onDocumentMouseUp);
-    document.removeEventListener("touchend", this.onDocumentMouseUp);
-    this.prevY = -1;
-  }
-
-  private onKnobDblClick() {
-    const value =
-      typeof this.default === "undefined" ? this.midValue : this.default;
-    this.unsteppedValue = value;
-    this.$emit("input", this.valueCurve.getCurvedValue(value));
-  }
-
-  private roundToStep(x: number) {
-    if (this.step === 0) {
-      throw "step is zero or undefined";
-    }
-    const roundedValue = Math.round(x / this.step) * this.step;
-    return roundedValue < this.minValue
-      ? this.minValue
-      : roundedValue > this.maxValue
-      ? this.maxValue
-      : roundedValue;
-  }
-
-  private onKnobDrag(currY: number) {
-    if (this.prevY >= 0) {
-      const diffY = this.prevY - currY;
-      let knobValue =
-        this.unsteppedValue + (diffY / this.dragRange) * (this.valueRange / 2);
-      knobValue =
-        knobValue > this.maxValue
-          ? this.maxValue
-          : knobValue < this.minValue
-          ? this.minValue
-          : knobValue;
-      this.unsteppedValue = knobValue;
-      const steppedValue =
-        this.step === 0
-          ? this.unsteppedValue
-          : this.roundToStep(this.unsteppedValue);
-      this.$emit("input", this.valueCurve.getCurvedValue(steppedValue));
+      knobRotation,
+      cssVars,
+      onKnobMouseDown,
+      onKnobDblClick
     }
   }
+});
 
-  private onKnobTouchDrag(e: TouchEvent) {
-    this.onKnobDrag(e.touches[0].pageY);
-    this.prevY = e.touches[0].pageY;
-  }
-
-  private onKnobMouseDrag(e: MouseEvent) {
-    this.onKnobDrag(e.pageY);
-    this.prevY = e.pageY;
-  }
-
-  get knobRotation() {
-    const offset = this.linearValue - this.midValue;
-    return (offset / (this.valueRange / 2)) * this.rotationMax;
-  }
-
-  get midValue() {
-    return this.minValue + this.valueRange / 2;
-  }
-
-  get valueRange() {
-    return this.maxValue - this.minValue;
-  }
-
-  @Watch("value")
-  onValueChanged(value: number) {
-    this.curvedValue = value;
-    this.unsteppedValue = this.valueCurve.getLinearValue(this.curvedValue);
-    this.linearValue =
-      this.step === 0
-        ? this.unsteppedValue
-        : this.roundToStep(this.unsteppedValue);
-  }
-}
 </script>
 
 <style scoped>

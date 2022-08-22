@@ -75,7 +75,7 @@ interface IPhaserSettings {
   frequency: number;
   delayTime: number;
   depth: number;
-	feedback: number
+	feedback: number;
 }
 
 @Component({
