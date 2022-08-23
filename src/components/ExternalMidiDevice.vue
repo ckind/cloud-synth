@@ -1,6 +1,4 @@
 <template>
-  <!-- todo: this is kind of messy...should generate keys in a loop -->
-  <!-- prettier-ignore -->
   <v-row class="keyboard-container">
     <v-card
       v-if="!webmidiSupported"
