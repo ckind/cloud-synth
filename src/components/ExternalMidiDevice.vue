@@ -48,12 +48,12 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, onBeforeUnmount } from "vue";
 import { Draw, immediate } from "tone";
-import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
 import { MidiFunction, IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
 import webmidi, { InputEventNoteoff, InputEventNoteon } from "webmidi";
 import { v4 as uuidv4 } from "uuid";
 import DomPiano from "@/components/DomPiano.vue";
 import { IDomPiano } from "@/components/DomPiano.vue";
+import { useMidiConnections } from "@/composables/useMidiConnections";
 
 export default defineComponent({
   emits: ["deviceMounted"],
@@ -67,25 +67,12 @@ export default defineComponent({
     const selectedExternalDevice = ref("Click to Select Device");
     const availableDevices = ref(new Array<string>());
     const domPiano = ref(null as IDomPiano | null);
-
-    const connections = new Array<IMidiReceiver>();
     
     function applySettings(settings: any) {
       // nothing yet
     }
 
-    function connect(receiver: IMidiReceiver) {
-      connections.push(receiver);
-    }
-
-    function disconnect(receiver: IMidiReceiver) {
-      const i = connections.indexOf(receiver);
-      if (i > -1) {
-        connections.splice(i, 1);
-      } else {
-        throw `no existing connection to given midi receiver`;
-      }
-    }
+    const { connect, disconnect, connections } = useMidiConnections();
 
     function sendMidi(message: IMidiMessage) {
       connections.forEach(r => {

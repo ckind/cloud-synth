@@ -61,7 +61,7 @@
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'External'"
       />
-      <step-sequencer-v-2
+      <step-sequencer
         ref="stepSequencer"
         @deviceMounted="newDeviceMounted"
         v-if="currentDeviceName === 'Step Sequencer'"
@@ -81,16 +81,13 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from "vue";
-import { Component, Vue } from "vue-property-decorator";
 import { IPreset } from "../shared/interfaces/presets/IPreset";
-import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
-import { IPresetService } from "../shared/interfaces/presets/IPresetService";
 import { getDefaultKeypadBank } from "@/services/OfflinePresetService";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 import ComputerMidiKeyboard from "./ComputerMidiKeyboard.vue";
 import ExternalMidiDevice from "./ExternalMidiDevice.vue";
-import StepSequencerV2 from "./StepSequencer.vue";
+import StepSequencer from "./StepSequencer.vue";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import DeviceContainerModal from "./DeviceContainerModal.vue";
@@ -105,7 +102,7 @@ export default defineComponent({
     DeviceDropdown,
     ComputerMidiKeyboard,
     ExternalMidiDevice,
-    StepSequencerV2,
+    StepSequencer,
     DeviceContainerModal,
   },
   setup(props, context) {

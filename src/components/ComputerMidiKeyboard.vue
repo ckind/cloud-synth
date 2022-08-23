@@ -56,7 +56,6 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, onBeforeUnmount } from "vue";
 import { Draw, immediate } from "tone";
-import { IMidiReceiver } from "@/shared/interfaces/midi/IMidiReceiver";
 import { MidiFunction, IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
 import { IComputerMidiKeyboardSettings } from "@/shared/interfaces/presets/IComputerMidiKeyboardSettings";
 import { getDefaultKeypadSettings } from "@/services/OfflinePresetService";
@@ -64,13 +63,13 @@ import KnobControl from "@/components/KnobControl.vue";
 import DomPiano from "@/components/DomPiano.vue";
 import { IDomPiano } from "@/components/DomPiano.vue";
 import { v4 as uuidv4 } from "uuid";
+import { useMidiConnections } from "@/composables/useMidiConnections"
 
 export default defineComponent({
   emits: ["deviceMounted"],
   components: { KnobControl, DomPiano },
   // todo: should break this up into composables
   setup(props, context) {
-    const connections = new Array<IMidiReceiver>();
     const keysPressed = new Array<boolean>(127).fill(false);
     const noteKeyCodes = [
       "KeyA",
@@ -96,21 +95,10 @@ export default defineComponent({
     const settings = ref(getDefaultKeypadSettings());
     const domPiano = ref(null as IDomPiano | null);
 
+    const { connect, disconnect, connections } = useMidiConnections();
+
     function applySettings(newSettings: IComputerMidiKeyboardSettings) {
       settings.value = newSettings;
-    }
-
-    function connect(receiver: IMidiReceiver) {
-      connections.push(receiver);
-    }
-
-    function disconnect(receiver: IMidiReceiver) {
-      const i = connections.indexOf(receiver);
-      if (i > -1) {
-        connections.splice(i, 1);
-      } else {
-        throw `no existing connection to given midi receiver`;
-      }
     }
 
     function sendMidi(message: IMidiMessage) {
