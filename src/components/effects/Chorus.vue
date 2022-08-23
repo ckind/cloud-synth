@@ -29,7 +29,7 @@
             :maxValue="1"
             label="Mix"
             id="mix"
-            size="50"
+            :size="50"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
@@ -38,7 +38,7 @@
             :maxValue="20"
             label="Frequency"
             id="frequency"
-            size="50"
+            :size="50"
 						scale="exponential"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
@@ -48,7 +48,7 @@
             :maxValue="1.0"
             label="Depth"
             id="depth"
-            size="50"
+            :size="50"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
         </div>

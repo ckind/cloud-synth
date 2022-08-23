@@ -29,7 +29,7 @@
             :maxValue="1"
             label="Mix"
             id="dryWet"
-            size="50"
+            :size="50"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
@@ -38,7 +38,7 @@
             :maxValue="1"
             label="Time"
             id="time"
-            size="50"
+            :size="50"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
@@ -47,7 +47,7 @@
             :maxValue="0.99"
             label="Feedback"
             id="feedback"
-            size="50"
+            :size="50"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
         </div>

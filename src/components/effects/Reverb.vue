@@ -29,7 +29,7 @@
             :maxValue="1"
             label="Mix"
             id="dryWet"
-            size="50"
+            :size="50"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
@@ -38,7 +38,7 @@
             :maxValue="20"
             label="Decay"
             id="dryWet"
-            size="50"
+            :size="50"
             :shadowColor="'#5e5e5e'"
           ></knob-control>
           <knob-control
@@ -47,7 +47,7 @@
             :maxValue="20000"
             label="Filter"
             id="filter"
-            size="50"
+            :size="50"
             scale="exponential"
             :shadowColor="'#5e5e5e'"
           ></knob-control>

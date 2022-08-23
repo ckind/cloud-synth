@@ -10,7 +10,7 @@
                 :maxValue="5"
                 :step="1"
                 v-model="settings.arpMode"
-                size="70"
+                :size="70"
                 id="arpStyleKnob"
                 label="Arp Style"
               ></knob-control>
@@ -21,7 +21,7 @@
                 :maxValue="8"
                 :step="1"
                 v-model="settings.arpRate"
-                size="70"
+                :size="70"
                 id="arpRateKnob"
                 label="Arp Rate"
               ></knob-control>

@@ -31,7 +31,7 @@
                 :maxValue="1"
                 label="Mix"
                 id="dryWet"
-                size="50"
+                :size="50"
                 :shadowColor="'#5e5e5e'"
               ></knob-control>
             </v-col>
@@ -42,7 +42,7 @@
                 :maxValue="maxDelayTimeModRate"
                 label="Mod"
                 id="modRate"
-                size="50"
+                :size="50"
                 :shadowColor="'#5e5e5e'"
               ></knob-control>
             </v-col>
@@ -56,7 +56,7 @@
                 :maxValue="2"
                 label="Time"
                 id="syncedTime"
-                size="50"
+                :size="50"
                 :step="0.25"
                 :shadowColor="'#5e5e5e'"
               ></knob-control>
@@ -67,7 +67,7 @@
                 :maxValue="maxDelayTime"
                 label="Time"
                 id="time"
-                size="50"
+                :size="50"
                 :shadowColor="'#5e5e5e'"
               ></knob-control>
             </v-col>
@@ -78,7 +78,7 @@
                 :maxValue="maxDelayTimeModAmount"
                 label="Depth"
                 id="modAmount"
-                size="50"
+                :size="50"
                 :shadowColor="'#5e5e5e'"
               ></knob-control>
             </v-col>
@@ -91,7 +91,7 @@
                 :maxValue="1.1"
                 label="Feedback"
                 id="feedback"
-                size="50"
+                :size="50"
                 :shadowColor="'#5e5e5e'"
               ></knob-control>
             </v-col>
