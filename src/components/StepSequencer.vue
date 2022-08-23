@@ -145,59 +145,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed, onBeforeUnmount } from "vue";
-import { quantizePitch, ScaleType, getScale, KeySignature } from "@/musicTheory/scales"; 
+import { defineComponent, ref, onMounted, computed, onBeforeUnmount, getCurrentInstance } from "vue";
+import { quantizePitch, getScale } from "@/musicTheory/scales"; 
 import { MidiFunction, IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
 import { ToneEvent, Transport as ToneTransport } from "tone";
 import BarGraphControl from "@/components/BarGraphControl.vue";
 import { v4 as uuidv4 } from "uuid";
 import { useMidiConnections } from "@/composables/useMidiConnections";
-
-interface Step {
-  note: number;
-  octave: number;
-  velocity: number;
-  length: number;
-  gate: boolean;
-}
-
-class PropertySequence<T> {
-  public steps: T[];
-  public length: number;
-  public currentStep: number;
-  public direction: DirectionOption;
-  public pingPongForward: boolean;
-
-  constructor(_steps: T[], _length: number, _direction: DirectionOption) {
-    this.steps = _steps;
-    this.length = _length;
-    this.direction = _direction;
-    this.currentStep = this.steps.length - 1;
-    this.pingPongForward = true;
-  }
-
-  getNextValue(): T {
-    this.currentStep = this.direction.nextStepFunction(this);
-    return this.steps[this.currentStep];
-  }
-}
-
-type SequencerAdvanceFunction = (sequence: PropertySequence<any>) => number;
-
-interface DirectionOption {
-  label: string;
-  nextStepFunction: SequencerAdvanceFunction;
-}
-interface ScaleOption {
-  label: string;
-  scale: ScaleType;
-}
-interface TransposeOption {
-  label: string;
-  note: number;
-}
-
-//#region composition api
+import { useSequencingOptions } from "@/composables/useSequencingOptions";
+import { PropertySequence, Step } from "@/shared/classes/sequencing/PropertySequence";
 
 export default defineComponent({
   emits: ["deviceMounted"],
@@ -213,86 +169,12 @@ export default defineComponent({
     const subdivision = ref(16);
     const running = ref(false);
     const selectedSequence = ref(null as PropertySequence<any> | null);
+    const container = ref(null);
 
     const { connect, disconnect, connections } = useMidiConnections();
-
-    let resizeTimer: ReturnType<typeof setTimeout>;
-    let previousPitch = -1;
-    let noteOffEventId = null as number?;
-
-    function applySettings(settings: any) {
-      // nothing yet
-    }
-
-    // todo: composable?
-    function getNextStepForward(sequence: PropertySequence<any>): number {
-      return sequence.currentStep + 1 >= sequence.length
-        ? 0
-        : sequence.currentStep + 1;
-    }
-    function getNextStepReverse(sequence: PropertySequence<any>): number {
-      return sequence.currentStep - 1 < 0
-        ? sequence.length - 1
-        : sequence.currentStep - 1;
-    }
-    function getNextStepPingPong(sequence: PropertySequence<any>): number {
-      if (sequence.pingPongForward) {
-        if (sequence.currentStep >= sequence.length - 1) {
-          sequence.pingPongForward = false;
-          return getNextStepReverse(sequence);
-        } else {
-          return getNextStepForward(sequence);
-        }
-      } else {
-        if (sequence.currentStep <= 0) {
-          sequence.pingPongForward = true;
-          return getNextStepForward(sequence);
-        } else {
-          return getNextStepReverse(sequence);
-        }
-      }
-    }
-    function getNextStepRandom(sequence: PropertySequence<any>): number {
-      return Math.floor(Math.random() * sequence.length);
-    }
-
-    const directionOptions = ref([
-      { label: "forward", nextStepFunction: getNextStepForward },
-      { label: "reverse", nextStepFunction: getNextStepReverse },
-      { label: "ping pong", nextStepFunction: getNextStepPingPong },
-      { label: "random", nextStepFunction: getNextStepRandom },
-    ] as DirectionOption[]);
-
-    const scaleOptions = ref([
-      { label: "chromatic", scale: ScaleType.Chromatic },
-      { label: "major", scale: ScaleType.Ionian },
-      { label: "minor", scale: ScaleType.Aeolian },
-      { label: "dorian", scale: ScaleType.Dorian },
-      { label: "phrygian", scale: ScaleType.Phrygian },
-      { label: "lydian", scale: ScaleType.Lydian },
-      { label: "mixolydian", scale: ScaleType.Mixolydian },
-      { label: "locrian", scale: ScaleType.Locrian },
-      { label: "harm. minor", scale: ScaleType.HarmonicMinor },
-      { label: "blues", scale: ScaleType.Blues }
-    ] as ScaleOption[]);
+    const { directionOptions, scaleOptions, transposeOptions } = useSequencingOptions();
 
     const scale = ref(scaleOptions.value[0].scale);
-
-    const transposeOptions = ref([
-      { label: "C", note: KeySignature.C },
-      { label: "C#", note: KeySignature.CSharp },
-      { label: "D", note: KeySignature.D },
-      { label: "D#", note: KeySignature.DSharp },
-      { label: "E", note: KeySignature.E },
-      { label: "F", note: KeySignature.F },
-      { label: "F#", note: KeySignature.FSharp },
-      { label: "G", note: KeySignature.G },
-      { label: "G#", note: KeySignature.GSharp },
-      { label: "A", note: KeySignature.A },
-      { label: "Bb", note: KeySignature.BFlat },
-      { label: "B", note: KeySignature.B },
-    ] as TransposeOption[]);
-
     const transpose = ref(transposeOptions.value[0].note);
 
     const noteSequence = ref(new PropertySequence<number>(
@@ -325,7 +207,35 @@ export default defineComponent({
       directionOptions.value[0]
     ));
 
+    const quantizeScale = computed(() => {
+      return getScale(scale.value, transpose.value);
+    });
+
+    const maxTrigLengthInSeconds = computed(() => {
+      // todo: should this be relative to the tempo somehow?
+      return 0.1;
+    });
+
+    const cssVars = computed(() => {
+      return {
+        "--graphWidth": `${graphWidth}px`,
+      };
+    });
+
     selectedSequence.value = noteSequence.value;
+
+    // hack to fix non-null assertion in template
+    const selectedSequenceNonNull = computed(() => {
+      return selectedSequence.value!;
+    });
+
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    let previousPitch = -1;
+    let noteOffEventId = null as number?;
+
+    function applySettings(settings: any) {
+      // nothing yet
+    }
 
     function sendMidi(message: IMidiMessage, time?: number) {
       connections.forEach((r) => {
@@ -351,25 +261,6 @@ export default defineComponent({
         );
       }
     }
-
-    const quantizeScale = computed(() => {
-      return getScale(scale.value, transpose.value);
-    });
-
-    const maxTrigLengthInSeconds = computed(() => {
-      // todo: should this be relative to the tempo somehow?
-      return 0.1;
-    });
-
-    const cssVars = computed(() => {
-      return {
-        "--graphWidth": `${graphWidth}px`,
-      };
-    });
-
-    const selectedSequenceNonNull = computed(() => {
-      return selectedSequence.value!;
-    });
 
     function triggerStep(step: Step, time: number) {
       if (step.gate) {
@@ -436,29 +327,6 @@ export default defineComponent({
       gateSequence.value.steps[i] = val === 1;
     }
 
-    const sequencerEvent = new ToneEvent((time) => {
-      advanceSequencer(time);
-    });
-
-    function dispose() {
-      sequencerEvent.stop();
-      sequencerEvent.dispose();
-    }
-
-    sequencerEvent.loop = true;
-    sequencerEvent.playbackRate = subdivision.value;
-
-    function toggleSequence() {
-      if (sequencerEvent.state === "stopped") {
-        sequencerEvent.start();
-        running.value = true;
-      } else {
-        triggerPreviousNoteRelease();
-        sequencerEvent.stop();
-        running.value = false;
-      }
-    }
-
     function displayNoteSequence() {
       selectedSequence.value = noteSequence.value;
     }
@@ -481,20 +349,41 @@ export default defineComponent({
 
     function sizeGraph() {
       // todo: this is kinda buggy when resizing but not high priority since it works on first load
-      // if ($vuetify.breakpoint.mobile) {
-      //   const el = $refs.container as Element;
-      //   graphWidth = el.getBoundingClientRect().width;
-      // } else {
-      //   graphWidth = 768;
-      // }
-
-      graphWidth.value = 768;
+      if (getCurrentInstance()?.proxy.$vuetify.breakpoint.mobile) {
+        const el = container.value! as Element;
+        graphWidth.value = el.getBoundingClientRect().width;
+      } else {
+        graphWidth.value = 768;
+      }
     }
 
     function sizeGraphDebounce() {
       // window resize event only fires before resize is applied, so use this hack to get around that
       if (resizeTimer) clearTimeout(resizeTimer);
       resizeTimer = setTimeout(sizeGraph, 100);
+    }
+
+    const sequencerEvent = new ToneEvent((time) => {
+      advanceSequencer(time);
+    });
+    
+    sequencerEvent.loop = true;
+    sequencerEvent.playbackRate = subdivision.value;
+
+    function dispose() {
+      sequencerEvent.stop();
+      sequencerEvent.dispose();
+    }
+
+    function toggleSequence() {
+      if (sequencerEvent.state === "stopped") {
+        sequencerEvent.start();
+        running.value = true;
+      } else {
+        triggerPreviousNoteRelease();
+        sequencerEvent.stop();
+        running.value = false;
+      }
     }
 
     onMounted(() => {
@@ -533,6 +422,7 @@ export default defineComponent({
       maxNumSteps,
       graphWidth,
       running,
+      container,
       connect,
       disconnect,
       applySettings,
@@ -550,8 +440,6 @@ export default defineComponent({
     }
   }
 });
-
-//#endregion
 
 </script>
 
