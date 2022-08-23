@@ -1,7 +1,7 @@
 <template>
   <!-- todo: this is kind of messy...should generate keys in a loop -->
   <!-- prettier-ignore -->
-  <div class="keyboard">
+  <div :class="['keyboard', disabled ? 'disabled' : '']">
     <div v-if="$vuetify.breakpoint.mdAndUp" class="octave-section">
       <div id="key24" class="key">
         <div id="key25" class="black-key"></div>
@@ -94,27 +94,12 @@ export interface IDomPiano {
 
 export default defineComponent({
   emits: ["keySlideOn", "keySlideOff", "keyMouseDown", "keyMouseUp"],
+  props: {
+    disabled: { type: Boolean, required: false, default: false },
+  },
   setup(props, context) {
     const keyPressedColor = "#ff2929";
     const blackKeys = [1, 3, 6, 8, 10];
-    const noteKeyCodes = [
-      "KeyA",
-      "KeyW",
-      "KeyS",
-      "KeyE",
-      "KeyD",
-      "KeyF",
-      "KeyT",
-      "KeyG",
-      "KeyY",
-      "KeyH",
-      "KeyU",
-      "KeyJ",
-      "KeyK",
-      "KeyO",
-      "KeyL",
-    ];
-    let mouseIsDown = false;
 
     function displayKeyDown(keyNumber: number) {
       const key: HTMLElement | null = document.querySelector(`#key${keyNumber}`);
@@ -139,24 +124,30 @@ export default defineComponent({
 
     function keySlideOn(e: Event) {
       e.stopPropagation();
-      context.emit("keySlideOn", getKeyNum(e));
+      if (!props.disabled) {
+        context.emit("keySlideOn", getKeyNum(e))
+      }
     }
 
     function keySlideOff(e: Event) {
       e.stopPropagation();
-      context.emit("keySlideOff", getKeyNum(e));
+      if (!props.disabled) {
+        context.emit("keySlideOff", getKeyNum(e));
+      }
     }
 
     function keyMouseDown(e: Event) {
       e.stopPropagation();
-      mouseIsDown = true;
-      context.emit("keyMouseDown", getKeyNum(e));
+      if (!props.disabled) {
+        context.emit("keyMouseDown", getKeyNum(e));
+      }
     }
 
     function keyMouseUp(e: Event) {
       e.stopPropagation();
-      mouseIsDown = false;
-      context.emit("keyMouseUp", getKeyNum(e));
+      if (!props.disabled) {
+        context.emit("keyMouseUp", getKeyNum(e));
+      }
     }
 
     function assignKeyboardListeners() {
