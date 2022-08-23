@@ -116,6 +116,7 @@
 </template>
 
 <script lang="ts">
+import { defineComponent, ref, onMounted, onBeforeUnmount } from "vue";
 import { Component, Vue } from "vue-property-decorator";
 import { Draw, immediate } from "tone";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
@@ -127,152 +128,158 @@ import {
 import webmidi, { InputEventNoteoff, InputEventNoteon } from "webmidi";
 import { v4 as uuidv4 } from "uuid";
 
-@Component({})
-export default class ExternalMidiDevice extends Vue implements IMidiDevice {
-  guid: string;
-  name = "External Midi Device";
-  settings = {}; // todo: settings for external?
+export default defineComponent({
+  emits: ["deviceMounted"],
+  setup(props, context) {
+    const guid = ref(uuidv4());
+    const name = ref("External Midi Device");
+    const settings = ref({}); // todo: settings for external?
+    const webmidiSupported = ref(true);
+    const webmidiError = ref("");
+    const selectedExternalDevice = ref("Click to Select Device");
+    const availableDevices = ref(new Array<string>());
 
-  private selectedExternalDevice = "Click to Select Device";
-  private connections: Array<IMidiReceiver>;
-  private webmidiSupported = true;
-  private webmidiError = "";
-  private availableDevices: string[] = [];
-  private readonly keyPressedColor = "#ff2929";
-  private readonly blackKeys = [1, 3, 6, 8, 10];
+    const keyPressedColor = "#ff2929";
+    const blackKeys = [1, 3, 6, 8, 10];
+    const connections = new Array<IMidiReceiver>();
+    
+    function applySettings(settings: any) {
+      // nothing yet
+    }
 
-  public constructor() {
-    super();
+    function connect(receiver: IMidiReceiver) {
+      connections.push(receiver);
+    }
 
-    this.guid = uuidv4();
-    this.connections = [];
+    function disconnect(receiver: IMidiReceiver) {
+      const i = connections.indexOf(receiver);
+      if (i > -1) {
+        connections.splice(i, 1);
+      } else {
+        throw `no existing connection to given midi receiver`;
+      }
+    }
+
+    function displayKeyDown(keyNumber: number) {
+      const key: HTMLElement | null = document.querySelector(`#key${keyNumber}`);
+      if (key != null) {
+        key.style.background = keyPressedColor;
+      }
+    }
+
+    function displayKeyUp(keyNumber: number) {
+      const key: HTMLElement | null = document.querySelector(`#key${keyNumber}`);
+      if (key != null) {
+        key.style.background = blackKeys.includes(keyNumber % 12)
+          ? "black"
+          : "white";
+      }
+    }
+
+    function sendMidi(message: IMidiMessage) {
+      connections.forEach(r => {
+        r.receiveMidi(message);
+      });
+    }
+
+    function receiveMidi(message: IMidiMessage) {
+      switch (message.midiFunction) {
+        case MidiFunction.noteon:
+          Draw.schedule(() => {
+            displayKeyDown(message.noteNumber);
+          }, immediate());
+          sendMidi(message);
+          break;
+        case MidiFunction.noteoff:
+          Draw.schedule(() => {
+            displayKeyUp(message.noteNumber);
+          }, immediate());
+          sendMidi(message);
+          break;
+      }
+      sendMidi(message);
+    }
+
+    function extNoteOn(e: InputEventNoteon) {
+      sendMidi({
+        midiFunction: MidiFunction.noteon,
+        noteNumber: e.note.number,
+        noteVelocity: Math.round(e.velocity * 127)
+      });
+      displayKeyDown(e.note.number);
+    }
+
+    function extNoteOff(e: InputEventNoteoff) {
+      sendMidi({
+        midiFunction: MidiFunction.noteoff,
+        noteNumber: e.note.number,
+        noteVelocity: Math.round(e.velocity * 127)
+      });
+      displayKeyUp(e.note.number);
+    }
+
+    function externalDeviceSelected(deviceName: string) {
+      const old = webmidi.getInputByName(selectedExternalDevice.value);
+      const input = webmidi.getInputByName(deviceName);
+      if (input) {
+        if (old) {
+          old.removeListener("noteon", "all", extNoteOn);
+          old.removeListener("noteoff", "all", extNoteOff);
+        }
+        selectedExternalDevice.value = deviceName;
+        input.addListener("noteon", "all", extNoteOn);
+        input.addListener("noteoff", "all", extNoteOff);
+      }
+    }
+
+    function dispose() {
+      connections.length = 0;
+      if (webmidi.enabled) {
+        const input = webmidi.getInputByName(selectedExternalDevice.value);
+        if (input) {
+          input.removeListener("noteon", "all", extNoteOn);
+          input.removeListener("noteoff", "all", extNoteOff);
+        }
+        webmidi.disable();
+      }
+    }
+
+    onMounted(() => {
+      context.emit("deviceMounted");
+    });
+
+    onBeforeUnmount(() => {
+      dispose();
+    });
 
     webmidi.enable(err => {
       if (err) {
-        this.webmidiSupported = false;
-        this.webmidiError = err ? err.message : "";
+        webmidiSupported.value = false;
+        webmidiError.value = err ? err.message : "";
       } else {
         webmidi.inputs.forEach(input => {
-          this.availableDevices.push(input.name);
+          availableDevices.value.push(input.name);
         });
       }
     });
-  }
 
-  // Lifecycle Hooks
-
-  mounted() {
-    this.$emit("deviceMounted");
-  }
-
-  beforeDestroy() {
-    this.dispose();
-  }
-
-  // Methods
-
-  externalDeviceSelected(deviceName: string) {
-    const old = webmidi.getInputByName(this.selectedExternalDevice);
-    const input = webmidi.getInputByName(deviceName);
-    if (input) {
-      if (old) {
-        old.removeListener("noteon", "all", this.extNoteOn);
-        old.removeListener("noteoff", "all", this.extNoteOff);
-      }
-      this.selectedExternalDevice = deviceName;
-      input.addListener("noteon", "all", this.extNoteOn);
-      input.addListener("noteoff", "all", this.extNoteOff);
+    return {
+      guid,
+      name,
+      settings,
+      webmidiSupported,
+      webmidiError,
+      selectedExternalDevice,
+      availableDevices,
+      applySettings,
+      connect,
+      disconnect,
+      externalDeviceSelected
     }
   }
+});
 
-  applySettings(settings: any) {
-    // nothing yet
-  }
 
-  connect(receiver: IMidiReceiver) {
-    this.connections.push(receiver);
-    console.log("conntected");
-  }
-
-  disconnect(receiver: IMidiReceiver) {
-    const i = this.connections.indexOf(receiver);
-    if (i > -1) {
-      this.connections.splice(i, 1);
-    } else {
-      throw `no existing connection to given midi receiver`;
-    }
-  }
-
-  dispose() {
-    this.connections.length = 0;
-    if (webmidi.enabled) {
-      const input = webmidi.getInputByName(this.selectedExternalDevice);
-      if (input) {
-        input.removeListener("noteon", "all", this.extNoteOn);
-        input.removeListener("noteoff", "all", this.extNoteOff);
-      }
-      webmidi.disable();
-    }
-  }
-
-  sendMidi(message: IMidiMessage) {
-    this.connections.forEach(r => {
-      r.receiveMidi(message);
-    });
-  }
-
-  receiveMidi(message: IMidiMessage) {
-    switch (message.midiFunction) {
-      case MidiFunction.noteon:
-        Draw.schedule(() => {
-          this.displayKeyDown(message.noteNumber);
-        }, immediate());
-        this.sendMidi(message);
-        break;
-      case MidiFunction.noteoff:
-        Draw.schedule(() => {
-          this.displayKeyUp(message.noteNumber);
-        }, immediate());
-        this.sendMidi(message);
-        break;
-    }
-    this.sendMidi(message);
-  }
-
-  private extNoteOn(e: InputEventNoteon) {
-    this.sendMidi({
-      midiFunction: MidiFunction.noteon,
-      noteNumber: e.note.number,
-      noteVelocity: Math.round(e.velocity * 127)
-    });
-    this.displayKeyDown(e.note.number);
-  }
-
-  private extNoteOff(e: InputEventNoteoff) {
-    this.sendMidi({
-      midiFunction: MidiFunction.noteoff,
-      noteNumber: e.note.number,
-      noteVelocity: Math.round(e.velocity * 127)
-    });
-    this.displayKeyUp(e.note.number);
-  }
-
-  private displayKeyDown(keyNumber: number) {
-    const key: HTMLElement | null = document.querySelector(`#key${keyNumber}`);
-    if (key != null) {
-      key.style.background = this.keyPressedColor;
-    }
-  }
-
-  public displayKeyUp(keyNumber: number) {
-    const key: HTMLElement | null = document.querySelector(`#key${keyNumber}`);
-    if (key != null) {
-      key.style.background = this.blackKeys.includes(keyNumber % 12)
-        ? "black"
-        : "white";
-    }
-  }
-}
 </script>
 
 <style scoped>
