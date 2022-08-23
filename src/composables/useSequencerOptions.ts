@@ -10,7 +10,7 @@ import {
 } from "@/shared/classes/sequencing/PropertySequence";
 import { ScaleType, KeySignature } from "@/musicTheory/scales";
 
-export function useSequencingOptions() {
+export function useSequencerOptions() {
 
 	const directionOptions = ref([
 		{ label: "forward", nextStepFunction: getNextStepForward },

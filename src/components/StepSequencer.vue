@@ -152,7 +152,7 @@ import { ToneEvent, Transport as ToneTransport } from "tone";
 import BarGraphControl from "@/components/BarGraphControl.vue";
 import { v4 as uuidv4 } from "uuid";
 import { useMidiConnections } from "@/composables/useMidiConnections";
-import { useSequencingOptions } from "@/composables/useSequencingOptions";
+import { useSequencerOptions } from "@/composables/useSequencerOptions";
 import { PropertySequence, Step } from "@/shared/classes/sequencing/PropertySequence";
 
 export default defineComponent({
@@ -172,7 +172,7 @@ export default defineComponent({
     const container = ref(null);
 
     const { connect, disconnect, connections } = useMidiConnections();
-    const { directionOptions, scaleOptions, transposeOptions } = useSequencingOptions();
+    const { directionOptions, scaleOptions, transposeOptions } = useSequencerOptions();
 
     const scale = ref(scaleOptions.value[0].scale);
     const transpose = ref(transposeOptions.value[0].note);
@@ -282,6 +282,7 @@ export default defineComponent({
         );
 
         // todo: need be able to cancel this if the next note comes first
+        // todo: apply length
         sendMidi(
           {
             midiFunction: MidiFunction.noteoff,
@@ -349,6 +350,7 @@ export default defineComponent({
 
     function sizeGraph() {
       // todo: this is kinda buggy when resizing but not high priority since it works on first load
+      // might want to refactor this to use pure css
       if (getCurrentInstance()?.proxy.$vuetify.breakpoint.mobile) {
         const el = container.value! as Element;
         graphWidth.value = el.getBoundingClientRect().width;
