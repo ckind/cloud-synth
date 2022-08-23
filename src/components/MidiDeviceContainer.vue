@@ -94,7 +94,6 @@ import StepSequencerV2 from "./StepSequencer.vue";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import DeviceContainerModal from "./DeviceContainerModal.vue";
-import { context } from "tone";
 
 //#region Composition API
 
