@@ -7,82 +7,68 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { defineComponent, ref, onMounted, onBeforeUnmount } from "vue";
 import { Gain as ToneGain, Midi } from "tone";
 import { Piano as TonePiano } from '@tonejs/piano';
 import { IMidiMessage, MidiFunction } from "@/shared/interfaces/midi/IMidiMessage";
-import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
 import { v4 as uuidv4 } from "uuid";
 
-@Component({})
-export default class Piano extends Vue implements IInstrumentDevice {
-  guid: string;
-  name = "Piano";
-  output!: ToneGain;
-  piano!: TonePiano;
-  settings = {};
-
-  public constructor() {
-    super();
-
-    this.guid = uuidv4();
-  }
-
-  // Lifecycle Hooks
-
-  mounted() {
-    this.$emit("deviceMounted");
-  }
-
-  created() {
-    /**
-     * Important: define web audio objects outside of the constructor so vue doesn't
-     * apply reactivity to them. Reactivity can interfere with the dispose methods
-     * of some Tone/WebAudio objects
-     */
-
-    this.piano = new TonePiano({
+export default defineComponent({
+  emits: ["deviceMounted"],
+  setup(props, context) {
+    const guid = ref(uuidv4());
+    const name = ref("Piano");
+    const output = new ToneGain(1);
+    const piano = new TonePiano({
       velocities: 1
     });
 
-    this.output = new ToneGain(1);
-
-    // todo: this takes fucking forever to load multiple velocities
-    this.piano.load().then(() => {
-      this.piano.connect(this.output);
+    // todo: option to select number of velocities, volume knob
+    
+    piano.load().then(() => {
+      // todo: show model while loading samples
+      piano.connect(output);
       console.log('piano samples loaded');
-    });    
-  }
+    });
 
-  beforeDestroy() {
-    this.dispose();
-  }
+    function dispose() {
+      piano.disconnect(output);
+      piano.dispose();
+      output.dispose();
+    }
 
-  // Methods
+    function receiveMidi(message: IMidiMessage, time?: number) {
+      switch (message.midiFunction) {
+        case MidiFunction.noteon:
+          piano.keyDown({ note: Midi(message.noteNumber).toNote(), time: time, velocity: message.noteVelocity / 127});
+          break;
+        case MidiFunction.noteoff:
+          piano.keyUp({ note: Midi(message.noteNumber).toNote(), time: time, velocity: message.noteVelocity / 127});
+          break;
+      }
+    }
 
-  applySettings(settings: any) {
-    // nothing to see here
-  }
+    function applySettings(settings: any) {
+      // nothing to see here
+    }
 
-  dispose() {
-    this.piano.disconnect(this.output);
-    this.piano.dispose();
-    this.output.dispose();
-  }
+    onMounted(() => {
+      context.emit("deviceMounted");
+    });
 
-  receiveMidi(message: IMidiMessage, time?: number) {
-    switch (message.midiFunction) {
-      case MidiFunction.noteon:
-        this.piano.keyDown({ note: Midi(message.noteNumber).toNote(), time: time, velocity: message.noteVelocity / 127});
-        break;
-      case MidiFunction.noteoff:
-        this.piano.keyUp({ note: Midi(message.noteNumber).toNote(), time: time, velocity: message.noteVelocity / 127});
-        break;
+    onBeforeUnmount(() => {
+      dispose();
+    });
+
+    return {
+      guid,
+      name,
+      output,
+      receiveMidi
     }
   }
+});
 
-  // Watches
-}
 </script>
 
 <style scoped>

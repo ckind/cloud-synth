@@ -18,35 +18,34 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { defineComponent, ref, onMounted, PropType } from "vue";
 
-@Component({})
-export default class PageSelector extends Vue {
-  private selectedOption = 0;
+export default defineComponent({
+  emits: ["pageSelected"],
+  props: {
+    options: { type: Array as PropType<Array<any>>, required: true },
+    dark: { type: Boolean, required: false, default: false },
+    slim: { type: Boolean, required: false, default: false }
+  },
+  setup(props, context) {
+    const selectedOption = ref(0);
 
-  @Prop({ required: true })
-  public options!: any[];
+    function pageSelected(option: any, i: number) {
+      selectedOption.value = i;
+      // this.$forceUpdate(); // todo: how to do this?
+      context.emit("pageSelected", option);
+    }
 
-  @Prop({ required: false, default: false })
-  public dark!: boolean;
+    onMounted(() => {
+      pageSelected(props.options[0], 0);
+    });
 
-  @Prop({ required: false, default: false })
-  public slim!: boolean;
-
-  constructor() {
-    super();
+    return {
+      selectedOption,
+      pageSelected
+    }
   }
-
-  mounted() {
-    this.pageSelected(this.options[0], 0);
-  }
-
-  pageSelected(option: any, i: number) {
-    this.selectedOption = i;
-    this.$forceUpdate();
-    this.$emit("pageSelected", option);
-  }
-}
+});
 </script>
 
 <style scoped>
