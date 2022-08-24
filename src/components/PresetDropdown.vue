@@ -51,12 +51,35 @@
 </template>
 
 <script lang="ts">
+import { defineComponent, PropType, ref } from "vue";
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { IPresetBank } from "@/shared/interfaces/presets/IPresetBank";
 import { IPreset } from "@/shared/interfaces/presets/IPreset";
 
+export default defineComponent({
+  emits: ["presetSelected"],
+  props: {
+    bank: { type: Object as PropType<IPresetBank>, required: true },
+    selectedPreset: { type: Object as PropType<IPreset>, required: true },
+    label: { type: String, required: true }
+  },
+  setup(props, context) {
+    const showMenu = ref(false);
+
+    function presetSelected(p: IPreset) {
+      showMenu.value = false;
+      context.emit("presetSelected", p);
+    }
+
+    return {
+      showMenu,
+      presetSelected
+    }
+  }
+});
+
 @Component({})
-export default class PresetDropdown extends Vue {
+class PresetDropdown extends Vue {
   @Prop({ required: true })
   public bank!: IPresetBank;
 
