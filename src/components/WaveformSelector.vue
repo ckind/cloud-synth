@@ -1,6 +1,6 @@
 <template>
   <div class="waveform-selector-container">
-    <div v-if="myValue === 'sine'" @click="changeType(0)">
+    <div v-if="value === 'sine'" @click="changeType(0)">
       <svg
         width="30px"
         height="30px"
@@ -28,7 +28,7 @@
         </g>
       </svg>
     </div>
-    <div v-if="myValue === 'triangle'" @click="changeType(1)">
+    <div v-if="value === 'triangle'" @click="changeType(1)">
       <svg
         width="30px"
         height="30px"
@@ -62,7 +62,7 @@
         </g>
       </svg>
     </div>
-    <div v-if="myValue === 'sawtooth'" @click="changeType(2)">
+    <div v-if="value === 'sawtooth'" @click="changeType(2)">
       <svg
         width="30px"
         height="30px"
@@ -94,7 +94,7 @@
         </g>
       </svg>
     </div>
-    <div v-if="myValue === 'square'" @click="changeType(3)">
+    <div v-if="value === 'square'" @click="changeType(3)">
       <svg
         width="30px"
         height="30px"
@@ -131,41 +131,32 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { defineComponent, PropType } from "vue";
 import { ToneOscillatorType } from "tone";
 
-@Component({})
-export default class WaveformSelector extends Vue {
-  private waveforms: Array<ToneOscillatorType>;
-  private myValue: ToneOscillatorType;
+export default defineComponent({
+  emits: ["input"],
+  props: {
+    value: { type: String as PropType<ToneOscillatorType>, required: true }
+  },
+  setup(props, context) {
+    const waveforms: Array<ToneOscillatorType> = [
+      "sine",
+      "triangle",
+      "sawtooth",
+      "square"
+    ];
 
-  // for some reason vue complains about this if its required
-  // even if you have v-model
-  @Prop({ required: false })
-  public value!: ToneOscillatorType;
+    function changeType(i: number) {
+      context.emit("input", waveforms[(i + 1) % waveforms.length]);
+    }
 
-  constructor() {
-    super();
-
-    this.myValue = "square";
-
-    this.waveforms = new Array<ToneOscillatorType>(4);
-    this.waveforms[0] = "sine";
-    this.waveforms[1] = "triangle";
-    this.waveforms[2] = "sawtooth";
-    this.waveforms[3] = "square";
+    return {
+      changeType
+    }
   }
+});
 
-  changeType(i: number) {
-    this.myValue = this.waveforms[(i + 1) % this.waveforms.length];
-    this.$emit('input', this.myValue);
-  }
-
-  @Watch("value")
-  onValueChanged(incomingValue: ToneOscillatorType) {
-    this.myValue = incomingValue;
-  }
-}
 </script>
 
 <style scoped>
