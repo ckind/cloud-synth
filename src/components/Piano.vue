@@ -64,7 +64,8 @@ export default defineComponent({
       guid,
       name,
       output,
-      receiveMidi
+      receiveMidi,
+      applySettings
     }
   }
 });

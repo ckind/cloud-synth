@@ -23,26 +23,24 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { IDevice } from "@/shared/interfaces/devices/IDevice";
+import { defineComponent } from "vue";
 
-@Component({})
-export default class DeviceDropdown extends Vue {
-  @Prop({ required: true })
-  public devices!: string[];
+export default defineComponent({
+  emits: ["deviceSelected"],
+  props: {
+    devices: { type: Array<string>, required: true },
+    selectedDeviceName: { type: String, required: true },
+    label: { type: String, required: true }
+  },
+  setup(props, context) {
+    function deviceSelected(deviceName: string) {
+      context.emit("deviceSelected", deviceName);
+    }
 
-  @Prop({ required: true })
-  public selectedDeviceName!: string[];
-
-  @Prop({ required: true })
-  public label!: string;
-
-  constructor() {
-    super();
+    return {
+      deviceSelected
+    }
   }
+});
 
-  deviceSelected(deviceName: string) {
-    this.$emit("deviceSelected", deviceName);
-  }
-}
 </script>

@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    @input="(val) => $emit('input', val)"
+    @input="dialogInput"
     dark
     max-width="600"
   >
@@ -37,48 +37,48 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { defineComponent, PropType } from "vue";
 import { IPreset } from "../shared/interfaces/presets/IPreset";
 import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 
-@Component({
+export default defineComponent({
+  emits: ["input", "deviceSelected", "presetSelected"],
   components: {
     DeviceDropdown,
     PresetDropdown,
   },
-})
-export default class DeviceContainerModal extends Vue {
-  @Prop({ required: true })
-  public value!: boolean;
+  props: {
+    value: { type: Boolean, required: true },
+    currentPresetBank: { type: Object as PropType<IPresetBank>, required: true },
+    currentPreset: { type: Object as PropType<IPreset>, required: true },
+    currentDeviceName: { type: String, required: true },
+    availableDevices: { type: Array<string>, required: true },
+  },
+  setup(prop, context) {
+    function closeDialog() {
+      context.emit("input", false);
+    }
 
-  @Prop({ required: true })
-  public currentPresetBank!: IPresetBank;
+    function deviceSelected(d: string) {
+      context.emit("deviceSelected", d);
+    }
 
-  @Prop({ required: true })
-  public currentPreset!: IPreset;
+    function presetSelected(p: IPreset) {
+      context.emit("presetSelected", p);
+    }
 
-  @Prop({ required: true })
-  public currentDeviceName!: string;
+    function dialogInput(val: any) {
+      context.emit("input", val);
+    }
 
-  @Prop({ required: true })
-  public availableDevices!: string[];
-
-  constructor() {
-    super();
+    return {
+      closeDialog,
+      deviceSelected,
+      presetSelected,
+      dialogInput
+    }
   }
-
-  private closeDialog() {
-    this.$emit("input", false);
-  }
-
-  private deviceSelected(d: string) {
-    this.$emit("deviceSelected", d);
-  }
-
-  private presetSelected(p: IPreset) {
-    this.$emit("presetSelected", p);
-  }
-}
+});
 </script>
