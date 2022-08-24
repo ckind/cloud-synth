@@ -292,12 +292,6 @@ export default defineComponent({
       dispose();
     });
 
-    // todo:
-    // @Watch("$vuetify.breakpoint.name")
-    // private onBreakpointChange(value: string) {
-    //   this.resetKeyboardListeners();
-    // }
-
     document.addEventListener("keydown", userKeyPressed);
     document.addEventListener("keyup", userKeyReleased);
 

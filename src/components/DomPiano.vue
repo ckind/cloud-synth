@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeUnmount, onMounted } from "vue";
+import { defineComponent, onBeforeUnmount, onMounted, watch, getCurrentInstance} from "vue";
 
 export interface IDomPiano {
   displayKeyDown(keyNumber: number): void;
@@ -179,6 +179,12 @@ export default defineComponent({
       }
     }
 
+    function resetKeyboardListeners() {
+      clearKeyboardListeners();
+      assignKeyboardListeners();
+      console.log("foo");
+    }
+
     onMounted(() => {
       assignKeyboardListeners();
     });
@@ -186,6 +192,11 @@ export default defineComponent({
     onBeforeUnmount(() => {
       clearKeyboardListeners();
     });
+
+    // todo: need to fix this
+    // watch(getCurrentInstance()?.proxy.$vuetify.breakpoint.name, () => {
+    //   resetKeyboardListeners();
+    // });
 
     return {
       displayKeyDown,

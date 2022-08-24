@@ -1,7 +1,7 @@
 <template>
   <div class="component-container">
     <div
-      :class="['graph-container', this.activeAnchorId !== '' ? 'dragging' : '']"
+      :class="['graph-container', activeAnchorId !== '' ? 'dragging' : '']"
       @mousemove="onMouseMove"
       @touchmove="onTouchMove"
       @mouseup="onMouseUp"
@@ -18,7 +18,7 @@
         />
         <path
           id="envPath"
-          :d="this.adsrPath"
+          :d="adsrPath"
           fill="transparent"
           :stroke="envelopeColor"
           stroke-width="2"
@@ -132,17 +132,17 @@
         />
       </svg>
       <div class="value-label-container">
-        <div class="value-label">{{ Math.round(this.value.attack) }} ms</div>
-        <div class="value-label">{{ Math.round(this.value.decay) }} ms</div>
-        <div class="value-label">{{ this.value.sustain.toFixed(2) }}</div>
-        <div class="value-label">{{ Math.round(this.value.release) }} ms</div>
+        <div class="value-label">{{ Math.round(value.attack) }} ms</div>
+        <div class="value-label">{{ Math.round(value.decay) }} ms</div>
+        <div class="value-label">{{ value.sustain.toFixed(2) }}</div>
+        <div class="value-label">{{ Math.round(value.release) }} ms</div>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { defineComponent, ref, computed, PropType } from "vue";
 
 interface EnvSettings {
   attack: number;
@@ -151,265 +151,303 @@ interface EnvSettings {
   release: number;
 }
 
-@Component({})
-export default class AdsrGraph extends Vue {
-  private backgroundColor = "black";
-  private envelopeColor = "#70bfff";
-  private anchorColor = "#70bfff";
-  private anchorRadius = 4;
-  private ghostAnchorRadius = 16;
+export default defineComponent ({
+  emits: ["input"],
+  props: {
+    value: { type: Object as PropType<EnvSettings>, required: true },
+    attackMax: { type: Number, required: false, default: 1000 },
+    decayMax: { type: Number, required: false, default: 1000 },
+    releaseMax: { type: Number, required: false, default: 1000 },
+    width: { type: Number, required: false, default: 200 },
+    height: { type: Number, required: false, default: 0 }
+  },
+  setup(props, context) {
+    const backgroundColor = ref("black");
+    const envelopeColor = ref("#70bfff");
+    const anchorColor = ref("#70bfff");
+    const anchorRadius = ref(4);
+    const ghostAnchorRadius = ref(16);
 
-  private attackWidthRatio = 0.25;
-  private decayWidthRatio = 0.4;
-  private susatinWidthRatio = 0.1;
-  private releaseWidthRatio = 0.25;
+    const attackWidthRatio = 0.25;
+    const decayWidthRatio = 0.4;
+    const susatinWidthRatio = 0.1;
+    const releaseWidthRatio = 0.25;
 
-  private startX = 0;
-  private startY = 0;
+    const startX = ref(0);
+    const startY = ref(0);
 
-  private attackPeakX = 0;
-  private attackPeakY = 0;
+    const attackPeakX = ref(0);
+    const attackPeakY = ref(0);
 
-  private decayBezier1X = 0;
-  private decayBezier1Y = 0;
-  private decayBezier2X = 0;
-  private decayBezier2Y = 0;
+    let decayBezier1X = 0;
+    let decayBezier1Y = 0;
+    let decayBezier2X = 0;
+    let decayBezier2Y = 0;
 
-  private decayEndX = 0;
-  private decayEndY = 0;
+    const decayEndX = ref(0);
+    const decayEndY = ref(0);
 
-  private sustainEndX = 0;
-  private sustainEndY = 0;
+    const sustainEndX = ref(0);
+    const sustainEndY = ref(0);
 
-  private releaseBezier1X = 0;
-  private releaseBezier1Y = 0;
-  private releaseBezier2X = 0;
-  private releaseBezier2Y = 0;
+    let releaseBezier1X = 0;
+    let releaseBezier1Y = 0;
+    let releaseBezier2X = 0;
+    let releaseBezier2Y = 0;
 
-  private releaseEndX = 0;
-  private releaseEndY = 0;
+    const releaseEndX = ref(0);
+    const releaseEndY = ref(0);
 
-  private padding = 10;
+    const padding = 10;
 
-  private activeAnchorId = "";
-  private prevPageX = -1;
-  private prevPageY = -1;
+    const activeAnchorId = ref("");
 
-  private envActive = false;
+    let prevPageX = -1;
+    let prevPageY = -1;
 
-  // Props
+    const envActive = false;
 
-  // for some reason vue complains about this if its required
-  // even if you have v-model
-  @Prop({ required: false })
-  public value!: EnvSettings;
+    const envTime = computed(() => {
+      return props.value.attack + props.value.decay + props.value.release;
+    });
 
-  @Prop({ required: false, default: 1000 })
-  public attackMax!: number;
+    const containerWidth = computed(() => {
+      return props.width;
+    });
 
-  @Prop({ required: false, default: 1000 })
-  public decayMax!: number;
+    const containerHeight = computed(() => {
+      return props.height > 0 ? props.height : props.width / 2.5;
+    });
 
-  @Prop({ required: false, default: 1000 })
-  public releaseMax!: number;
+    const graphWidth = computed(() => {
+      return containerWidth.value - padding * 2;
+    });
 
-  @Prop({ required: false, default: 200 })
-  public width!: number;
+    const graphHeight = computed(() => {
+      return containerHeight.value - padding * 2;
+    });
 
-  @Prop({ required: false, default: 0 })
-  public height!: number;
+    const envHeight = computed(() => {
+      return graphHeight.value * 1.0;
+    });
 
-  public constructor() {
-    super();
-  }
+    const attackTotalWidth = computed(() => {
+      return attackWidthRatio * graphWidth.value;
+    });
 
-  // Methods
+    const attackWidth = computed(() => {
+      return attackTotalWidth.value * (props.value.attack / props.attackMax);
+    });
 
-  private attackAnchorMouseDown(e: MouseEvent) {
-    e.preventDefault ? e.preventDefault() : (e.returnValue = false);
-    this.activeAnchorId = "attackAnchor";
-  }
+    const decayTotalWidth = computed(() => {
+      return decayWidthRatio * graphWidth.value;
+    });
 
-  private decaySustainAnchorMouseDown(e: MouseEvent) {
-    e.preventDefault ? e.preventDefault() : (e.returnValue = false);
-    this.activeAnchorId = "decaySustainAnchor";
-  }
+    const decayWidth = computed(() => {
+      return decayTotalWidth.value * (props.value.decay / props.decayMax);
+    });
 
-  private releaseAnchorMouseDown(e: MouseEvent) {
-    e.preventDefault ? e.preventDefault() : (e.returnValue = false);
-    this.activeAnchorId = "releaseAnchor";
-  }
+    const sustainTotalWidth = computed(() => {
+      return susatinWidthRatio * graphWidth.value;
+    });
 
-  private onMouseUp() {
-    this.activeAnchorId = "";
-  }
+    const releaseTotalWidth = computed(() => {
+      return releaseWidthRatio * graphWidth.value;
+    });
 
-  private onMouseLeave() {
-    this.activeAnchorId = "";
-  }
+    const releaseWidth = computed(() => {
+      return releaseTotalWidth.value * (props.value.release / props.releaseMax);
+    });
 
-  private onMove(pageX: number, pageY: number) {
-    let diffX, diffY: number;
-    let diffAttack = 0;
-    let diffDecay = 0;
-    let diffSustain = 0;
-    let diffRelease = 0;
+    const adsrPath = computed(() => {
+      startX.value = padding;
+      startY.value = graphHeight.value + padding;
 
-    if (this.activeAnchorId != "") {
-      switch (this.activeAnchorId) {
-        case "attackAnchor":
-          diffX = pageX - this.prevPageX;
-          diffAttack = (diffX / this.attackTotalWidth) * this.attackMax;
-          diffAttack =
-            this.value.attack + diffAttack >= this.attackMax && diffAttack > 0
-              ? this.attackMax - this.value.attack
-              : this.value.attack + diffAttack <= 0 && diffAttack < 0
-              ? 0
-              : diffAttack;
-          break;
-        case "decaySustainAnchor":
-          diffX = pageX - this.prevPageX;
-          diffDecay = (diffX / this.decayTotalWidth) * this.decayMax;
-          diffDecay =
-            this.value.decay + diffDecay >= this.decayMax && diffDecay > 0
-              ? this.decayMax - this.value.decay
-              : this.value.decay + diffDecay <= 0 && diffDecay < 0
-              ? 0
-              : diffDecay;
-          diffY = pageY - this.prevPageY;
-          diffSustain = -(diffY / this.graphHeight);
-          diffSustain =
-            this.value.sustain + diffSustain >= 1.0 && diffSustain > 0
-              ? 1.0 - this.value.sustain
-              : this.value.sustain + diffSustain <= 0 && diffSustain < 0
-              ? 0
-              : diffSustain;
-          break;
-        case "releaseAnchor":
-          diffX = pageX - this.prevPageX;
-          diffRelease = (diffX / this.releaseTotalWidth) * this.releaseMax;
-          diffRelease =
-            this.value.release + diffRelease >= this.releaseMax && diffRelease > 0
-              ? this.releaseMax - this.value.release
-              : this.value.release + diffRelease <= 0 && diffRelease < 0
-              ? 0
-              : diffRelease;
-          break;
-      }
-      this.$emit("input", {
-        attack: this.value.attack + diffAttack,
-        decay: this.value.decay + diffDecay,
-        sustain: this.value.sustain + diffSustain,
-        release: this.value.release + diffRelease
-      });
+      attackPeakX.value = attackWidth.value + padding;
+      attackPeakY.value = padding;
+
+      decayBezier1X = attackWidth.value + decayWidth.value/4 + padding;
+      decayBezier1Y = (graphHeight.value - graphHeight.value * props.value.sustain)/2 + padding;
+      decayBezier2X = attackWidth.value + decayWidth.value/2 + padding;
+      decayBezier2Y = graphHeight.value - graphHeight.value * props.value.sustain + padding;
+
+      decayEndX.value = attackWidth.value + decayWidth.value + padding;
+      decayEndY.value = graphHeight.value - graphHeight.value * props.value.sustain + padding;
+
+      sustainEndX.value = attackTotalWidth.value + decayTotalWidth.value + sustainTotalWidth.value;
+      sustainEndY.value = graphHeight.value - graphHeight.value * props.value.sustain + padding;
+
+      releaseBezier1X = attackTotalWidth.value
+        + decayTotalWidth.value
+        + sustainTotalWidth.value
+        + releaseWidth.value/4;
+      releaseBezier1Y = graphHeight.value
+        - graphHeight.value
+        * props.value.sustain/2
+        + padding;
+      releaseBezier2X = attackTotalWidth.value
+        + decayTotalWidth.value
+        + sustainTotalWidth.value
+        + releaseWidth.value/2;
+      releaseBezier2Y = graphHeight.value + padding;
+
+      releaseEndX.value = sustainEndX.value + releaseWidth.value;
+      releaseEndY.value  = graphHeight.value + padding;
+
+      const start = `M ${startX.value} ${startY.value} `;
+      const attackCurve = `L ${attackPeakX.value} ${attackPeakY.value} `;
+      const decayCurve = `C
+        ${decayBezier1X}
+        ${decayBezier1Y}
+        ${decayBezier2X}
+        ${decayBezier2Y}
+        ${decayEndX.value}
+        ${decayEndY.value}`;
+      const sustainCurve = `L ${sustainEndX.value} ${sustainEndY.value}`;
+      const releaseCurve = `C 
+        ${releaseBezier1X}
+        ${releaseBezier1Y} 
+        ${releaseBezier2X}
+        ${releaseBezier2Y}
+        ${releaseEndX.value }
+        ${releaseEndY.value }`
+      
+      return start + attackCurve + decayCurve + sustainCurve + releaseCurve;
+    });
+
+
+    function attackAnchorMouseDown(e: MouseEvent | TouchEvent) {
+      e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+      activeAnchorId.value = "attackAnchor";
     }
 
-    this.prevPageX = pageX;
-    this.prevPageY = pageY;
+    function decaySustainAnchorMouseDown(e: MouseEvent | TouchEvent) {
+      e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+      activeAnchorId.value = "decaySustainAnchor";
+    }
+
+    function releaseAnchorMouseDown(e: MouseEvent | TouchEvent) {
+      e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+      activeAnchorId.value = "releaseAnchor";
+    }
+
+    function onMove(pageX: number, pageY: number) {
+      let diffX, diffY: number;
+      let diffAttack = 0;
+      let diffDecay = 0;
+      let diffSustain = 0;
+      let diffRelease = 0;
+
+      if (activeAnchorId.value != "") {
+        switch (activeAnchorId.value) {
+          case "attackAnchor":
+            diffX = pageX - prevPageX;
+            diffAttack = (diffX / attackTotalWidth.value) * props.attackMax;
+            diffAttack =
+              props.value.attack + diffAttack >= props.attackMax && diffAttack > 0
+                ? props.attackMax - props.value.attack
+                : props.value.attack + diffAttack <= 0 && diffAttack < 0
+                ? 0
+                : diffAttack;
+            break;
+          case "decaySustainAnchor":
+            diffX = pageX - prevPageX;
+            diffDecay = (diffX / decayTotalWidth.value) * props.decayMax;
+            diffDecay =
+              props.value.decay + diffDecay >= props.decayMax && diffDecay > 0
+                ? props.decayMax - props.value.decay
+                : props.value.decay + diffDecay <= 0 && diffDecay < 0
+                ? 0
+                : diffDecay;
+            diffY = pageY - prevPageY;
+            diffSustain = -(diffY / graphHeight.value);
+            diffSustain =
+              props.value.sustain + diffSustain >= 1.0 && diffSustain > 0
+                ? 1.0 - props.value.sustain
+                : props.value.sustain + diffSustain <= 0 && diffSustain < 0
+                ? 0
+                : diffSustain;
+            break;
+          case "releaseAnchor":
+            diffX = pageX - prevPageX;
+            diffRelease = (diffX / releaseTotalWidth.value) * props.releaseMax;
+            diffRelease =
+              props.value.release + diffRelease >= props.releaseMax && diffRelease > 0
+                ? props.releaseMax - props.value.release
+                : props.value.release + diffRelease <= 0 && diffRelease < 0
+                ? 0
+                : diffRelease;
+            break;
+        }
+        context.emit("input", {
+          attack: props.value.attack + diffAttack,
+          decay: props.value.decay + diffDecay,
+          sustain: props.value.sustain + diffSustain,
+          release: props.value.release + diffRelease
+        });
+      }
+
+      prevPageX = pageX;
+      prevPageY = pageY;
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      onMove(e.pageX, e.pageY);
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      onMove(e.touches[0].pageX, e.touches[0].pageY)
+    }
+
+    function onMouseUp() {
+      activeAnchorId.value = "";
+    }
+
+    function onMouseLeave() {
+      activeAnchorId.value = "";
+    }
+
+    return {
+      backgroundColor,
+      envelopeColor,
+      anchorColor,
+      anchorRadius,
+      ghostAnchorRadius,
+      activeAnchorId,
+      startX,
+      startY,
+      attackPeakX,
+      attackPeakY,
+      decayEndX,
+      decayEndY,
+      releaseEndX,
+      releaseEndY,
+      envTime,
+      containerWidth,
+      containerHeight,
+      graphWidth,
+      graphHeight,
+      envHeight,
+      attackTotalWidth,
+      attackWidth,
+      decayTotalWidth,
+      decayWidth,
+      sustainTotalWidth,
+      releaseTotalWidth,
+      releaseWidth,
+      adsrPath,
+      attackAnchorMouseDown,
+      decaySustainAnchorMouseDown,
+      releaseAnchorMouseDown,
+      onMouseUp,
+      onMouseLeave,
+      onMove,
+      onMouseMove,
+      onTouchMove
+    }
   }
+});
 
-  private onMouseMove(e: MouseEvent) {
-    this.onMove(e.pageX, e.pageY);
-  }
-
-  private onTouchMove(e: TouchEvent) {
-    this.onMove(e.touches[0].pageX, e.touches[0].pageY)
-  }
-
-  // Computed
-
-  get envTime() {
-    return this.value.attack + this.value.decay + this.value.release;
-  }
-
-  get containerWidth() {
-    return this.width;
-  }
-
-  get containerHeight() {
-    return this.height > 0 ? this.height : this.width / 2.5;
-  }
-
-  get graphWidth() {
-    return this.containerWidth - this.padding * 2;
-  }
-
-  get graphHeight() {
-    return this.containerHeight - this.padding * 2;
-  }
-
-  get envHeight() {
-    return this.graphHeight * 1.0;
-  }
-
-  get attackTotalWidth() {
-    return this.attackWidthRatio * this.graphWidth;
-  }
-
-  get attackWidth() {
-    return this.attackTotalWidth * (this.value.attack / this.attackMax);
-  }
-
-  get decayTotalWidth() {
-    return this.decayWidthRatio * this.graphWidth;
-  }
-
-  get decayWidth() {
-    return this.decayTotalWidth * (this.value.decay / this.decayMax);
-  }
-
-  get sustainTotalWidth() {
-    return this.susatinWidthRatio * this.graphWidth;
-  }
-
-  get releaseTotalWidth() {
-    return this.releaseWidthRatio * this.graphWidth;
-  }
-
-  get releaseWidth() {
-    return this.releaseTotalWidth * (this.value.release / this.releaseMax);
-  }
-
-  /* eslint-disable */
-  get adsrPath() {
-    this.startX = this.padding;
-    this.startY = this.graphHeight + this.padding;
-
-    this.attackPeakX = this.attackWidth + this.padding;
-    this.attackPeakY = this.padding;
-
-    this.decayBezier1X = this.attackWidth + this.decayWidth/4 + this.padding;
-    this.decayBezier1Y = (this.graphHeight - this.graphHeight * this.value.sustain)/2 + this.padding;
-    this.decayBezier2X = this.attackWidth + this.decayWidth/2 + this.padding;
-    this.decayBezier2Y = this.graphHeight - this.graphHeight * this.value.sustain + this.padding;
-
-    this.decayEndX = this.attackWidth + this.decayWidth + this.padding;
-    this.decayEndY = this.graphHeight - this.graphHeight * this.value.sustain + this.padding;
-
-    this.sustainEndX = this.attackTotalWidth + this.decayTotalWidth + this.sustainTotalWidth;
-    this.sustainEndY = this.graphHeight - this.graphHeight * this.value.sustain + this.padding;
-
-    this.releaseBezier1X = this.attackTotalWidth + this.decayTotalWidth +
-      this.sustainTotalWidth + this.releaseWidth/4;
-    this.releaseBezier1Y = this.graphHeight - this.graphHeight * this.value.sustain/2 + this.padding;
-    this.releaseBezier2X = this.attackTotalWidth + this.decayTotalWidth +
-      this.sustainTotalWidth + this.releaseWidth/2;
-    this.releaseBezier2Y = this.graphHeight + this.padding;
-
-    this.releaseEndX = this.sustainEndX + this.releaseWidth;
-    this.releaseEndY = this.graphHeight + this.padding;
-
-    const start = `M ${this.startX} ${this.startY} `;
-    const attackCurve = `L ${this.attackPeakX} ${this.attackPeakY} `;
-    const decayCurve = `C ${this.decayBezier1X} ${this.decayBezier1Y}
-      ${this.decayBezier2X} ${this.decayBezier2Y} ${this.decayEndX} ${this.decayEndY}`;
-    const sustainCurve = `L ${this.sustainEndX} ${this.sustainEndY}`;
-    const releaseCurve = `C  ${this.releaseBezier1X} ${this.releaseBezier1Y} 
-      ${this.releaseBezier2X} ${this.releaseBezier2Y} ${this.releaseEndX} ${this.releaseEndY}`
-    return start + attackCurve + decayCurve + sustainCurve + releaseCurve;
-  }
-  /* eslint-enable */
-}
 </script>
 
 <style scoped>
@@ -424,13 +462,13 @@ svg {
   display: block;
 }
 #attackAnchorGhost, #attackAnchor {
-  cursor: e-resize;
+  cursor: ew-resize;
 }
 #decaySustainAnchorGhost, #decaySustainAnchor {
   cursor: move;
 }
 #releaseAnchorGhost, #releaseAnchor {
-  cursor: e-resize;
+  cursor: ew-resize;
 }
 .dragging {
   cursor: none;
