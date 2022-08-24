@@ -167,7 +167,7 @@ export default defineComponent({
       prevY = -1;
     }
 
-    function onKnobMouseDown(e: MouseEvent) {
+    function onKnobMouseDown(e: MouseEvent | TouchEvent) {
       e.preventDefault ? e.preventDefault() : (e.returnValue = false);
       document.addEventListener("mousemove", onKnobMouseDrag);
       document.addEventListener("touchmove", onKnobTouchDrag);

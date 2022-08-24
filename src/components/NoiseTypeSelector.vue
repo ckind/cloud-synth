@@ -1,52 +1,41 @@
 <template>
   <div class="noise-type-selector-container">
-    <div v-if="myValue === 'white'" @click="changeType(0)">
+    <div v-if="value === 'white'" @click="changeType(0)">
 			<div class="noise-type-option white"></div>
 		</div>
-    <div v-if="myValue === 'pink'" @click="changeType(1)">
+    <div v-if="value === 'pink'" @click="changeType(1)">
 			<div class="noise-type-option pink"></div>
 		</div>
-    <div v-if="myValue === 'brown'" @click="changeType(2)">
+    <div v-if="value === 'brown'" @click="changeType(2)">
 			<div class="noise-type-option brown"></div>
 		</div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { defineComponent, PropType } from "vue";
 import { NoiseType as ToneNoiseType } from "tone";
 
-@Component({})
-export default class NoiseTypeSelector extends Vue {
-  private noiseTypes: Array<ToneNoiseType>;
-  private myValue: ToneNoiseType;
+export default defineComponent({
+  emits: ["input"],
+  props: {
+    value: { type: String as PropType<ToneNoiseType>, required: true }
+  },
+  setup(props, context) {
+    const noiseTypes: Array<ToneNoiseType> = [
+      "white", "pink", "brown"
+    ];
 
-  // for some reason vue complains about this if its required
-  // even if you have v-model
-  @Prop({ required: false })
-  public value!: ToneNoiseType;
+    function changeType(i: number) {
+      context.emit("input", noiseTypes[(i + 1) % noiseTypes.length]);
+    }
 
-  constructor() {
-    super();
-
-    this.myValue = "white";
-
-    this.noiseTypes = new Array<ToneNoiseType>(3);
-    this.noiseTypes[0] = "white";
-    this.noiseTypes[1] = "pink";
-    this.noiseTypes[2] = "brown";
+    return {
+      changeType
+    }
   }
+});
 
-  changeType(i: number) {
-    this.myValue = this.noiseTypes[(i + 1) % this.noiseTypes.length];
-    this.$emit("input", this.myValue);
-  }
-
-  @Watch("value")
-  onValueChanged(incomingValue: ToneNoiseType) {
-    this.myValue = incomingValue;
-  }
-}
 </script>
 
 <style scoped>

@@ -92,9 +92,6 @@ import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import DeviceContainerModal from "./DeviceContainerModal.vue";
 
-//#region Composition API
-
-// defineComponent({
 export default defineComponent({
   emits: ["newDeviceMounted"],
   components: {
@@ -115,8 +112,6 @@ export default defineComponent({
 
     const presetService = PresetServiceFactory.getPresetService(currentDeviceName.value);
 
-    // declare a ref to hold the element reference
-    // the name must match template ref value
     const keypad = ref<IMidiDevice | null>(null)
     const stepSequencer = ref<IMidiDevice | null>(null)
     const external = ref<IMidiDevice | null>(null)
