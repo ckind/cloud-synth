@@ -113,8 +113,6 @@ export default defineComponent({
       "External"
     ]);
 
-    console.log(JSON.stringify(availableDevices));
-
     const deviceRefs = [keypad, stepSequencer, external];
 
     const {
