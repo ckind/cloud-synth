@@ -206,7 +206,7 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
       // "Chorus" - commenting this out for now because it sounds kinda crappy
     ];
 
-    this.name = "Effects Chain";
+    this.name = "Effects Rack";
     this.output = this.chain.output;
     this.input = this.chain.input;
     this.settings = {};

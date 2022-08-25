@@ -63,83 +63,33 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from "vue";
-import { IPreset } from "../shared/interfaces/presets/IPreset";
-import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
+import { defineComponent, ref } from "vue";
+import { useDeviceContainer } from "@/composables/useDeviceContainer";
 import EffectsRack from "@/components/EffectsRack.vue";
 
 export default defineComponent({
   components: {
     EffectsRack
   },
+  // todo: find a way to declare emits from within a composable
+  // feels kind of icky to have delcare here and emit from within useDeviceContainer
   emits: ["newDeviceMounted"],
   setup(props, context) {
-    const currentDeviceName = ref("Effects Chain");
-    let presetService = PresetServiceFactory.getPresetService(
-      currentDeviceName.value
-    );
-
-    const currentBank = ref(presetService.getLocalBank());
-    const currentPreset = ref(currentBank.value.categories[0].presets[0]);
     const expanded = ref(true);
-    const effectsRack = ref(null as EffectsRack?);
+    const effectsRack = ref<EffectsRack | null>(null);
 
-    const device = computed(() => {
-      return effectsRack.value;
-    });
-
-    async function loadFactoryPresets() {
-      currentBank.value = await presetService.getFactoryBank();
-      currentPreset.value = currentBank.value.categories[0].presets[0];
-      device.value?.applySettings(currentPreset.value.settings);
-    }
-
-    function deviceSelected(deviceName: string) {
-      if (currentDeviceName.value != deviceName) {
-        currentDeviceName.value = deviceName;
-        presetService = PresetServiceFactory.getPresetService(
-          currentDeviceName.value
-        );
-        currentBank.value = presetService.getLocalBank();
-        currentPreset.value = currentBank.value.categories[0].presets[0];
-      }
-    }
-
-    function newDeviceMounted() {
-      loadFactoryPresets().then(() => {
-        console.log(
-          // `loaded ${this.device.name} preset bank ${this.currentBank._id}`
-        );
-      });
-      context.emit("newDeviceMounted", device.value);
-      console.log(`mounted device ${device.value?.name}`);
-    }
-
-    function downloadCurrentSettings() {
-      const dataStr =
-        "data:text/json;charset=utf-8," +
-        encodeURIComponent(JSON.stringify(device.value?.settings));
-      const downloadAnchorNode = document.createElement("a");
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "savedPreset.json");
-      document.body.appendChild(downloadAnchorNode); // required for firefox
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-    }
-
-    function uploadSettings() {
-      const input = document.querySelector("#uploadSettingsInput") as HTMLElement;
-      input.click();
-    }
-
-    function presetSelected(p: IPreset) {
-      currentPreset.value = p;
-      device.value?.applySettings(p.settings);
-    }
-
-    onMounted(() => {
-      device.value?.applySettings(currentPreset.value.settings);
-    });
+    const {
+      currentDeviceName,
+      currentBank,
+      currentPreset,
+      device,
+      loadFactoryPresets,
+      deviceSelected,
+      newDeviceMounted,
+      downloadCurrentSettings,
+      uploadSettings,
+      presetSelected
+    } = useDeviceContainer("Effects Rack", [effectsRack], context);
 
     return {
       currentDeviceName,

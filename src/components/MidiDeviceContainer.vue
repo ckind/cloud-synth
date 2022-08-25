@@ -54,7 +54,7 @@
       <computer-midi-keyboard
         ref="keypad"
         @deviceMounted="newDeviceMounted"
-        v-if="currentDeviceName === 'Keypad'"
+        v-if="currentDeviceName === 'Computer Keyboard'"
       />
       <external-midi-device
         ref="external"
@@ -80,16 +80,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from "vue";
-import { IPreset } from "../shared/interfaces/presets/IPreset";
-import { getDefaultKeypadBank } from "@/services/OfflinePresetService";
+import { defineComponent, ref, onMounted, Ref} from "vue";
+import { useDeviceContainer } from "@/composables/useDeviceContainer";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
 import ComputerMidiKeyboard from "./ComputerMidiKeyboard.vue";
 import ExternalMidiDevice from "./ExternalMidiDevice.vue";
 import StepSequencer from "./StepSequencer.vue";
 import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
-import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import DeviceContainerModal from "./DeviceContainerModal.vue";
 
 export default defineComponent({
@@ -103,64 +101,33 @@ export default defineComponent({
     DeviceContainerModal,
   },
   setup(props, context) {
-    const availableMidiDevices = ref(["Keypad", "Step Sequencer", "External"]);
-    const currentDeviceName = ref(availableMidiDevices.value[0]);
-    const currentBank = ref(getDefaultKeypadBank()); // todo: load from local json file);
-    const currentPreset = ref(currentBank.value.categories[0].presets[0]);
     const expanded = ref(true);
     const showModal = ref(false);
 
-    const presetService = PresetServiceFactory.getPresetService(currentDeviceName.value);
+    const keypad = ref<IMidiDevice | null>(null);
+    const stepSequencer = ref<IMidiDevice | null>(null);
+    const external = ref<IMidiDevice | null>(null);
 
-    const keypad = ref<IMidiDevice | null>(null)
-    const stepSequencer = ref<IMidiDevice | null>(null)
-    const external = ref<IMidiDevice | null>(null)
+    const deviceRefs: Array<Ref<IMidiDevice | null>> = [keypad, stepSequencer, external];
 
-    const device = computed(() => {
-      let currentDevice: IMidiDevice | null;
-      switch (currentDeviceName.value) {
-        case "Keypad":
-          currentDevice = keypad.value;
-          break;
-        case "Step Sequencer":
-          currentDevice = stepSequencer.value;
-          break;
-        case "External":
-          currentDevice = external.value;
-          break;
-        default:
-          throw `Invalid Device Name ${currentDeviceName.value}`;
-      }
-      return currentDevice;
-    });
+    const availableMidiDevices = [
+      ComputerMidiKeyboard.name,
+      StepSequencer.name,
+      ExternalMidiDevice.name
+    ];
 
-    onMounted(() => {
-      device.value?.applySettings(currentPreset.value.settings);
-    });
-
-    async function loadFactoryPresets() {
-      currentBank.value = await presetService.getFactoryBank();
-      currentPreset.value = currentBank.value.categories[0].presets[0];
-      device.value?.applySettings(currentPreset.value.settings);
-    }
-
-    function presetSelected(p: IPreset) {
-      // todo: apply settings to midi device
-    }
-
-    function deviceSelected(deviceName: string) {
-      if (currentDeviceName.value != deviceName) {
-        currentDeviceName.value = deviceName;
-      }
-    }
-
-    function newDeviceMounted() {
-      loadFactoryPresets().then(() => {
-        // console.log(`loaded ${device?.value?.name} preset bank ${currentBank.value._id}`)
-      });
-      context.emit("newDeviceMounted", device.value);
-      console.log(`mounted device ${device?.value?.name}`);
-    }
+    const {
+      currentDeviceName,
+      currentBank,
+      currentPreset,
+      device,
+      loadFactoryPresets,
+      deviceSelected,
+      newDeviceMounted,
+      downloadCurrentSettings,
+      uploadSettings,
+      presetSelected
+    } = useDeviceContainer("Computer Keyboard", deviceRefs, context);
 
     return {
       deviceSelected,

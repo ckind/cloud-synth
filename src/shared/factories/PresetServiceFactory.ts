@@ -9,7 +9,7 @@ export class PresetServiceFactory {
       case "Jva Poly":
         service = new JvaPresetService();
         break;
-      case "Keypad":
+      case "Computer Keyboard":
         service = new KeypadPresetService();
         break;
       case "External":
@@ -18,7 +18,7 @@ export class PresetServiceFactory {
       case "Step Sequencer":
         service = new KeypadPresetService(); // todo: implement
         break;
-      case "Effects Chain":
+      case "Effects Rack":
         service = new KeypadPresetService(); // todo: implement
         break;
       case "Piano":
