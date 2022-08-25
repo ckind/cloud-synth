@@ -63,124 +63,99 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { IEffectsContainer } from "../shared/interfaces/containers/IEffectsContainer";
+import { defineComponent, ref, onMounted, computed } from "vue";
 import { IPreset } from "../shared/interfaces/presets/IPreset";
-import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
-import { IPresetService } from "../shared/interfaces/presets/IPresetService";
 import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import EffectsRack from "@/components/EffectsRack.vue";
 
-@Component({
+export default defineComponent({
   components: {
-    EffectsRack,
+    EffectsRack
   },
-})
-export default class EffectsDeviceContainer
-  extends Vue
-  implements IEffectsContainer {
-  currentPreset: IPreset;
-  currentBank: IPresetBank;
-  currentDeviceName: string;
-  presetService: IPresetService;
-
-  private expanded = true;
-
-  $refs!: {
-    effectsRack: EffectsRack;
-  };
-
-  public constructor() {
-    super();
-    this.currentDeviceName = "Effects Chain";
-    this.presetService = PresetServiceFactory.getPresetService(
-      this.currentDeviceName
+  emits: ["newDeviceMounted"],
+  setup(props, context) {
+    const currentDeviceName = ref("Effects Chain");
+    let presetService = PresetServiceFactory.getPresetService(
+      currentDeviceName.value
     );
-    this.currentBank = this.presetService.getLocalBank();
-    this.currentPreset = this.currentBank.categories[0].presets[0];
-  }
 
-  // Lifecycle Hooks
+    const currentBank = ref(presetService.getLocalBank());
+    const currentPreset = ref(currentBank.value.categories[0].presets[0]);
+    const expanded = ref(true);
+    const effectsRack = ref(null as EffectsRack?);
 
-  mounted() {
-    this.device.applySettings(this.currentPreset.settings);
-  }
+    const device = computed(() => {
+      return effectsRack.value;
+    });
 
-  // Computed
+    async function loadFactoryPresets() {
+      currentBank.value = await presetService.getFactoryBank();
+      currentPreset.value = currentBank.value.categories[0].presets[0];
+      device.value?.applySettings(currentPreset.value.settings);
+    }
 
-  get device() {
-    return this.$refs.effectsRack;
-  }
+    function deviceSelected(deviceName: string) {
+      if (currentDeviceName.value != deviceName) {
+        currentDeviceName.value = deviceName;
+        presetService = PresetServiceFactory.getPresetService(
+          currentDeviceName.value
+        );
+        currentBank.value = presetService.getLocalBank();
+        currentPreset.value = currentBank.value.categories[0].presets[0];
+      }
+    }
 
-  // Methods
+    function newDeviceMounted() {
+      loadFactoryPresets().then(() => {
+        console.log(
+          // `loaded ${this.device.name} preset bank ${this.currentBank._id}`
+        );
+      });
+      context.emit("newDeviceMounted", device.value);
+      console.log(`mounted device ${device.value?.name}`);
+    }
 
-  async loadFactoryPresets() {
-    this.currentBank = await this.presetService.getFactoryBank();
-    this.currentPreset = this.currentBank.categories[0].presets[0];
-    this.device.applySettings(this.currentPreset.settings);
-  }
+    function downloadCurrentSettings() {
+      const dataStr =
+        "data:text/json;charset=utf-8," +
+        encodeURIComponent(JSON.stringify(device.value?.settings));
+      const downloadAnchorNode = document.createElement("a");
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "savedPreset.json");
+      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
 
-  deviceSelected(deviceName: string) {
-    if (this.currentDeviceName != deviceName) {
-      this.currentDeviceName = deviceName;
-      this.presetService = PresetServiceFactory.getPresetService(
-        this.currentDeviceName
-      );
-      this.currentBank = this.presetService.getLocalBank();
-      this.currentPreset = this.currentBank.categories[0].presets[0];
+    function uploadSettings() {
+      const input = document.querySelector("#uploadSettingsInput") as HTMLElement;
+      input.click();
+    }
+
+    function presetSelected(p: IPreset) {
+      currentPreset.value = p;
+      device.value?.applySettings(p.settings);
+    }
+
+    onMounted(() => {
+      device.value?.applySettings(currentPreset.value.settings);
+    });
+
+    return {
+      currentDeviceName,
+      currentBank,
+      currentPreset,
+      expanded,
+      effectsRack,
+      deviceSelected,
+      newDeviceMounted,
+      downloadCurrentSettings,
+      uploadSettings,
+      presetSelected
     }
   }
+});
 
-  newDeviceMounted() {
-    this.loadFactoryPresets().then(() => {
-      console.log(
-        // `loaded ${this.device.name} preset bank ${this.currentBank._id}`
-      );
-    });
-    this.$emit("newDeviceMounted", this.device);
-    console.log(`mounted device ${this.device.name}`);
-  }
-
-  downloadCurrentSettings() {
-    const dataStr =
-      "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(this.device.settings));
-    const downloadAnchorNode = document.createElement("a");
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "savedPreset.json");
-    document.body.appendChild(downloadAnchorNode); // required for firefox
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  }
-
-  uploadSettings() {
-    const input = document.querySelector("#uploadSettingsInput") as HTMLElement;
-    input.click();
-  }
-
-  applyCustomSettings(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (!input.files) return;
-    const file = input.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const jsonSettings = e.target!.result as string;
-      this.device.applySettings(JSON.parse(jsonSettings));
-      this.currentPreset = {
-        name: file.name,
-        version: 0,
-        private: true,
-        settings: this.device.settings,
-      };
-    };
-    reader.readAsText(file);
-  }
-
-  presetSelected(p: IPreset) {
-    this.currentPreset = p;
-    this.device.applySettings(p.settings);
-  }
-}
 </script>
 
 <style scoped>
