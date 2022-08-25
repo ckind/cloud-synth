@@ -26,7 +26,7 @@ export default defineComponent({
     // todo: option to select number of velocities, volume knob
     
     piano.load().then(() => {
-      // todo: show model while loading samples
+      // todo: show modal while loading samples
       piano.connect(output);
       console.log('piano samples loaded');
     });

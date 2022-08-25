@@ -112,13 +112,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { IInstrumentContainer } from "../shared/interfaces/containers/IInstrumentContainer";
+import { defineComponent, ref } from "vue";
+import { useDeviceContainer } from "@/composables/useDeviceContainer";
 import { IInstrumentDevice } from "../shared/interfaces/devices/IInstrumentDevice";
-import { IPreset } from "../shared/interfaces/presets/IPreset";
-import { IPresetBank } from "../shared/interfaces/presets/IPresetBank";
-import { IPresetService } from "../shared/interfaces/presets/IPresetService";
-import { PresetServiceFactory } from "@/shared/factories/PresetServiceFactory";
 import JvaSynth from "./JvaSynth.vue";
 import PresetDropdown from "./PresetDropdown.vue";
 import DeviceDropdown from "./DeviceDropdown.vue";
@@ -126,141 +122,67 @@ import ExternalInstrument from "./ExternalInstrument.vue";
 import DeviceContainerModal from "./DeviceContainerModal.vue";
 import Piano from "./Piano.vue";
 
-@Component({
+export default defineComponent ({
+  emits: ["newDeviceMounted"],
   components: {
     JvaSynth,
     ExternalInstrument,
     Piano,
     PresetDropdown,
     DeviceDropdown,
-    DeviceContainerModal,
+    DeviceContainerModal
   },
-})
-export default class InstrumentContainer
-  extends Vue
-  implements IInstrumentContainer {
-  currentPreset: IPreset;
-  currentBank: IPresetBank;
-  presetService: IPresetService;
-  availableDevices: string[];
-  currentDeviceName: string;
+  setup(props, context) {
+    const expanded = ref(true);
+    const showModal = ref(false);
 
-  private expanded = true;
-  private showModal = false;
+    const jvaPoly = ref<IInstrumentDevice | null>(null);
+    const piano = ref<IInstrumentDevice | null>(null);
+    const external = ref<IInstrumentDevice | null>(null);
+    const availableDevices = ref([
+      "Jva Poly",
+      "Piano",
+      "External"
+    ]);
 
-  $refs!: {
-    jvaPoly: JvaSynth;
-    external: ExternalInstrument;
-    piano: Piano;
-  };
+    console.log(JSON.stringify(availableDevices));
 
-  public constructor() {
-    super();
-    this.availableDevices = ["Jva Poly", "Piano", "External"];
-    this.currentDeviceName = this.availableDevices[0];
-    this.presetService = PresetServiceFactory.getPresetService(
-      this.currentDeviceName
-    );
-    this.currentBank = this.presetService.getLocalBank();
-    this.currentPreset = this.currentBank.categories[0].presets[0];
-  }
+    const deviceRefs = [jvaPoly, piano, external];
 
-  // Lifecycle Hooks
+    const {
+      currentDeviceName,
+      currentBank,
+      currentPreset,
+      device,
+      loadFactoryPresets,
+      deviceSelected,
+      newDeviceMounted,
+      downloadCurrentSettings,
+      uploadSettings,
+      applyCustomSettings,
+      presetSelected
+    } = useDeviceContainer("Jva Poly", deviceRefs, context);
 
-  mounted() {
-    this.device.applySettings(this.currentPreset.settings);
-  }
-
-  // Computed
-
-  get device() {
-    // todo: better implementation than switch?
-    let currentDevice: IInstrumentDevice;
-    switch (this.currentDeviceName) {
-      case "Jva Poly":
-        currentDevice = this.$refs.jvaPoly;
-        break;
-      case "External":
-        currentDevice = this.$refs.external; 
-        break;
-      case "Piano":
-        currentDevice = this.$refs.piano;
-        break;
-      default:
-        throw `Invalid Device Name ${this.currentDeviceName}`;
-    }
-    return currentDevice;
-  }
-
-  // Methods
-
-  async loadFactoryPresets() {
-    this.currentBank = await this.presetService.getFactoryBank();
-    this.currentPreset = this.currentBank.categories[0].presets[0];
-    this.device.applySettings(this.currentPreset.settings);
-  }
-
-  deviceSelected(deviceName: string) {
-    if (this.currentDeviceName != deviceName) {
-      this.currentDeviceName = deviceName;
-      this.presetService = PresetServiceFactory.getPresetService(
-        this.currentDeviceName
-      );
-      this.currentBank = this.presetService.getLocalBank();
-      this.currentPreset = this.currentBank.categories[0].presets[0];
+    return {
+      deviceSelected,
+      presetSelected,
+      newDeviceMounted,
+      downloadCurrentSettings,
+      uploadSettings,
+      applyCustomSettings,
+      availableDevices,
+      currentDeviceName,
+      currentBank,
+      currentPreset,
+      expanded,
+      showModal,
+      jvaPoly,
+      piano,
+      external
     }
   }
+});
 
-  newDeviceMounted() {
-    this.loadFactoryPresets().then(() => {
-      // console.log(
-      //   `loaded ${this.device.name} preset bank ${this.currentBank._id}`
-      // );
-    });
-    this.$emit("newDeviceMounted", this.device);
-    console.log(`mounted device ${this.device.name}`);
-  }
-
-  downloadCurrentSettings() {
-    const dataStr =
-      "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(this.device.settings));
-    const downloadAnchorNode = document.createElement("a");
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "savedPreset.json");
-    document.body.appendChild(downloadAnchorNode); // required for firefox
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  }
-
-  uploadSettings() {
-    const input = document.querySelector("#uploadSettingsInput") as HTMLElement;
-    input.click();
-  }
-
-  applyCustomSettings(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if (!input.files) return;
-    const file = input.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const jsonSettings = e.target!.result as string;
-      this.device.applySettings(JSON.parse(jsonSettings));
-      this.currentPreset = {
-        name: file.name,
-        version: 0,
-        private: true,
-        settings: this.device.settings,
-      };
-    };
-    reader.readAsText(file);
-  }
-
-  presetSelected(p: IPreset) {
-    this.currentPreset = p;
-    this.device.applySettings(p.settings);
-  }
-}
 </script>
 
 <style scoped>

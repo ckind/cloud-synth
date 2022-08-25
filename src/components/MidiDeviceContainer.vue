@@ -4,7 +4,7 @@
       <v-col cols="2">
         <device-dropdown
           @deviceSelected="deviceSelected"
-          :devices="availableMidiDevices"
+          :devices="availableDevices"
           :selectedDeviceName="currentDeviceName"
           label="midi devices"
         />
@@ -72,7 +72,7 @@
       :currentPreset="currentPreset"
       @presetSelected="presetSelected"
       :currentDeviceName="currentDeviceName"
-      :availableDevices="availableMidiDevices"
+      :availableDevices="availableDevices"
       @deviceSelected="deviceSelected"
       v-model="showModal"
     />
@@ -107,14 +107,15 @@ export default defineComponent({
     const keypad = ref<IMidiDevice | null>(null);
     const stepSequencer = ref<IMidiDevice | null>(null);
     const external = ref<IMidiDevice | null>(null);
+    const availableDevices = ref([
+      "Computer Keyboard",
+      "Step Sequencer",
+      "External"
+    ]);
 
-    const deviceRefs: Array<Ref<IMidiDevice | null>> = [keypad, stepSequencer, external];
+    console.log(JSON.stringify(availableDevices));
 
-    const availableMidiDevices = [
-      ComputerMidiKeyboard.name,
-      StepSequencer.name,
-      ExternalMidiDevice.name
-    ];
+    const deviceRefs = [keypad, stepSequencer, external];
 
     const {
       currentDeviceName,
@@ -133,7 +134,7 @@ export default defineComponent({
       deviceSelected,
       presetSelected,
       newDeviceMounted,
-      availableMidiDevices,
+      availableDevices,
       currentDeviceName,
       currentBank,
       currentPreset,

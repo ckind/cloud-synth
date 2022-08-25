@@ -65,6 +65,24 @@ export function useDeviceContainer(
     input.click();
   }
 
+  function applyCustomSettings(e: Event) {
+    const input = e.target as HTMLInputElement;
+    if (!input.files) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const jsonSettings = e.target!.result as string;
+      device.value?.applySettings(JSON.parse(jsonSettings));
+      currentPreset.value = {
+        name: file.name,
+        version: 0,
+        private: true,
+        settings: device.value?.settings ?? {},
+      };
+    };
+    reader.readAsText(file);
+  }
+
   function presetSelected(p: IPreset) {
     currentPreset.value = p;
     device.value?.applySettings(p.settings);
@@ -84,6 +102,7 @@ export function useDeviceContainer(
     newDeviceMounted,
     downloadCurrentSettings,
     uploadSettings,
+    applyCustomSettings,
     presetSelected
 	}
 }
