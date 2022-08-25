@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    @input="(val) => $emit('input', val)"
+    @input="onInput"
     dark
     max-width="600"
   >
@@ -28,42 +28,52 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { defineComponent, ref, onMounted } from "vue";
 import { Octokit } from "@octokit/rest";
 
-@Component({})
-export default class ChangeLog extends Vue {
-  @Prop({ required: true })
-  public value!: boolean;
-  private commitMessages: string[];
-  private title = "Change Log";
+export default defineComponent({
+  emits: ["input"],
+  props: {
+    value: { type: Boolean, required: true }
+  },
+  setup(props, context) {
+    const commitMessages = ref(new Array<string>());
+    const title = ref("Change Log");
 
-  constructor() {
-    super();
-    this.commitMessages = [];
-  }
+    function closeDialog() {
+      context.emit("input", false);
+    }
 
-  mounted() {
-    const octokit = new Octokit();
-    octokit.repos
-      .listCommits({
-        owner: "ckind",
-        repo: "JvaSynth",
-      })
-      .then((response) => {
-        response.data.forEach((c) => {
-          this.commitMessages.push(c.commit.message);
+    function onInput(val: boolean) {
+      context.emit("input", val);
+    }
+
+    onMounted(() => {
+      const octokit = new Octokit();
+      octokit.repos
+        .listCommits({
+          owner: "ckind",
+          repo: "JvaSynth",
+        })
+        .then((response) => {
+          response.data.forEach((c) => {
+            commitMessages.value.push(c.commit.message);
+          });
+        })
+        .catch(() => {
+          title.value = "Error Loading Commits";
         });
-      })
-      .catch(() => {
-        this.title = "Error Loading Commits";
-      });
-  }
+    });
 
-  private closeDialog() {
-    this.$emit("input", false);
+    return {
+      commitMessages,
+      title,
+      closeDialog,
+      onInput
+    }
   }
-}
+});
+
 </script>
 
 <style scoped>

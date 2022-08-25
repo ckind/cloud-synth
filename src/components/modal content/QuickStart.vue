@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    @input="(val) => $emit('input', val)"
+    @input="onInput"
     dark
     max-width="600"
   >
@@ -46,19 +46,28 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
+import { defineComponent } from "vue";
 
-@Component({})
-export default class QuickStart extends Vue {
-  @Prop({ required: true })
-  public value!: boolean;
+export default defineComponent({
+  emits: ["input"],
+  props: { 
+    value: { type: Boolean, required: true }
+  },
+  setup(props, context) {
 
-  constructor() {
-    super();
+    function onInput(val: boolean) {
+      context.emit("input", val);
+    }
+
+    function closeDialog() {
+      context.emit("input", false);
+    }
+
+    return {
+      onInput,
+      closeDialog
+    }
   }
+});
 
-  closeDialog() {
-    this.$emit("input", false);
-  }
-}
 </script>
