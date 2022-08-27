@@ -1,41 +1,61 @@
 <template>
   <div class="back-panel">
-    <div class="content-container">
-
-    </div>
+    <v-dialog
+      :value="loadingPiano"
+      dark
+      max-width="600"
+    >
+      <v-card>
+        <v-card-title class="headline">Loading Piano Samples...</v-card-title>
+      </v-card>
+    </v-dialog>
+    <!-- <v-text-field
+      class="number-input"
+      v-model="settings.velocities"
+      dark
+      label="Velocities"
+      type="number"
+    /> -->
+    <knob-control
+      v-model="settings.volume"
+      :minValue="-20"
+      :maxValue="0"
+      :id="`pianoVolume`"
+      :size="50"
+      label="Volume"
+    ></knob-control>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onBeforeUnmount } from "vue";
-import { Gain as ToneGain, Midi } from "tone";
+import { defineComponent, onMounted, onBeforeUnmount, watch, ref } from "vue";
+import { Midi, Volume as ToneVolume } from "tone";
 import { Piano as TonePiano } from '@tonejs/piano';
 import { IMidiMessage, MidiFunction } from "@/shared/interfaces/midi/IMidiMessage";
-import { v4 as uuidv4 } from "uuid";
+import { useAudioDevice } from "@/composables/useAudioDevice";
+import KnobControl from "@/components/KnobControl.vue";
+
+type TPianoSettings = {
+  velocities: number;
+  volume: number;
+}
 
 export default defineComponent({
   emits: ["deviceMounted"],
+  components: {
+    KnobControl
+  },
   setup(props, context) {
-    const guid = ref(uuidv4());
-    const name = ref("Piano");
-    const output = new ToneGain(1);
+    const { guid, name, settings, output } =
+      useAudioDevice<TPianoSettings>("Piano", {
+        velocities: 5,
+        volume: -6
+      });
+    const loadingPiano = ref(false);
     const piano = new TonePiano({
-      velocities: 1
+      velocities: settings.velocities
     });
-
-    // todo: option to select number of velocities, volume knob
-    
-    piano.load().then(() => {
-      // todo: show modal while loading samples
-      piano.connect(output);
-      console.log('piano samples loaded');
-    });
-
-    function dispose() {
-      piano.disconnect(output);
-      piano.dispose();
-      output.dispose();
-    }
+    const volume = new ToneVolume(settings.volume);
 
     function receiveMidi(message: IMidiMessage, time?: number) {
       switch (message.midiFunction) {
@@ -48,9 +68,36 @@ export default defineComponent({
       }
     }
 
-    function applySettings(settings: any) {
-      // nothing to see here
+    function applySettings(settings: TPianoSettings) {
+      // volume.volume.value = settings.volume;
     }
+
+    function reloadPiano() {
+      loadingPiano.value = true;
+      piano.load().then(() => {
+        loadingPiano.value = false;
+        console.log('piano samples loaded');
+      });
+    }
+
+    function dispose() {
+      piano.disconnect();
+      volume.disconnect();
+      output.disconnect();
+
+      piano.dispose();
+      volume.dispose();
+      output.dispose();
+    }
+
+    watch(() => settings.volume, (currentValue, oldValue) => {
+      volume.volume.value = currentValue;
+    });
+
+    watch(() => settings.velocities, (currentValue, oldValue) => {
+      piano.set({ velocities: currentValue});
+      reloadPiano();
+    });
 
     onMounted(() => {
       context.emit("deviceMounted");
@@ -60,10 +107,21 @@ export default defineComponent({
       dispose();
     });
 
+    loadingPiano.value = true;
+    
+    piano.load().then(() => {
+      loadingPiano.value = false;
+      piano.chain(volume, output);
+      console.log('piano samples loaded');
+    });
+
     return {
       guid,
       name,
+      settings,
       output,
+      loadingPiano,
+      reloadPiano,
       receiveMidi,
       applySettings
     }
@@ -73,35 +131,21 @@ export default defineComponent({
 </script>
 
 <style scoped>
-div.back-panel {
-  justify-content: center;
-  background-color: black;
-  position: relative;
-  height: 200px;
-}
-div.back-panel::after {
-  content: "";
-  background: url("../assets/piano.jpeg");
-  background-position: 0px -600px;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  position: absolute;
-  z-index: 2;
-  opacity: 0.8;
-}
-div.content-container {
-  position: absolute;
-  justify-content: center;
+div.back-panel  {
+  background-image: url("../assets/metal-2.png");
+  background-repeat: repeat;
+  color: white;
   display: flex;
-  height: 100%;
-  width: 100%;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
 }
 .selected-device-disp {
   top: 30%;
   position: absolute;
   opacity: 1;
   z-index: 3;
+}
+.number-input {
+  max-width: 100px;
 }
 </style>

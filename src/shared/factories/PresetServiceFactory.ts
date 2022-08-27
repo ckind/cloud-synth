@@ -12,7 +12,7 @@ export class PresetServiceFactory {
       case "Computer Keyboard":
         service = new KeypadPresetService();
         break;
-      case "External":
+      case "External Midi Device":
         service = new KeypadPresetService(); // todo: implement
         break;
       case "Step Sequencer":

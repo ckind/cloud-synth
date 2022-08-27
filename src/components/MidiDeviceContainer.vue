@@ -59,7 +59,7 @@
       <external-midi-device
         ref="external"
         @deviceMounted="newDeviceMounted"
-        v-if="currentDeviceName === 'External'"
+        v-if="currentDeviceName === 'External Midi Device'"
       />
       <step-sequencer
         ref="stepSequencer"
@@ -110,7 +110,7 @@ export default defineComponent({
     const availableDevices = ref([
       "Computer Keyboard",
       "Step Sequencer",
-      "External"
+      "External Midi Device"
     ]);
 
     const deviceRefs = [keypad, stepSequencer, external];
