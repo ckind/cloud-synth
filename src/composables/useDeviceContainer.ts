@@ -39,8 +39,6 @@ export function useDeviceContainer(
   }
 
   function newDeviceMounted() {
-    console.log(deviceRefs.map(d => d.value?.name));
-    
     loadFactoryPresets().then(() => {
       console.log(
         `loaded ${device.value?.name} preset bank ${currentBank.value._id}`

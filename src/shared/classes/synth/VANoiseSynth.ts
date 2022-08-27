@@ -21,8 +21,12 @@ export class VANoiseSynth extends VABaseSynth implements IMidiReceiver {
   }
 
   dispose() {
-    this.noiseSource.disconnect(this.filter);
+    this.noiseSource.disconnect();
+    this._stereoWidener.disconnect();
+
     this.noiseSource.dispose();
+    this._stereoWidener.dispose();
+    
     super.dispose();
   }
 
