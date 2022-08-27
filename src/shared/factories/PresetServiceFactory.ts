@@ -24,6 +24,9 @@ export class PresetServiceFactory {
       case "Piano":
         service = new KeypadPresetService(); // todo: implement
         break;
+      case "External Instrument":
+        service = new KeypadPresetService(); // todo: implement
+        break;
       default:
         throw "invalid preset service type argument";
     }

@@ -96,7 +96,7 @@
       <external-instrument
         ref="external"
         @deviceMounted="newDeviceMounted"
-        v-if="currentDeviceName === 'External'"
+        v-if="currentDeviceName === 'External Instrument'"
       />
     </div>
     <device-container-modal
@@ -142,7 +142,7 @@ export default defineComponent ({
     const availableDevices = ref([
       "Jva Poly",
       "Piano",
-      "External"
+      "External Instrument"
     ]);
 
     const deviceRefs = [jvaPoly, piano, external];

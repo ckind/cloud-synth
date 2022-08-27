@@ -47,98 +47,103 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { Gain as ToneGain, Filter as ToneFilter, Transport as ToneTransport, immediate as toneImmediate, Midi as ToneMidi } from "tone";
+import { defineComponent, reactive, ref, onMounted, onUnmounted } from "vue";
+import { useAudioDevice } from "@/composables/useAudioDevice";
 import { IMidiMessage, MidiFunction } from "@/shared/interfaces/midi/IMidiMessage";
-import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
-import webmidi, { InputEventNoteoff, InputEventNoteon, Output, INoteParam } from "webmidi";
-import { v4 as uuidv4 } from "uuid";
+import webmidi, { Output } from "webmidi";
 
-@Component({})
-export default class ExternalInstrument extends Vue implements IInstrumentDevice {
-  guid: string;
-  name = "External";
-  output: ToneGain;
-  settings = {};
+type TExternalInstrumentSettings = {}
 
-  private selectedExternalDevice = "Click to Select Device";
-  private selectedOutput: Output | false = false;
-  private webmidiSupported = true;
-  private webmidiError = "";
-  private availableDevices: string[] = [];
+export default defineComponent({
+  emits: ["deviceMounted"],
+  setup(props, context) {
+    const { 
+      guid,
+      name,
+      settings,
+      output
+    } = useAudioDevice<TExternalInstrumentSettings>("External Instrument", {});
 
-  public constructor() {
-    super();
+    const selectedExternalDevice = ref("Click to Select Device");
+    const webmidiSupported = ref(true);
+    const webmidiError = ref("");
+    const availableDevices = reactive([] as string[]);
 
-    this.guid = uuidv4();
+    let selectedOutput: Output | false = false;
+
+    function externalDeviceSelected(deviceName: string) {
+      selectedExternalDevice.value = deviceName;
+      selectedOutput = webmidi.getOutputByName(deviceName);
+    }
+
+    function applySettings(setting: TExternalInstrumentSettings) {
+      // todo: nothing yet
+    }
+
+    function dispose() {
+      // todo: cleanup
+    }
+
+    function receiveMidi(message: IMidiMessage, time?: number) {
+      // todo: this has inaccurate timing when used with step sequencer
+      if (selectedOutput) {
+        switch (message.midiFunction) {
+          case MidiFunction.noteon:
+            // ToneTransport.scheduleOnce(() => {
+            //   if (this.selectedOutput) {
+            //     this.selectedOutput.playNote("C4", "all");
+            //   }
+            // }, time !== undefined ? time : toneImmediate());
+            selectedOutput?.playNote(message.noteNumber, "all");
+            break;
+          case MidiFunction.noteoff:
+            // ToneTransport.scheduleOnce(() => {
+            //   if (this.selectedOutput) {
+            //     this.selectedOutput.stopNote("C4", "all");
+            //   }
+            // }, time !== undefined ? time : toneImmediate());
+            selectedOutput?.stopNote(message.noteNumber, "all");
+            break;
+        }
+      }
+    }
+
+    onMounted(() => {
+      context.emit("deviceMounted");
+    });
+
+    onUnmounted(() => {
+      dispose();
+    });
 
     webmidi.enable(err => {
       if (err) {
-        this.webmidiSupported = false;
-        this.webmidiError = err ? err.message : "";
+        webmidiSupported.value = false;
+        webmidiError.value = err ? err.message : "";
       } else {
         webmidi.outputs.forEach(output => {
-          this.availableDevices.push(output.name);
+          availableDevices.push(output.name);
         });
       }
     });
 
-    // output does nothing for external instrument
-    this.output = new ToneGain(0);
-  }
-
-  // Lifecycle Hooks
-
-  mounted() {
-    this.$emit("deviceMounted");
-  }
-
-  beforeDestroy() {
-    this.dispose();
-  }
-
-  // Methods
-
-  externalDeviceSelected(deviceName: string) {
-    // todo: implement
-    this.selectedExternalDevice = deviceName;
-    this.selectedOutput = webmidi.getOutputByName(deviceName);
-  }
-
-  applySettings(settings: any) {
-    // nothing to see here
-  }
-
-  dispose() {
-    // todo: cleanup
-  }
-
-  receiveMidi(message: IMidiMessage, time?: number) {
-    // todo: this has inaccurate timing when used with step sequencer
-    if (this.selectedOutput) {
-      switch (message.midiFunction) {
-        case MidiFunction.noteon:
-          // ToneTransport.scheduleOnce(() => {
-          //   if (this.selectedOutput) {
-          //     this.selectedOutput.playNote("C4", "all");
-          //   }
-          // }, time !== undefined ? time : toneImmediate());
-          this.selectedOutput.playNote(message.noteNumber, "all");
-          break;
-        case MidiFunction.noteoff:
-          // ToneTransport.scheduleOnce(() => {
-          //   if (this.selectedOutput) {
-          //     this.selectedOutput.stopNote("C4", "all");
-          //   }
-          // }, time !== undefined ? time : toneImmediate());
-          this.selectedOutput.stopNote(message.noteNumber, "all");
-          break;
-      }
+    return {
+      guid,
+      name,
+      settings,
+      output,
+      selectedExternalDevice,
+      availableDevices,
+      webmidiSupported,
+      webmidiError,
+      externalDeviceSelected,
+      applySettings,
+      dispose,
+      receiveMidi
     }
   }
+});
 
-  // Watches
-}
 </script>
 
 <style scoped>
