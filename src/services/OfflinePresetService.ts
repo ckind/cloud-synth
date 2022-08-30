@@ -26,7 +26,7 @@ export const getDefaultJvaSettings = function(): IJvaSettings {
     oscillatorSpread: 0.4,
     amp: {
       envelope: {
-        attack: 14,
+        attack: 200,
         decay: 400,
         sustain: 0.8,
         release: 200
@@ -36,7 +36,7 @@ export const getDefaultJvaSettings = function(): IJvaSettings {
     },
     filter: {
       envelope: {
-        attack: 300,
+        attack: 200,
         decay: 300,
         sustain: 0.8,
         release: 200
@@ -56,7 +56,7 @@ export const getDefaultJvaSettings = function(): IJvaSettings {
       type: "white",
       volume: -36
     },
-    volume: -12
+    volume: -50
   };
 };
 

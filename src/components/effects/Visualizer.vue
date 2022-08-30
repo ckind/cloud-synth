@@ -66,6 +66,8 @@ export default class Visualizer extends Vue implements IEffectsDevice {
   private nyquistFrequency: number;
   private fftSize = 1024;
 
+  private effectsDeviceProxy: IEffectsDevice;
+
   $refs!: {
     analyserCanvas: HTMLCanvasElement;
   };
@@ -97,6 +99,16 @@ export default class Visualizer extends Vue implements IEffectsDevice {
     this.dataArray = new Float32Array(this.bufferLength);
     this.nyquistFrequency = ToneContext.sampleRate / 2;
 
+    this.effectsDeviceProxy = {
+      guid: this.guid,
+      name: this.name,
+      settings: this.settings,
+      input: this.input,
+      output: this.output,
+      applySettings: this.applySettings,
+      dispose: this.dispose
+    };
+
     this.input.chain(this.analyser, this.output);
   }
 
@@ -107,7 +119,7 @@ export default class Visualizer extends Vue implements IEffectsDevice {
     // window.requestAnimationFrame(this.drawFrequencyDomain);
     window.requestAnimationFrame(this.drawTimeDomain);
 
-    this.$emit("effectsDeviceMounted", this.guid);
+    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
   }
 
   beforeDestroy() {
@@ -118,19 +130,19 @@ export default class Visualizer extends Vue implements IEffectsDevice {
   // Methods
 
   deleteComponent() {
-    this.$emit("deleteComponent", this);
+    this.$emit("deleteComponent", this.effectsDeviceProxy);
   }
 
   componentDragstart() {
-    this.$emit("componentDragstart", this);
+    this.$emit("componentDragstart", this.effectsDeviceProxy);
   }
 
   componentDragend() {
-    this.$emit("componentDragend", this);
+    this.$emit("componentDragend", this.effectsDeviceProxy);
   }
 
   elementDropped() {
-    this.$emit("elementDropped", this);
+    this.$emit("elementDropped", this.effectsDeviceProxy);
   }
 
   drawTimeDomain() {

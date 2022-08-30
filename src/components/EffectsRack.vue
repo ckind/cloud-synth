@@ -1,7 +1,19 @@
 <template>
   <div class="effects-rack-container">
     <!-- new effects will be mounted here -->
-    <div class="effects-rack" id="effectsRack"></div>
+    <div class="effects-rack" id="effectsRack">
+
+      <component
+        v-for="(effectsComponent, index) in effectsComponents"
+        :key="effectsComponent.id"
+        :is="effectsComponent.componentName"
+        @effectsDeviceMounted="effectsDeviceMounted"
+        @deleteComponent="(device) => removeEffect(device, index)"
+        @elementDropped="(device) => moveEffect(device, index)"
+        @componentDragstart="(device) => setDragSource(device, index)"
+      />
+
+    </div>
 
     <div class="add-new center-y center-x">
       <v-menu top :offset-x="true">
@@ -30,7 +42,7 @@
             @click="addEffect(item)"
           >
             <v-list-item-title class="effects-option">{{
-              item
+              item.type
             }}</v-list-item-title>
           </v-list-item>
         </v-list>
@@ -40,8 +52,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
+import EffectsChain from "@/shared/classes/effects/EffectsChain";
 import Reverb from "@/components/effects/Reverb.vue";
 import DigitalDelay from "@/components/effects/DigitalDelay.vue";
 import BBDelay from "@/components/effects/BBDelay.vue";
@@ -49,13 +62,10 @@ import Visualizer from "@/components/effects/Visualizer.vue";
 import Distortion from "@/components/effects/Distortion.vue";
 import Phaser from "@/components/effects/Phaser.vue";
 import Chorus from "@/components/effects/Chorus.vue";
-import Vuetify from "vuetify";
-import { ToneAudioNode, Gain as ToneGain, Destination as ToneDestination } from "tone";
+import { ToneAudioNode } from "tone";
 import { v4 as uuidv4 } from "uuid";
 
-interface IEffectsComponent extends IEffectsDevice, Vue {}
-
-type EffectsComponentType =
+type TEffectsComponentType =
   | "Digital Delay"
   | "Analog Delay"
   | "Visualizer"
@@ -64,104 +74,14 @@ type EffectsComponentType =
   | "Phaser"
   | "Chorus";
 
-// factory method
-function createEffectsComponent(type: EffectsComponentType): IEffectsComponent {
-  let component: IEffectsComponent;
-  switch (type) {
-    case "Digital Delay":
-      component = new DigitalDelay();
-      break;
-    case "Analog Delay":
-      component = new BBDelay();
-      break;
-    case "Reverb":
-      component = new Reverb();
-      break;
-    case "Visualizer":
-      component = new Visualizer();
-      break;
-    case "Distortion":
-      component = new Distortion();
-      break;
-    case "Phaser":
-      component = new Phaser();
-      break;
-    case "Chorus":
-      component = new Chorus();
-      break;
-    default:
-      throw "invalid EffectsComponentType argument";
-  }
-  component.$vuetify = Vuetify.framework; // todo: this is kinda hacky - find a better way
-  return component;
+type TEffectsComponentOption = {
+  type: TEffectsComponentType;
+  componentName: string;
 }
 
-class EffectsChain {
-  public components: IEffectsComponent[];
-  public input: ToneGain;
-  public output: ToneGain;
-
-  constructor() {
-    this.components = [];
-
-    this.input = new ToneGain(1);
-    this.output = new ToneGain(1);
-
-    this.input.connect(this.output);
-  }
-
-  addComponent(component: IEffectsComponent, index: number) {
-    if (index < 0 || index > this.components.length)
-      throw "effects component index out of range";
-
-    const prevNode: ToneAudioNode =
-      index === 0 ? this.input : this.components[index - 1].output;
-    const nextNode: ToneAudioNode =
-      index === this.components.length
-        ? this.output
-        : this.components[index].input;
-
-    ToneDestination.mute = true; //  mute while connecting in case of glitches
-
-    prevNode.disconnect(nextNode);
-    prevNode.connect(component.input);
-    component.output.connect(nextNode);
-
-    this.components.splice(index, 0, component);
-
-    ToneDestination.mute = false;
-  }
-
-  removeComponent(component: IEffectsComponent) {
-    const index = this.components.findIndex((c) => c === component);
-
-    if (index < 0) throw "component not found in chain";
-
-    const prevNode: ToneAudioNode =
-      index === 0 ? this.input : this.components[index - 1].output;
-    const nextNode: ToneAudioNode =
-      index === this.components.length - 1
-        ? this.output
-        : this.components[index + 1].input;
-
-    prevNode.disconnect(component.input);
-    component.output.disconnect(nextNode);
-    prevNode.connect(nextNode);
-
-    this.components.splice(index, 1);
-  }
-
-  dispose() {
-    this.input.disconnect(this.components[0].input);
-    this.components[this.components.length - 1].output.disconnect(this.output);
-
-    for (let i = 0; i < this.components.length - 1; i++) {
-      this.components[i].output.disconnect(this.components[i + 1].input);
-    }
-
-    this.input.dispose();
-    this.output.dispose();
-  }
+type TEffectsComponent = {
+  componentName: string;
+  id: string;
 }
 
 @Component({
@@ -182,14 +102,13 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   public name: string;
   public settings: any;
 
-  private chain: EffectsChain;
-  private rack?: HTMLElement | null;
-  private effectsOptions: string[];
-  private currentDragComponent: IEffectsComponent | undefined;
+  public effectsComponents: TEffectsComponent[];
 
-  $refs!: {
-    rack: HTMLElement;
-  };
+  private chain: EffectsChain;
+  private effectsOptions: TEffectsComponentOption[];
+  private dragSourceIndex?: number;
+
+  private dragSourceDevice: IEffectsDevice | undefined;
 
   constructor() {
     super();
@@ -197,14 +116,16 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
     this.guid = uuidv4();
     this.chain = new EffectsChain();
     this.effectsOptions = [
-      "Digital Delay",
-      "Analog Delay",
-      "Visualizer",
-      "Reverb",
-      "Distortion",
-      "Phaser",
+      { type: "Digital Delay", componentName: "DigitalDelay" },
+      { type: "Analog Delay", componentName: "BBDelay" },
+      { type: "Visualizer", componentName: "Visualizer" },
+      { type: "Reverb", componentName: "Reverb" },
+      { type: "Distortion", componentName: "Distortion" },
+      { type: "Phaser", componentName: "Phaser" }
       // "Chorus" - commenting this out for now because it sounds kinda crappy
     ];
+
+    this.effectsComponents = [];
 
     this.name = "Effects Rack";
     this.output = this.chain.output;
@@ -215,10 +136,7 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
   // Lifecycle Hooks
 
   mounted() {
-    this.rack = document.getElementById("effectsRack");
-
-    this.addEffect("Visualizer");
-
+    this.addEffect({ type: "Visualizer", componentName: "Visualizer" });
     this.$emit("deviceMounted");
   }
 
@@ -228,66 +146,41 @@ export default class EffectsRack extends Vue implements IEffectsDevice {
 
   // Methods
 
-  addEffect(type: EffectsComponentType) {
-    const el = document.createElement("div");
-
-    if (this.rack?.appendChild(el)) {
-      const component = createEffectsComponent(type);
-      this.chain.addComponent(component, this.chain.components.length);
-      component.$on("deleteComponent", this.removeEffect);
-      component.$on("elementDropped", this.moveEffect);
-      component.$on("componentDragstart", this.setCurrentDragComponent);
-      component.$mount(el);
-    }
+  effectsDeviceMounted(effectsDevice: IEffectsDevice) {
+    this.chain.addComponent(effectsDevice, this.chain.components.length);
   }
 
-  removeEffect(component: IEffectsComponent) {
-    this.chain.removeComponent(component);
-    component.$destroy();
+  addEffect(option: TEffectsComponentOption) {
+    this.effectsComponents.push({
+      componentName: option.componentName, id: uuidv4()
+    });
   }
 
-  moveEffect(destinationComponent: IEffectsComponent) {
-    if (!this.currentDragComponent) return;
-    const sourceComponent = this.currentDragComponent;
+  removeEffect(device: IEffectsDevice, index: number) {
+    this.chain.removeComponent(device);
+    this.effectsComponents.splice(index, 1).map(c => c.id);
+  }
 
-    const srcIndex = this.chain.components.findIndex(
-      (c) => c === sourceComponent
-    );
-    const dstIndex = this.chain.components.findIndex(
-      (c) => c === destinationComponent
-    );
+  setDragSource(device: IEffectsDevice, sourceIndex: number) {
+    this.dragSourceDevice = device;
+    this.dragSourceIndex = sourceIndex;
+  }
 
-    if (srcIndex < 0) throw "source component not found in chain";
-    if (dstIndex < 0) throw "destination component not found in chain";
+  moveEffect(destinationDevice: IEffectsDevice, dragDestinationIndex: number) {
+    if (this.dragSourceDevice === undefined || this.dragSourceIndex === undefined) return;
 
-    if (destinationComponent.guid != sourceComponent.guid) {
-      this.chain.removeComponent(sourceComponent);
-      // dstIndex will now fall to the right of our destination component
-      // because we spliced out the source component
+    if (this.dragSourceIndex != dragDestinationIndex) {
+      this.chain.removeComponentByIndex(this.dragSourceIndex);
 
-      document.getElementById("effectsRack")!.removeChild(sourceComponent.$el);
+      const effectsComponent = this.effectsComponents.splice(this.dragSourceIndex, 1)[0];
 
-      if (dstIndex < srcIndex) {
-        destinationComponent.$el.insertAdjacentElement(
-          "beforebegin",
-          sourceComponent.$el
-        );
-      } else {
-        destinationComponent.$el.insertAdjacentElement(
-          "afterend",
-          sourceComponent.$el
-        );
-      }
+      this.effectsComponents.splice(dragDestinationIndex, 0, effectsComponent);
 
-      this.chain.addComponent(sourceComponent, dstIndex);
+      this.chain.addComponent(this.dragSourceDevice, dragDestinationIndex);
     }
 
-    this.currentDragComponent = undefined;
-    // todo: this.currentDragComponent will stay defined if the drag ends somewhere else
-  }
-
-  setCurrentDragComponent(component: IEffectsComponent) {
-    this.currentDragComponent = component;
+    // todo: will stay defined if the drag ends somewhere else
+    this.dragSourceDevice = this.dragSourceIndex = undefined;
   }
 
   applySettings(settings: any): void {

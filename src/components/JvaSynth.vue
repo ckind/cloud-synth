@@ -270,7 +270,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { defineComponent, watch, ref, onMounted, onUnmounted } from "vue";
 import AdsrGraph from "@/components/AdsrGraph.vue";
 import KnobControl from "@/components/KnobControl.vue";
 import WaveformSelector from "@/components/WaveformSelector.vue";
@@ -279,339 +279,261 @@ import { getDefaultJvaSettings } from "@/services/OfflinePresetService";
 import { VAPolySynth } from "@/shared/classes/synth/VAPolySynth";
 import {
   NoiseType as ToneNoiseType,
-  ToneOscillatorType,
   Volume as ToneVolume,
   LFO as ToneLFO,
   immediate as ToneImmediate,
-  Gain as ToneGain,
 } from "tone";
 import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
 import { IJvaSettings } from "@/shared/interfaces/presets/IJvaSettings";
 import { IMidiMessage } from "@/shared/interfaces/midi/IMidiMessage";
-import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
-import { v4 as uuidv4 } from "uuid";
+import { useAudioDevice } from "@/composables/useAudioDevice";
 
-@Component({
+export default defineComponent({
+  emits: ["deviceMounted"],
   components: {
     AdsrGraph,
     KnobControl,
     WaveformSelector,
     NoiseTypeSelector
   },
-})
-export default class JvaSynth extends Vue implements IInstrumentDevice {
-  guid: string;
-  name = "Jva Poly";
-  output!: ToneGain;
-  settings: IJvaSettings;
+  setup(props, context) {
+    const {
+      guid,
+      name,
+      settings,
+      output
+    } = useAudioDevice<IJvaSettings>("Jva Poly", getDefaultJvaSettings());
 
-  private synth!: VAPolySynth;
-  private volume!: ToneVolume;
-  private filterLFO!: ToneLFO;
-  private ampLFO!: ToneLFO;
-  private pitchLFO!: ToneLFO;
-  private noise!: VANoiseSynth;
-  private noiseVolume!: ToneVolume;
+    const synth = new VAPolySynth(6, 3, "sawtooth");
+    const volume = new ToneVolume();
+    const filterLFO = new ToneLFO();
+    const ampLFO = new ToneLFO();
+    const pitchLFO = new ToneLFO();
+    const noise = new VANoiseSynth("white");
+    const noiseVolume = new ToneVolume(-24);
 
-  private filterTypes: Array<BiquadFilterType>;
-  private filterTypeIndex: number;
+    const filterTypes: Array<BiquadFilterType> = [
+      "lowpass",
+      "highpass"
+    ];
+    const filterTypeIndex = ref(0);
 
-  public constructor() {
-    super();
+    function dispose() {
+      filterLFO.stop().disconnect();
+      ampLFO.stop().disconnect();
+      pitchLFO.stop().disconnect();
+      volume.disconnect();
+      synth.output.disconnect();
+      noise.output.disconnect();
+      noiseVolume.disconnect();
+      output.disconnect();
 
-    this.guid = uuidv4();
-    this.settings = getDefaultJvaSettings();
+      filterLFO.dispose();
+      ampLFO.dispose();
+      pitchLFO.dispose();
+      volume.dispose();
+      synth.dispose();
+      noise.dispose();
+      noiseVolume.dispose();
+      output.dispose();
+    }
 
-    this.filterTypes = new Array<BiquadFilterType>(2);
-    this.filterTypes[0] = "lowpass";
-    this.filterTypes[1] = "highpass";
-    this.filterTypeIndex = 0;
-  }
+    function receiveMidi(message: IMidiMessage, time?: number) {
+      synth.receiveMidi(message, time);
+      noise.receiveMidi(message, time); // todo: don't release noise if keys are still down
+    }
 
-  // Lifecycle Hooks
+    // todo: for some reason this isn't working on initial page load
+    // think it has something to do with nested properies in reactive() on settings - investigate
+    function applySettings(_settings: IJvaSettings) {
+      settings.oscillator1.transpose = _settings.oscillator1.transpose;
+      settings.oscillator2.transpose = _settings.oscillator2.transpose;
+      settings.oscillator3.transpose = _settings.oscillator3.transpose;
 
-  created() {
-    /**
-     * Important: define web audio objects outside of the constructor so vue doesn't
-     * apply reactivity to them. Reactivity can interfere with the dispose methods
-     * of some Tone/WebAudio objects
-     */
+      settings.oscillator1.detune = _settings.oscillator1.detune;
+      settings.oscillator2.detune = _settings.oscillator2.detune;
+      settings.oscillator3.detune = _settings.oscillator3.detune;
 
-    this.synth = new VAPolySynth(6, 3, "sawtooth");
+      settings.oscillator1.volume = _settings.oscillator1.volume;
+      settings.oscillator2.volume = _settings.oscillator2.volume;
+      settings.oscillator3.volume = _settings.oscillator3.volume;
 
-    this.filterLFO = new ToneLFO();
-    this.ampLFO = new ToneLFO();
-    this.pitchLFO = new ToneLFO();
+      settings.oscillator1.type = _settings.oscillator1.type;
+      settings.oscillator2.type = _settings.oscillator2.type;
+      settings.oscillator3.type = _settings.oscillator3.type;
 
-    this.filterLFO.start().connect(this.synth.filterFrequencyModulation);
-    this.ampLFO.start().connect(this.synth.ampModulation);
-    this.pitchLFO.start().connect(this.synth.pitchModulation);
+      settings.oscillator1.type = _settings.oscillator1.type;
 
-    this.noise = new VANoiseSynth("white");
-    this.noiseVolume = new ToneVolume(-24);
+      settings.filter.type = _settings.filter.type;
+      settings.filter.frequency = _settings.filter.frequency;
+      settings.filter.q = _settings.filter.q;
+      settings.filter.envelope.attack = _settings.filter.envelope.attack;
+      settings.filter.envelope.decay = _settings.filter.envelope.decay;
+      settings.filter.envelope.sustain = _settings.filter.envelope.sustain;
+      settings.filter.envelope.release = _settings.filter.envelope.release;
+      settings.filter.envelopeAmount = _settings.filter.envelopeAmount;
+      settings.filter.modulationAmount = _settings.filter.modulationAmount;
+      settings.filter.modulationRate = _settings.filter.modulationRate;
 
-    this.output = new ToneGain(1);
-    this.volume = new ToneVolume();
+      settings.amp.envelope.attack = _settings.amp.envelope.attack;
+      settings.amp.envelope.decay = _settings.amp.envelope.decay;
+      settings.amp.envelope.sustain = _settings.amp.envelope.sustain;
+      settings.amp.envelope.release = _settings.amp.envelope.release;
+      settings.amp.modulationAmount = _settings.amp.modulationAmount;
+      settings.amp.modulationRate = _settings.amp.modulationRate;
 
-    this.noise.output.chain(this.noiseVolume, this.volume);
-    this.synth.output.connect(this.volume);
-    this.volume.connect(this.output);
-  }
+      settings.noise.volume = _settings.noise.volume;
+      settings.noise.type = _settings.noise.type;
 
-  mounted() {
-    this.$emit("deviceMounted");
-  }
+      settings.volume = _settings.volume;
+    }
 
-  beforeDestroy() {
-    this.dispose();
-  }
-  
-  // Methods
+    watch(() => settings.oscillator1.transpose, (currentValue, oldValue) => {
+      synth.oscillators[0].transpose = currentValue;
+    });
+    watch(() => settings.oscillator2.transpose, (currentValue, oldValue) => {
+      synth.oscillators[1].transpose = currentValue;
+    });
+    watch(() => settings.oscillator3.transpose, (currentValue, oldValue) => {
+      synth.oscillators[2].transpose = currentValue;
+    });
 
-  dispose() {
-    this.filterLFO.stop().disconnect();
-    this.ampLFO.stop().disconnect();
-    this.pitchLFO.stop().disconnect();
-    this.volume.disconnect();
-    this.synth.output.disconnect();
-    this.noise.output.disconnect();
-    this.noiseVolume.disconnect();
-    this.output.disconnect();
+    watch(() => settings.oscillator1.detune, (currentValue, oldValue) => {
+      synth.oscillators[0].detune = currentValue;
+    });
+    watch(() => settings.oscillator2.detune, (currentValue, oldValue) => {
+      synth.oscillators[1].detune = currentValue;
+    });
+    watch(() => settings.oscillator3.detune, (currentValue, oldValue) => {
+      synth.oscillators[2].detune = currentValue;
+    });
 
-    this.filterLFO.dispose();
-    this.ampLFO.dispose();
-    this.pitchLFO.dispose();
-    this.volume.dispose();
-    this.synth.dispose();
-    this.noise.dispose();
-    this.noiseVolume.dispose();
-    this.output.dispose();
-  }
+    watch(() => settings.oscillator1.volume, (currentValue, oldValue) => {
+      synth.oscillators[0].volume = currentValue;
+    });
+    watch(() => settings.oscillator2.volume, (currentValue, oldValue) => {
+      synth.oscillators[1].volume = currentValue;
+    });
+    watch(() => settings.oscillator3.volume, (currentValue, oldValue) => {
+      synth.oscillators[2].volume = currentValue;
+    });
 
-  receiveMidi(message: IMidiMessage, time?: number) {
-    this.synth.receiveMidi(message, time);
-    this.noise.receiveMidi(message, time); // todo: don't release noise if keys are still down
-  }
+    watch(() => settings.oscillator1.type, (currentValue, oldValue) => {
+      synth.oscillators[0].type = currentValue;
+    });
+    watch(() => settings.oscillator2.type, (currentValue, oldValue) => {
+      synth.oscillators[1].type = currentValue;
+    });
+    watch(() => settings.oscillator3.type, (currentValue, oldValue) => {
+      synth.oscillators[2].type = currentValue;
+    });
 
-  applySettings(settings: IJvaSettings) {
-    // create a deep copy so we don't mutate the preset
-    this.settings = JSON.parse(JSON.stringify(settings));
-    this.updateSynthWatches();
-  }
+    watch(filterTypeIndex, (currentValue, oldValue) => {
+      settings.filter.type = filterTypes[currentValue];
+    });
 
-  // kind of verbose but needed for reactivity in certain cases - maybe there's a cleaner way?
-  private updateSynthWatches() {
-    this.onOscillator1VolumeChanged(this.settings.oscillator1.volume);
-    this.onOscillator1TranposeChanged(this.settings.oscillator1.transpose);
-    this.onOscillator1DetuneChanged(this.settings.oscillator1.detune);
-    this.onOscillator1TypeChanged(this.settings.oscillator1.type);
+    watch(() => settings.filter.type, (currentValue, oldValue) => {
+      synth.filterType = currentValue;
+      noise.filterType = currentValue;
+    });
+    watch(() => settings.filter.frequency, (currentValue, oldValue) => {
+      synth.filterFrequency = currentValue;
+      noise.filterFrequency = currentValue;
+    });
+    watch(() => settings.filter.q, (currentValue, oldValue) => {
+      synth.filterQ = currentValue;
+      noise.filterQ = currentValue;
+    });
+    watch(() => settings.filter.envelope.attack, (currentValue, oldValue) => {
+      synth.filterAttack = currentValue;
+      noise.filterAttack = currentValue;
+    });
+    watch(() => settings.filter.envelope.decay, (currentValue, oldValue) => {
+      synth.filterDecay = currentValue;
+      noise.filterDecay = currentValue;
+    });
+    watch(() => settings.filter.envelope.sustain, (currentValue, oldValue) => {
+      synth.filterSustain = currentValue;
+      noise.filterSustain = currentValue;
+    });
+    watch(() => settings.filter.envelope.release, (currentValue, oldValue) => {
+      synth.filterRelease = currentValue;
+      noise.filterRelease = currentValue;
+    });
+    watch(() => settings.filter.envelopeAmount, (currentValue, oldValue) => {
+      synth.filterEnvelopeAmount = currentValue;
+      noise.filterEnvelopeAmount = currentValue;
+    });
+    watch(() => settings.filter.modulationAmount, (currentValue, oldValue) => {
+      synth.filterFrequencyModulationMix = currentValue;
+      noise.filterFrequencyModulationMix = currentValue;
+    });
+    watch(() => settings.filter.modulationRate, (currentValue, oldValue) => {
+      filterLFO.frequency.setValueAtTime(currentValue, ToneImmediate());
+    });
 
-    this.onOscillator2VolumeChanged(this.settings.oscillator2.volume);
-    this.onOscillator2TranposeChanged(this.settings.oscillator2.transpose);
-    this.onOscillator2DetuneChanged(this.settings.oscillator2.detune);
-    this.onOscillator2TypeChanged(this.settings.oscillator2.type);
+    watch(() => settings.amp.envelope.attack, (currentValue, oldValue) => {
+      synth.ampAttack = currentValue;
+      noise.ampAttack = currentValue;
+    });
+    watch(() => settings.amp.envelope.decay, (currentValue, oldValue) => {
+      synth.ampDecay = currentValue;
+      noise.ampDecay = currentValue;
+    });
+    watch(() => settings.amp.envelope.sustain, (currentValue, oldValue) => {
+      synth.ampSustain = currentValue;
+      noise.ampSustain = currentValue;
+    });
+    watch(() => settings.amp.envelope.release, (currentValue, oldValue) => {
+      synth.ampRelease = currentValue;
+      noise.ampRelease = currentValue;
+    });
+    watch(() => settings.amp.modulationAmount, (currentValue, oldValue) => {
+      synth.ampModulationMix = currentValue;
+      noise.ampModulationMix = currentValue;
+    });
+    watch(() => settings.amp.modulationRate, (currentValue, oldValue) => {
+      ampLFO.frequency.setValueAtTime(currentValue, ToneImmediate());
+    });
 
-    this.onOscillator3VolumeChanged(this.settings.oscillator3.volume);
-    this.onOscillator3TranposeChanged(this.settings.oscillator3.transpose);
-    this.onOscillator3DetuneChanged(this.settings.oscillator3.detune);
-    this.onOscillator3TypeChanged(this.settings.oscillator3.type);
+    watch(() => settings.noise.volume, (currentValue, oldValue) => {
+      noiseVolume.volume.setValueAtTime(currentValue, ToneImmediate());
+    });
+    watch(() => settings.noise.type, (currentValue, oldValue) => {
+      noise.noiseType = currentValue as ToneNoiseType;
+    });
 
-    this.onOscillatorSpreadChanged(this.settings.oscillatorSpread);
+    watch(() => settings.volume, (currentValue, oldValue) => {
+      volume.volume.setValueAtTime(currentValue, ToneImmediate());
+    });
 
-    this.onAmpEnvelopeAttackChange(this.settings.amp.envelope.attack);
-    this.onAmpEnvelopeDecayChange(this.settings.amp.envelope.decay);
-    this.onAmpEnvelopeSustainChange(this.settings.amp.envelope.sustain);
-    this.onAmpEnvelopeReleaseChange(this.settings.amp.envelope.release);
-    this.onAmpLFOAmtChanged(this.settings.amp.modulationAmount);
-    this.onAmpLFORateChange(this.settings.amp.modulationRate);
+    onMounted(() => {
+      context.emit("deviceMounted");
+    });
 
-    this.onFilterEnvelopeAttackChange(this.settings.filter.envelope.attack);
-    this.onFilterEnvelopeDecayChange(this.settings.filter.envelope.decay);
-    this.onFilterEnvelopeSustainChange(this.settings.filter.envelope.sustain);
-    this.onFilterEnvelopeReleaseChange(this.settings.filter.envelope.release);
-    this.onFilterEnvelopeAmountChanged(this.settings.filter.envelopeAmount);
-    this.onFilterFrequencyChange(this.settings.filter.frequency);
-    this.onFilterQChange(this.settings.filter.q);
-    this.onFilterTypeChanged(this.settings.filter.type);
-    this.onFilterLFOAmtChanged(this.settings.filter.modulationAmount);
-    this.onFilterLFORateChanged(this.settings.filter.modulationRate);
+    onUnmounted(() => {
+      dispose();
+    });
 
-    this.onPitchLFOAmtChanged(this.settings.pitch.modulationAmount);
-    this.onPitchLFORateChanged(this.settings.pitch.modulationRate);
+    filterLFO.start().connect(synth.filterFrequencyModulation);
+    ampLFO.start().connect(synth.ampModulation);
+    pitchLFO.start().connect(synth.pitchModulation);
+    noise.output.chain(noiseVolume, volume);
+    synth.output.connect(volume);
+    volume.connect(output);
 
-    this.onNoiseTypeChange(this.settings.noise.type);
-    this.onNoiseVolumeChange(this.settings.noise.volume);
+    return {
+      guid,
+      name,
+      settings,
+      output,
+      filterTypeIndex,
+      receiveMidi,
+      applySettings
+    }
+  }
+});
 
-    this.onVolumeLevelChanged(this.settings.volume);
-
-    this.$forceUpdate(); // make sure the gui updates
-  }
-
-  // Watches
-
-  @Watch("settings.oscillator1.transpose")
-  private onOscillator1TranposeChanged(value: number) {
-    this.synth.oscillators[0].transpose = value;
-  }
-  @Watch("settings.oscillator1.detune")
-  private onOscillator1DetuneChanged(value: number) {
-    this.synth.oscillators[0].detune = value;
-  }
-  @Watch("settings.oscillator1.volume")
-  private onOscillator1VolumeChanged(value: number) {
-    this.synth.oscillators[0].volume = value;
-  }
-  @Watch("settings.oscillator1.type")
-  private onOscillator1TypeChanged(value: ToneOscillatorType) {
-    this.synth.oscillators[0].type = value;
-  }
-
-  @Watch("settings.oscillator2.transpose")
-  private onOscillator2TranposeChanged(value: number) {
-    this.synth.oscillators[1].transpose = value;
-  }
-  @Watch("settings.oscillator2.detune")
-  private onOscillator2DetuneChanged(value: number) {
-    this.synth.oscillators[1].detune = value;
-  }
-  @Watch("settings.oscillator2.volume")
-  private onOscillator2VolumeChanged(value: number) {
-    this.synth.oscillators[1].volume = value;
-  }
-  @Watch("settings.oscillator2.type")
-  private onOscillator2TypeChanged(value: ToneOscillatorType) {
-    this.synth.oscillators[1].type = value;
-  }
-
-  @Watch("settings.oscillator3.transpose")
-  private onOscillator3TranposeChanged(value: number) {
-    this.synth.oscillators[2].transpose = value;
-  }
-  @Watch("settings.oscillator3.detune")
-  private onOscillator3DetuneChanged(value: number) {
-    this.synth.oscillators[2].detune = value;
-  }
-  @Watch("settings.oscillator3.volume")
-  private onOscillator3VolumeChanged(value: number) {
-    this.synth.oscillators[2].volume = value;
-  }
-  @Watch("settings.oscillator3.type")
-  private onOscillator3TypeChanged(value: ToneOscillatorType) {
-    this.synth.oscillators[2].type = value;
-  }
-
-  @Watch("settings.oscillatorSpread")
-  private onOscillatorSpreadChanged(value: number) {
-    this.synth.oscillatorSpread = value;
-  }
-
-  @Watch("filterTypeIndex")
-  private onFilterTypeIndexChanged(value: number) {
-    this.settings.filter.type = this.filterTypes[value];
-  }
-  @Watch("settings.filter.type")
-  private onFilterTypeChanged(value: BiquadFilterType) {
-    this.synth.filterType = value;
-    this.noise.filterType = value;
-  }
-  @Watch("settings.filter.frequency")
-  private onFilterFrequencyChange(value: number) {
-    this.synth.filterFrequency = value;
-    this.noise.filterFrequency = value;
-  }
-  @Watch("settings.filter.q")
-  private onFilterQChange(value: number) {
-    this.synth.filterQ = value;
-    this.noise.filterQ = value;
-  }
-  @Watch("settings.filter.envelope.attack")
-  private onFilterEnvelopeAttackChange(value: number) {
-    this.synth.filterAttack = value;
-    this.noise.filterAttack = value;
-  }
-  @Watch("settings.filter.envelope.decay")
-  private onFilterEnvelopeDecayChange(value: number) {
-    this.synth.filterDecay = value;
-    this.noise.filterDecay = value;
-  }
-  @Watch("settings.filter.envelope.sustain")
-  private onFilterEnvelopeSustainChange(value: number) {
-    this.synth.filterSustain = value;
-    this.noise.filterSustain = value;
-  }
-  @Watch("settings.filter.envelope.release")
-  private onFilterEnvelopeReleaseChange(value: number) {
-    this.synth.filterRelease = value;
-    this.noise.filterRelease = value;
-  }
-  @Watch("settings.filter.envelopeAmount")
-  private onFilterEnvelopeAmountChanged(value: number) {
-    this.synth.filterEnvelopeAmount = value;
-    this.noise.filterEnvelopeAmount = value;
-  }
-  @Watch("settings.filter.modulationAmount")
-  private onFilterLFOAmtChanged(value: number) {
-    this.synth.filterFrequencyModulationMix = value;
-    this.noise.filterFrequencyModulationMix = value;
-  }
-  @Watch("settings.filter.modulationRate")
-  private onFilterLFORateChanged(value: number) {
-    this.filterLFO.frequency.setValueAtTime(value, ToneImmediate());
-  }
-
-  @Watch("settings.pitch.modulationAmount")
-  private onPitchLFOAmtChanged(value: number) {
-    this.synth.pitchModulationMix = value;
-  }
-  @Watch("settings.pitch.modulationRate")
-  private onPitchLFORateChanged(value: number) {
-    this.pitchLFO.frequency.setValueAtTime(value, ToneImmediate());
-  }
-
-  @Watch("settings.amp.envelope.attack")
-  private onAmpEnvelopeAttackChange(value: number) {
-    this.synth.ampAttack = value;
-    this.noise.ampAttack = value;
-  }
-  @Watch("settings.amp.envelope.decay")
-  private onAmpEnvelopeDecayChange(value: number) {
-    this.synth.ampDecay = value;
-    this.noise.ampDecay = value;
-  }
-  @Watch("settings.amp.envelope.sustain")
-  private onAmpEnvelopeSustainChange(value: number) {
-    this.synth.ampSustain = value;
-    this.noise.ampSustain = value;
-  }
-  @Watch("settings.amp.envelope.release")
-  private onAmpEnvelopeReleaseChange(value: number) {
-    this.synth.ampRelease = value;
-    this.noise.ampRelease = value;
-  }
-  @Watch("settings.amp.modulationAmount")
-  private onAmpLFOAmtChanged(value: number) {
-    this.synth.ampModulationMix = value;
-    this.noise.ampModulationMix = value;
-  }
-  @Watch("settings.amp.modulationRate")
-  private onAmpLFORateChange(value: number) {
-    this.ampLFO.frequency.setValueAtTime(value, ToneImmediate());
-  }
-
-  @Watch("settings.noise.volume")
-  private onNoiseVolumeChange(value: number) {
-    this.noiseVolume.volume.setValueAtTime(value, ToneImmediate());
-  }
-  @Watch("settings.noise.type")
-  private onNoiseTypeChange(value: string) {
-    this.noise.noiseType = value as ToneNoiseType;
-  }
-
-  @Watch("settings.volume")
-  private onVolumeLevelChanged(value: number) {
-    this.volume.volume.setValueAtTime(value, ToneImmediate());
-  }
-}
 </script>
 
 <style scoped>

@@ -162,6 +162,8 @@ export default class Distortion extends Vue implements IEffectsDevice {
   public output!: ToneAudioNode;
   private toneDistortion!: ToneDistortion;
 
+  private effectsDeviceProxy!: IEffectsDevice;
+
   constructor() {
     super();
 
@@ -180,8 +182,22 @@ export default class Distortion extends Vue implements IEffectsDevice {
     this.output = new ToneGain(1);
     this.toneDistortion = new ToneDistortion(0.4);
 
+    this.effectsDeviceProxy = {
+      guid: this.guid,
+      name: this.name,
+      settings: this.settings,
+      input: this.input,
+      output: this.output,
+      applySettings: this.applySettings,
+      dispose: this.dispose
+    };
+
     this.input.connect(this.toneDistortion);
     this.toneDistortion.connect(this.output);
+  }
+
+  mounted() {
+    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
   }
 
   beforeDestroy() {
@@ -191,19 +207,19 @@ export default class Distortion extends Vue implements IEffectsDevice {
   // Methods
 
   deleteComponent() {
-    this.$emit("deleteComponent", this);
+    this.$emit("deleteComponent", this.effectsDeviceProxy );
   }
 
   componentDragstart() {
-    this.$emit("componentDragstart", this);
+    this.$emit("componentDragstart", this.effectsDeviceProxy );
   }
 
   componentDragend() {
-    this.$emit("componentDragend", this);
+    this.$emit("componentDragend", this.effectsDeviceProxy );
   }
 
   elementDropped() {
-    this.$emit("elementDropped", this);
+    this.$emit("elementDropped", this.effectsDeviceProxy );
   }
 
   applySettings(settings: any) {

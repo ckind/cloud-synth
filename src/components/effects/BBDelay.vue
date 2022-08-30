@@ -175,6 +175,8 @@ export default class BBDelay extends Vue implements IEffectsDevice {
 
   private delayTimeSmoothing = 0.05;
 
+  private effectsDeviceProxy!: IEffectsDevice;
+
   get bpmInterval() {
     return 60 / ToneTransport.bpm.value;
   }
@@ -228,7 +230,21 @@ export default class BBDelay extends Vue implements IEffectsDevice {
     this.input.chain(this.drySignal);
     this.dryWetMixer.output.connect(this.output);
 
+    this.effectsDeviceProxy = {
+      guid: this.guid,
+      name: this.name,
+      settings: this.settings,
+      input: this.input,
+      output: this.output,
+      applySettings: this.applySettings,
+      dispose: this.dispose
+    };
+
     this.delayTimeLFO.start();
+  }
+
+  mounted() {
+    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
   }
 
   beforeDestroy() {
@@ -238,19 +254,19 @@ export default class BBDelay extends Vue implements IEffectsDevice {
   // Methods
 
   deleteComponent() {
-    this.$emit("deleteComponent", this);
+    this.$emit("deleteComponent", this.effectsDeviceProxy);
   }
 
   componentDragstart() {
-    this.$emit("componentDragstart", this);
+    this.$emit("componentDragstart", this.effectsDeviceProxy);
   }
 
   componentDragend() {
-    this.$emit("componentDragend", this);
+    this.$emit("componentDragend", this.effectsDeviceProxy);
   }
 
   elementDropped() {
-    this.$emit("elementDropped", this);
+    this.$emit("elementDropped", this.effectsDeviceProxy);
   }
 
   applySettings(settings: any) {

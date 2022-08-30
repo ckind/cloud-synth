@@ -97,6 +97,8 @@ export default class DigitalDelay extends Vue implements IEffectsDevice {
   private delayTimeSignal!: ToneSignal;
   private feedbackSignal!: ToneSignal;
 
+  private effectsDeviceProxy!: IEffectsDevice;
+
   constructor() {
     super();
 
@@ -124,8 +126,22 @@ export default class DigitalDelay extends Vue implements IEffectsDevice {
     this.dryWetSignal.connect(this.toneDelay.wet);
     this.feedbackSignal.connect(this.toneDelay.feedback);
 
+    this.effectsDeviceProxy = {
+      guid: this.guid,
+      name: this.name,
+      settings: this.settings,
+      input: this.input,
+      output: this.output,
+      applySettings: this.applySettings,
+      dispose: this.dispose
+    };
+
     this.input.connect(this.toneDelay);
     this.toneDelay.connect(this.output);
+  }
+
+  mounted() {
+    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
   }
 
   beforeDestroy() {
@@ -135,19 +151,19 @@ export default class DigitalDelay extends Vue implements IEffectsDevice {
   // Methods
 
   deleteComponent() {
-    this.$emit("deleteComponent", this);
+    this.$emit("deleteComponent", this.effectsDeviceProxy);
   }
 
   componentDragstart() {
-    this.$emit("componentDragstart", this);
+    this.$emit("componentDragstart", this.effectsDeviceProxy);
   }
 
   componentDragend() {
-    this.$emit("componentDragend", this);
+    this.$emit("componentDragend", this.effectsDeviceProxy);
   }
 
   elementDropped() {
-    this.$emit("elementDropped", this);
+    this.$emit("elementDropped", this.effectsDeviceProxy);
   }
 
   applySettings(settings: any) {
