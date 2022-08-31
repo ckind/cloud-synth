@@ -54,65 +54,38 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onBeforeUnmount, getCurrentInstance, reactive } from "vue";
-import { Component, Vue, Watch } from "vue-property-decorator";
-import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
+import { defineComponent, onBeforeUnmount } from "vue";
+import { useEffectsDevice } from "@/composables/useEffectsDevice";
+import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
 import KnobControl from "@/components/KnobControl.vue";
-import { v4 as uuidv4 } from "uuid";
-import {
-  ToneAudioNode,
-  Gain as ToneGain,
-  Distortion as ToneDistortion
-} from "tone";
+import { Distortion as ToneDistortion } from "tone";
 
-interface IDistortionSettings {
+type TDistortionSettings = {
   mix: number;
   drive: number;
 }
 
-//#region composition api
-
-// todo: probably need to refactor effects rack first
-defineComponent({
-// export default defineComponent({
+export default defineComponent({
   emits: [
     "deleteComponent",
     "componentDragstart",
     "componentDragend",
-    "elementDropped"
+    "elementDropped",
+    "effectsDeviceMounted"
   ],
+  components: {
+    KnobControl
+  },
   setup(props, context) {
-    const guid = ref(uuidv4());
-    const name = ref("Distrotion");
-    const settings = reactive({
-      mix: 1.0,
-      drive: 0.4,
-    });
+    const { guid, name, settings, output, input } =
+      useEffectsDevice<TDistortionSettings>(
+        "Distortion",
+        { mix: 1.0, drive: 0.4 }
+      );
 
-    const input = new ToneGain(1);
-    const output = new ToneGain(1);
     const toneDistortion = new ToneDistortion(0.4);
 
-    input.connect(toneDistortion);
-    toneDistortion.connect(output);
-
-    function deleteComponent() {
-      context.emit("deleteComponent", getCurrentInstance());
-    }
-
-    function componentDragstart() {
-      context.emit("componentDragstart", getCurrentInstance());
-    }
-
-    function componentDragend() {
-      context.emit("componentDragend", getCurrentInstance());
-    }
-
-    function elementDropped() {
-      context.emit("elementDropped", getCurrentInstance());
-    }
-
-    function applySettings(newSettings: IDistortionSettings) {
+    function applySettings(newSettings: TDistortionSettings) {
       settings.drive = newSettings.drive;
       settings.mix = newSettings.mix;
     }
@@ -126,7 +99,27 @@ defineComponent({
       toneDistortion.dispose();
     }
 
+    const {
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped
+    } = useEffectsRackComponent(
+      context,
+      {
+        guid,
+        name,
+        settings,
+        input,
+        output,
+        applySettings,
+        dispose
+      });
+
     onBeforeUnmount(() => dispose());
+
+    input.connect(toneDistortion);
+    toneDistortion.connect(output);
 
     return {
       input,
@@ -143,112 +136,6 @@ defineComponent({
   }
 });
 
-//#endregion
-
-//#region class api
-
-@Component({
-  components: {
-    KnobControl,
-  },
-})
-// class Distortion extends Vue implements IEffectsDevice {
-export default class Distortion extends Vue implements IEffectsDevice {
-  public guid: string;
-  public name: string;
-  public settings: IDistortionSettings;
-
-  public input!: ToneAudioNode;
-  public output!: ToneAudioNode;
-  private toneDistortion!: ToneDistortion;
-
-  private effectsDeviceProxy!: IEffectsDevice;
-
-  constructor() {
-    super();
-
-    this.guid = uuidv4();
-    this.name = "Distortion";
-    this.settings = {
-      mix: 1.0,
-      drive: 0.4,
-    };
-  }
-
-  // Lifecycle Hooks
-
-  created() {
-    this.input = new ToneGain(1);
-    this.output = new ToneGain(1);
-    this.toneDistortion = new ToneDistortion(0.4);
-
-    this.effectsDeviceProxy = {
-      guid: this.guid,
-      name: this.name,
-      settings: this.settings,
-      input: this.input,
-      output: this.output,
-      applySettings: this.applySettings,
-      dispose: this.dispose
-    };
-
-    this.input.connect(this.toneDistortion);
-    this.toneDistortion.connect(this.output);
-  }
-
-  mounted() {
-    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
-  }
-
-  beforeDestroy() {
-    this.dispose();
-  }
-
-  // Methods
-
-  deleteComponent() {
-    this.$emit("deleteComponent", this.effectsDeviceProxy );
-  }
-
-  componentDragstart() {
-    this.$emit("componentDragstart", this.effectsDeviceProxy );
-  }
-
-  componentDragend() {
-    this.$emit("componentDragend", this.effectsDeviceProxy );
-  }
-
-  elementDropped() {
-    this.$emit("elementDropped", this.effectsDeviceProxy );
-  }
-
-  applySettings(settings: any) {
-    this.settings = settings;
-  }
-
-  dispose() {
-    this.input.disconnect(this.toneDistortion);
-    this.toneDistortion.disconnect(this.output);
-
-    this.input.dispose();
-    this.output.dispose();
-    this.toneDistortion.dispose();
-  }
-
-  // Watch
-
-  @Watch("settings.mix")
-  private setMix(value: number) {
-    this.toneDistortion.wet.value = value;
-  }
-
-  @Watch("settings.drive")
-  private setDrive(value: number) {
-    this.toneDistortion.distortion = value;
-  }
-}
-
-//#endregion
 </script>
 
 <style scoped>

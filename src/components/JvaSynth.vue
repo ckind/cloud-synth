@@ -343,8 +343,6 @@ export default defineComponent({
       noise.receiveMidi(message, time); // todo: don't release noise if keys are still down
     }
 
-    // todo: for some reason this isn't working on initial page load
-    // think it has something to do with nested properies in reactive() on settings - investigate
     function applySettings(_settings: IJvaSettings) {
       settings.oscillator1.transpose = _settings.oscillator1.transpose;
       settings.oscillator2.transpose = _settings.oscillator2.transpose;

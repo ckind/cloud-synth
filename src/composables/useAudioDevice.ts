@@ -14,5 +14,5 @@ export function useAudioDevice<TSettings extends Record<string, any>>(
     name,
     settings,
     output
-  }
+  };
 }

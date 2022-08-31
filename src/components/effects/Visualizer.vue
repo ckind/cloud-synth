@@ -44,179 +44,167 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop } from "vue-property-decorator";
-import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
-import { v4 as uuidv4 } from "uuid";
-import { ToneAudioNode, Gain as ToneGain, context as ToneContext } from "tone";
+import { defineComponent, computed, onMounted, onUnmounted, ref } from "vue";
+import { useEffectsDevice } from "@/composables/useEffectsDevice";
+import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
+import { context as ToneContext } from "tone";
 
-@Component({})
-export default class Visualizer extends Vue implements IEffectsDevice {
-  public guid: string;
-  public output: ToneAudioNode;
-  public input: ToneAudioNode;
-  public name: string;
-  public settings: any;
+type TVisualizerSettings = {};
 
-  private analyser: AnalyserNode;
-  private dataArray: Float32Array;
-  private bufferLength: number;
-  private canvasContext!: CanvasRenderingContext2D; // tell the typescript compiler to take a chill pill - we'll set it in mounted()
-  private continueDrawing = true;
-  private fillColor = "#70bfff";
-  private nyquistFrequency: number;
-  private fftSize = 1024;
+export default defineComponent({
+  emits: [
+    "deleteComponent",
+    "componentDragstart",
+    "componentDragend",
+    "elementDropped",
+    "effectsDeviceMounted"
+  ],
+  props: {
+    width: { type: Number, required: false, default: 208 },
+    height: { type: Number, required: false, default: 130 },
+  },
+  setup(props, context) {
+    const { guid, name, settings, output, input } =
+      useEffectsDevice<TVisualizerSettings>("Visualizer", {});
 
-  private effectsDeviceProxy: IEffectsDevice;
+    const analyser = ToneContext.createAnalyser()
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Float32Array(bufferLength);
+    const nyquistFrequency = ToneContext.sampleRate / 2;
+    const fftSize = 1024;
+    const fillColor = "#70bfff";
+    const analyserCanvas = ref(null as HTMLCanvasElement | null);
 
-  $refs!: {
-    analyserCanvas: HTMLCanvasElement;
-  };
+    const cssVars = computed(() => {
+      return {
+        "--shadowColor": "#5e5e5e"
+      };
+    });
 
-  @Prop({ required: false, default: 208 })
-  public width!: number;
+    let canvasContext: CanvasRenderingContext2D;
+    let continueDrawing = true;
 
-  @Prop({ required: false, default: 130 })
-  public height!: number;
+    function applySettings(settings: TVisualizerSettings) {
+      // nothing to do yet
+    }
 
-  get cssVars() {
-    return {
-      "--shadowColor": "#5e5e5e",
-    };
-  }
+    function dispose() {
+      input.dispose();
+      output.dispose();
+    }
 
-  constructor() {
-    super();
+    const {
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped
+    } = useEffectsRackComponent(
+      context,
+      {
+        guid,
+        name,
+        settings,
+        input,
+        output,
+        applySettings,
+        dispose
+      });
 
-    this.guid = uuidv4();
-    this.output = new ToneGain(1);
-    this.input = new ToneGain(1);
-    this.name = "Visualizer";
-    this.settings = {};
+    function drawTimeDomain() {
+      analyser.getFloatTimeDomainData(dataArray);
 
-    this.analyser = ToneContext.createAnalyser();
-    this.analyser.fftSize = this.fftSize;
-    this.bufferLength = this.analyser.frequencyBinCount;
-    this.dataArray = new Float32Array(this.bufferLength);
-    this.nyquistFrequency = ToneContext.sampleRate / 2;
+      canvasContext.fillStyle = "black";
+      canvasContext.fillRect(0, 0, props.width, props.height);
 
-    this.effectsDeviceProxy = {
-      guid: this.guid,
-      name: this.name,
-      settings: this.settings,
-      input: this.input,
-      output: this.output,
-      applySettings: this.applySettings,
-      dispose: this.dispose
-    };
+      canvasContext.lineWidth = 2.5;
+      canvasContext.strokeStyle = fillColor;
 
-    this.input.chain(this.analyser, this.output);
-  }
+      canvasContext.beginPath();
 
-  // Lifecycle Hooks
+      const sliceWidth = props.width / bufferLength;
 
-  mounted() {
-    this.canvasContext = this.$refs.analyserCanvas.getContext("2d")!;
-    // window.requestAnimationFrame(this.drawFrequencyDomain);
-    window.requestAnimationFrame(this.drawTimeDomain);
+      let x = 0;
 
-    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
-  }
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] * props.height * 0.8;
+        const y = props.height / 2 + v;
 
-  beforeDestroy() {
-    this.continueDrawing = false;
-    this.dispose();
-  }
+        if (i === 0) {
+          canvasContext.moveTo(x, y);
+        } else {
+          canvasContext.lineTo(x, y);
+        }
 
-  // Methods
-
-  deleteComponent() {
-    this.$emit("deleteComponent", this.effectsDeviceProxy);
-  }
-
-  componentDragstart() {
-    this.$emit("componentDragstart", this.effectsDeviceProxy);
-  }
-
-  componentDragend() {
-    this.$emit("componentDragend", this.effectsDeviceProxy);
-  }
-
-  elementDropped() {
-    this.$emit("elementDropped", this.effectsDeviceProxy);
-  }
-
-  drawTimeDomain() {
-    this.analyser.getFloatTimeDomainData(this.dataArray);
-
-    this.canvasContext.fillStyle = "black";
-    this.canvasContext.fillRect(0, 0, this.width, this.height);
-
-    this.canvasContext.lineWidth = 2.5;
-    this.canvasContext.strokeStyle = this.fillColor;
-
-    this.canvasContext.beginPath();
-
-    const sliceWidth = this.width / this.bufferLength;
-
-    let x = 0;
-
-    for (let i = 0; i < this.bufferLength; i++) {
-      const v = this.dataArray[i] * this.height * 0.8;
-      const y = this.height / 2 + v;
-
-      if (i === 0) {
-        this.canvasContext.moveTo(x, y);
-      } else {
-        this.canvasContext.lineTo(x, y);
+        x += sliceWidth;
       }
 
-      x += sliceWidth;
+      canvasContext.lineTo(props.width, props.height / 2);
+      canvasContext.stroke();
+
+      if (continueDrawing) {
+        window.requestAnimationFrame(drawTimeDomain);
+      }
     }
 
-    this.canvasContext.lineTo(this.width, this.height / 2);
-    this.canvasContext.stroke();
+    function drawFrequencyDomain() {
+      analyser.getFloatFrequencyData(dataArray);
 
-    if (this.continueDrawing) {
-      window.requestAnimationFrame(this.drawTimeDomain);
+      canvasContext.fillStyle = "black";
+      canvasContext.fillRect(0, 0, props.width, props.height);
+
+      for (let i = 0; i < bufferLength; i++) {
+        const freq = i * (nyquistFrequency / fftSize);
+
+        const x = i * (props.width/bufferLength);
+        const barWidth = 1;
+        const barHeight = dataArray[i] + 140;
+
+        canvasContext.fillStyle = fillColor;
+        canvasContext.fillRect(
+          x,
+          props.height - barHeight,
+          barWidth,
+          barHeight
+        );
+      }
+
+      if (continueDrawing) {
+        window.requestAnimationFrame(drawFrequencyDomain);
+      }
+    }
+
+    onMounted(() => {
+      canvasContext = analyserCanvas.value?.getContext("2d")!;
+      // window.requestAnimationFrame(drawFrequencyDomain);
+      window.requestAnimationFrame(drawTimeDomain);
+    });
+    
+    onUnmounted(() => {
+      continueDrawing = false;
+      dispose();   
+    });
+
+    input.chain(analyser, output);
+
+    return {
+      guid,
+      name,
+      settings,
+      input,
+      output,
+      cssVars,
+      analyserCanvas,
+      applySettings,
+      dispose,
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped
     }
   }
 
-  drawFrequencyDomain() {
-    this.analyser.getFloatFrequencyData(this.dataArray);
+});
 
-    this.canvasContext.fillStyle = "black";
-    this.canvasContext.fillRect(0, 0, this.width, this.height);
-
-    for (let i = 0; i < this.bufferLength; i++) {
-      const freq = i * (this.nyquistFrequency / this.fftSize);
-
-      const x = i * (this.width/this.bufferLength);
-      const barWidth = 1;
-      const barHeight = this.dataArray[i] + 140;
-
-      this.canvasContext.fillStyle = this.fillColor;
-      this.canvasContext.fillRect(
-        x,
-        this.height - barHeight,
-        barWidth,
-        barHeight
-      );
-    }
-
-    if (this.continueDrawing) {
-      window.requestAnimationFrame(this.drawFrequencyDomain);
-    }
-  }
-
-  applySettings(settings: any) {
-    this.settings = settings;
-  }
-
-  dispose() {
-    this.input.dispose();
-    this.output.dispose();
-  }
-}
 </script>
 
 <style scoped>
