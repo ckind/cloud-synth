@@ -2,8 +2,8 @@
   <div
     class="flex"
     draggable
-    @dragstart="this.componentDragstart"
-    @dragend="this.componentDragend"
+    @dragstart="componentDragstart"
+    @dragend="componentDragend"
     @drop="elementDropped"
     @dragover="
       (e) => {
@@ -116,23 +116,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
-import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
+import { defineComponent, onBeforeUnmount, watch, computed } from "vue";
+import { useEffectsDevice } from "@/composables/useEffectsDevice";
+import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
 import { DryWetMixer } from "@/shared/classes/utility/DryWetMixer";
 import KnobControl from "@/components/KnobControl.vue";
-import { v4 as uuidv4 } from "uuid";
 import {
-  ToneAudioNode,
-  Gain as ToneGain,
   Delay as ToneDelay,
   Signal as ToneSignal,
   Filter as ToneFilter,
   Distortion as ToneDistortion,
   Transport as ToneTransport,
   LFO as ToneLFO,
+  Gain as ToneGain
 } from "tone";
 
-interface IBBDelaySettings {
+type IBBDelaySettings = {
   mix: number;
   sync: boolean;
   delayTime: number;
@@ -142,211 +141,182 @@ interface IBBDelaySettings {
   feedback: number;
 }
 
-@Component({
+export default defineComponent({
+  emits: [
+    "deleteComponent",
+    "componentDragstart",
+    "componentDragend",
+    "elementDropped",
+    "effectsDeviceMounted"
+  ],
   components: {
-    KnobControl,
+    KnobControl
   },
-})
-export default class BBDelay extends Vue implements IEffectsDevice {
-  public guid: string;
-  public output!: ToneAudioNode;
-  public input!: ToneAudioNode;
-  public name: string;
-  public settings: IBBDelaySettings;
-  public selected = false;
+  setup(props, context) {
+    const minDelayTime = 0.001;
+    const maxDelayTime = 1;
+    const minDelayTimeModAmount = 0;
+    const maxDelayTimeModAmount = 0.01;
+    const minDelayTimeModRate = 0.01;
+    const maxDelayTimeModRate = 10;
 
-  private minDelayTime = 0.001;
-  private maxDelayTime = 1;
-  private minDelayTimeModAmount = 0;
-  private maxDelayTimeModAmount = 0.01;
-  private minDelayTimeModRate = 0.01;
-  private maxDelayTimeModRate = 10;
+    const { guid, name, settings, output, input } =
+      useEffectsDevice<IBBDelaySettings>("Analog Delay", {
+        mix: 0.5,
+        sync: false,
+        delayTime: 0.2,
+        delayTimeSynced: 0.75,
+        modRate: 2,
+        modAmount: 0.001,
+        feedback: 0.5
+      });
 
-  private toneDelay!: ToneDelay;
-  private delayTimeSignal!: ToneSignal;
-  private feedbackSignal!: ToneGain;
-  private dryWetMixer!: DryWetMixer;
-  private drySignal!: ToneGain;
-  private wetSignal!: ToneGain;
-  private filter!: ToneFilter;
-  private distortion!: ToneDistortion;
-  private delayTimeLFO!: ToneLFO;
-  private delayTimeLFOGain!: ToneGain;
+    const toneDelay = new ToneDelay();
+    const feedbackSignal = new ToneGain(settings.feedback);
+    const delayTimeSignal = new ToneSignal(settings.delayTime);
+    const distortion = new ToneDistortion(0.05);
+    const drySignal = new ToneGain(1);
+    const wetSignal = new ToneGain(1);
+    const dryWetMixer = new DryWetMixer(drySignal, wetSignal);
+    const filter = new ToneFilter(4000, "lowpass");
+    const delayTimeLFO = new ToneLFO(settings.modRate, minDelayTime, maxDelayTime);
+    const delayTimeLFOGain = new ToneGain(settings.modAmount);
 
-  private delayTimeSmoothing = 0.05;
+    delayTimeSignal.connect(toneDelay.delayTime);
+    input.chain(
+      toneDelay,
+      distortion,
+      filter,
+      feedbackSignal,
+      toneDelay,
+      wetSignal
+    );
+    delayTimeLFO.chain(delayTimeLFOGain, toneDelay.delayTime);
+    input.chain(drySignal);
+    dryWetMixer.output.connect(output);
 
-  private effectsDeviceProxy!: IEffectsDevice;
+    function applySettings(newSettings: IBBDelaySettings) {
+      settings.mix = newSettings.mix;
+      settings.sync = newSettings.sync;
+      settings.delayTime = newSettings.delayTime;
+      settings.delayTimeSynced = newSettings.delayTimeSynced;
+      settings.modRate = newSettings.modRate;
+      settings.modAmount = newSettings.modAmount;
+      settings.feedback = newSettings.feedback;
+    }
 
-  get bpmInterval() {
-    return 60 / ToneTransport.bpm.value;
-  }
+    function dispose() {
+      delayTimeLFO.stop();
 
-  constructor() {
-    super();
+      input.disconnect();
+      toneDelay.disconnect();
+      distortion.disconnect();
+      filter.disconnect();
+      feedbackSignal.disconnect();
+      toneDelay.disconnect();
+      wetSignal.disconnect();
+      drySignal.disconnect();
+      dryWetMixer.output.disconnect();
+      delayTimeLFO.disconnect();
+      delayTimeLFOGain.disconnect();
 
-    this.guid = uuidv4();
-    this.name = "Analog Delay";
-    this.settings = {
-      mix: 0.5,
-      sync: false,
-      delayTime: 0.2,
-      delayTimeSynced: 0.75,
-      modRate: 2,
-      modAmount: 0.001,
-      feedback: 0.5,
+      input.dispose();
+      toneDelay.dispose();
+      distortion.dispose();
+      filter.dispose();
+      feedbackSignal.dispose();
+      toneDelay.dispose();
+      wetSignal.dispose();
+      drySignal.dispose();
+      output.dispose();
+      delayTimeLFO.dispose();
+      delayTimeLFOGain.dispose();
+    }
+
+    const bpmInterval = computed(() => 60 / ToneTransport.bpm.value);
+
+    const {
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped
+    } = useEffectsRackComponent(
+      context,
+      {
+        guid,
+        name,
+        settings,
+        input,
+        output,
+        applySettings,
+        dispose
+      }
+    );
+
+    watch(() => settings.mix, (value) => {
+      dryWetMixer.wetness = value;
+    });
+
+    watch(() => settings.feedback, (value) => {
+      feedbackSignal.gain.value = value;
+    });
+
+    watch(() => settings.sync, (value) => {
+      if (value) {
+        // set synced time
+        delayTimeSignal.linearRampTo(settings.delayTimeSynced * bpmInterval.value, 0.3);
+      } else {
+        delayTimeSignal.linearRampTo(settings.delayTime, 0.05);
+      }
+    });
+
+    watch(() => settings.delayTime, (value) => {
+      if (!settings.sync) {
+        delayTimeSignal.linearRampTo(value, 0.05);
+      }
+    });
+
+    watch(() => settings.delayTimeSynced, (value) => {
+      if (settings.sync) {
+        delayTimeSignal.linearRampTo(value * bpmInterval.value, 0.3);
+      }
+    });
+
+    watch(() => settings.modRate, (value) => {
+      delayTimeLFO.frequency.value = value;
+    });
+
+    watch(() => settings.modAmount, (value) => {
+      delayTimeLFOGain.gain.value = value;
+    });
+
+    delayTimeLFO.start();
+
+    onBeforeUnmount(() => dispose());
+
+    input.connect(toneDelay);
+    toneDelay.connect(output);
+
+    return {
+      input,
+      output,
+      guid,
+      name,
+      settings,
+      minDelayTime,
+      maxDelayTime,
+      minDelayTimeModAmount,
+      maxDelayTimeModAmount,
+      minDelayTimeModRate,
+      maxDelayTimeModRate,
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped,
+      applySettings
     };
   }
-
-  // Lifecycle Hooks
-
-  created() {
-    this.output = new ToneGain(1);
-    this.input = new ToneGain(1);
-    this.toneDelay = new ToneDelay();
-    this.feedbackSignal = new ToneGain(0.5);
-    this.delayTimeSignal = new ToneSignal(0.2);
-    this.distortion = new ToneDistortion(0.05);
-    this.drySignal = new ToneGain(1);
-    this.wetSignal = new ToneGain(1);
-    this.dryWetMixer = new DryWetMixer(this.drySignal, this.wetSignal);
-    this.filter = new ToneFilter(4000, "lowpass");
-    this.delayTimeLFO = new ToneLFO(
-      this.settings.modRate,
-      this.minDelayTime,
-      this.maxDelayTime
-    );
-    this.delayTimeLFOGain = new ToneGain(this.settings.modAmount);
-
-    this.delayTimeSignal.connect(this.toneDelay.delayTime);
-    this.input.chain(
-      this.toneDelay,
-      this.distortion,
-      this.filter,
-      this.feedbackSignal,
-      this.toneDelay,
-      this.wetSignal
-    );
-    this.delayTimeLFO.chain(this.delayTimeLFOGain, this.toneDelay.delayTime);
-    this.input.chain(this.drySignal);
-    this.dryWetMixer.output.connect(this.output);
-
-    this.effectsDeviceProxy = {
-      guid: this.guid,
-      name: this.name,
-      settings: this.settings,
-      input: this.input,
-      output: this.output,
-      applySettings: this.applySettings,
-      dispose: this.dispose
-    };
-
-    this.delayTimeLFO.start();
-  }
-
-  mounted() {
-    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
-  }
-
-  beforeDestroy() {
-    this.dispose();
-  }
-
-  // Methods
-
-  deleteComponent() {
-    this.$emit("deleteComponent", this.effectsDeviceProxy);
-  }
-
-  componentDragstart() {
-    this.$emit("componentDragstart", this.effectsDeviceProxy);
-  }
-
-  componentDragend() {
-    this.$emit("componentDragend", this.effectsDeviceProxy);
-  }
-
-  elementDropped() {
-    this.$emit("elementDropped", this.effectsDeviceProxy);
-  }
-
-  applySettings(settings: any) {
-    this.settings = settings;
-  }
-
-  dispose() {
-    this.delayTimeLFO.stop();
-
-    this.input.disconnect();
-    this.toneDelay.disconnect();
-    this.distortion.disconnect();
-    this.filter.disconnect();
-    this.feedbackSignal.disconnect();
-    this.toneDelay.disconnect();
-    this.wetSignal.disconnect();
-    this.drySignal.disconnect();
-    this.dryWetMixer.output.disconnect();
-    this.delayTimeLFO.disconnect();
-    this.delayTimeLFOGain.disconnect();
-    // this.output.disconnect(); todo: should we handle this here?
-
-    this.input.dispose();
-    this.toneDelay.dispose();
-    this.distortion.dispose();
-    this.filter.dispose();
-    this.feedbackSignal.dispose();
-    this.toneDelay.dispose();
-    this.wetSignal.dispose();
-    this.drySignal.dispose();
-    this.output.dispose();
-    this.delayTimeLFO.dispose();
-    this.delayTimeLFOGain.dispose();
-  }
-
-  // Watches
-
-  @Watch("settings.mix")
-  private setMix(value: number) {
-    this.dryWetMixer.wetness = value;
-  }
-
-  @Watch("settings.feedback")
-  private setFeedback(value: number) {
-    this.feedbackSignal.gain.value = value;
-  }
-
-  @Watch("settings.sync")
-  private setSync(value: boolean) {
-    if (value) {
-      this.setDelayTimeSynced(this.settings.delayTimeSynced);
-    } else {
-      this.setDelayTime(this.settings.delayTime);
-    }
-  }
-
-  @Watch("settings.delayTime")
-  private setDelayTime(value: number) {
-    if (!this.settings.sync) {
-      this.delayTimeSignal.linearRampTo(value, 0.05);
-    }
-  }
-
-  @Watch("settings.delayTimeSynced")
-  private setDelayTimeSynced(value: number) {
-    if (this.settings.sync) {
-      this.delayTimeSignal.linearRampTo(value * this.bpmInterval, 0.3);
-    }
-  }
-
-  @Watch("settings.modRate")
-  private setModRate(value: number) {
-    this.delayTimeLFO.frequency.value = value;
-  }
-
-  @Watch("settings.modAmount")
-  private setModAmount(value: number) {
-    this.delayTimeLFOGain.gain.value = value;
-  }
-}
+});
 </script>
 
 <style scoped>
