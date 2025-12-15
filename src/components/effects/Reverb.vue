@@ -2,8 +2,8 @@
   <div
     class="flex"
     draggable
-    @dragstart="this.componentDragstart"
-    @dragend="this.componentDragend"
+    @dragstart="componentDragstart"
+    @dragend="componentDragend"
     @drop="elementDropped"
     @dragover="
       (e) => {
@@ -64,150 +64,117 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
-import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
+import { defineComponent, onBeforeUnmount, watch } from "vue";
 import KnobControl from "@/components/KnobControl.vue";
+import { useEffectsDevice } from "@/composables/useEffectsDevice";
+import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
 import { DryWetMixer } from "@/shared/classes/utility/DryWetMixer";
-import { v4 as uuidv4 } from "uuid";
-import {
-  ToneAudioNode,
-  Gain as ToneGain,
-  Reverb as ToneReverb,
-  Signal as ToneSignal,
-  Filter as ToneFilter,
-} from "tone";
+import { Reverb as ToneReverb, Signal as ToneSignal, Filter as ToneFilter, Gain as ToneGain } from "tone";
 
-interface IReverbSettings {
+type IReverbSettings = {
   mix: number;
   decay: number;
   filterCutoff: number;
 }
 
-@Component({
+export default defineComponent({
+  emits: [
+    "deleteComponent",
+    "componentDragstart",
+    "componentDragend",
+    "elementDropped",
+    "effectsDeviceMounted"
+  ],
   components: {
-    KnobControl,
+    KnobControl
   },
-})
-export default class Reverb extends Vue implements IEffectsDevice {
-  public guid: string;
-  public input!: ToneAudioNode;
-  public output!: ToneAudioNode;
-  public name: string;
-  public settings: IReverbSettings;
+  setup(props, context) {
+    const { guid, name, settings, output, input } =
+      useEffectsDevice<IReverbSettings>("Reverb", { mix: 0.5, decay: 4, filterCutoff: 4000 });
 
-  private toneReverb!: ToneReverb;
-  private filter!: ToneFilter;
-  private filterCutoffSignal!: ToneSignal;
-  private dryWetMixer!: DryWetMixer;
-  private drySignal!: ToneGain;
-  private wetSignal!: ToneGain;
+    const toneReverb = new ToneReverb(2);
+    toneReverb.wet.value = 1;
+    const filter = new ToneFilter(4000, "lowpass");
+    const filterCutoffSignal = new ToneSignal(4000);
+    const drySignal = new ToneGain(1);
+    const wetSignal = new ToneGain(1);
+    const dryWetMixer = new DryWetMixer(drySignal, wetSignal);
 
-  private effectsDeviceProxy!: IEffectsDevice;
+    input.chain(drySignal);
+    input.chain(toneReverb, filter, wetSignal);
+    filterCutoffSignal.connect(filter.frequency);
+    dryWetMixer.output.connect(output);
 
-  constructor() {
-    super();
+    function applySettings(newSettings: IReverbSettings) {
+      settings.mix = newSettings.mix;
+      settings.decay = newSettings.decay;
+      settings.filterCutoff = newSettings.filterCutoff;
+    }
 
-    this.guid = uuidv4();
-    this.name = "Reverb";
-    this.settings = {
-      mix: 0.5,
-      decay: 4,
-      filterCutoff: 4000,
+    function dispose() {
+      input.disconnect(drySignal);
+      input.disconnect(toneReverb);
+      toneReverb.disconnect(filter);
+      filter.disconnect(wetSignal);
+      filterCutoffSignal.disconnect(filter.frequency);
+      dryWetMixer.output.disconnect(output);
+
+      filterCutoffSignal.dispose();
+      dryWetMixer.dispose();
+      toneReverb.dispose();
+      filter.dispose();
+      input.dispose();
+      output.dispose();
+      drySignal.dispose();
+      wetSignal.dispose();
+    }
+
+    const {
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped
+    } = useEffectsRackComponent(
+      context,
+      {
+        guid,
+        name,
+        settings,
+        input,
+        output,
+        applySettings,
+        dispose
+      }
+    );
+
+    watch(() => settings.mix, (value) => {
+      dryWetMixer.wetness = value;
+    });
+
+    watch(() => settings.decay, (value) => {
+      toneReverb.decay = value;
+    });
+
+    watch(() => settings.filterCutoff, (value) => {
+      filterCutoffSignal.value = value;
+    });
+
+    onBeforeUnmount(() => dispose());
+
+    return {
+      input,
+      output,
+      guid,
+      name,
+      settings,
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped,
+      applySettings
     };
   }
-
-  // Lifecycle hooks
-
-  created() {
-    this.output = new ToneGain(1);
-    this.input = new ToneGain(1);
-    this.toneReverb = new ToneReverb(2);
-    this.toneReverb.wet.value = 1;
-    this.filter = new ToneFilter(4000, "lowpass");
-    this.filterCutoffSignal = new ToneSignal(4000);
-    this.drySignal = new ToneGain(1);
-    this.wetSignal = new ToneGain(1);
-    this.dryWetMixer = new DryWetMixer(this.drySignal, this.wetSignal);
-
-    this.input.chain(this.drySignal);
-    this.input.chain(this.toneReverb, this.filter, this.wetSignal);
-    this.filterCutoffSignal.connect(this.filter.frequency);
-    this.dryWetMixer.output.connect(this.output);
-
-    this.effectsDeviceProxy = {
-      guid: this.guid,
-      name: this.name,
-      settings: this.settings,
-      input: this.input,
-      output: this.output,
-      applySettings: this.applySettings,
-      dispose: this.dispose
-    };
-
-    this.onFilterCutoffChange(this.settings.filterCutoff);
-  }
-
-  mounted() {
-    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
-  }
-
-  beforeDestroy() {
-    this.dispose();
-  }
-
-  // Methods
-
-  deleteComponent() {
-    this.$emit("deleteComponent", this.effectsDeviceProxy);
-  }
-
-  componentDragstart() {
-    this.$emit("componentDragstart", this.effectsDeviceProxy);
-  }
-
-  componentDragend() {
-    this.$emit("componentDragend", this.effectsDeviceProxy);
-  }
-
-  elementDropped() {
-    this.$emit("elementDropped", this.effectsDeviceProxy);
-  }
-
-  applySettings(settings: IReverbSettings) {
-    this.settings = settings;
-  }
-
-  dispose() {
-    this.input.disconnect(this.drySignal);
-    this.input.disconnect(this.toneReverb);
-    this.toneReverb.disconnect(this.filter);
-    this.filter.disconnect(this.wetSignal);
-    this.filterCutoffSignal.disconnect(this.filter.frequency);
-    this.dryWetMixer.output.disconnect(this.output);
-
-    this.filterCutoffSignal.dispose();
-    this.dryWetMixer.dispose();
-    this.toneReverb.dispose();
-    this.filter.dispose();
-    this.input.dispose();
-    this.output.dispose();
-  }
-
-  @Watch("settings.mix")
-  private onMixChange(value: number) {
-    this.dryWetMixer.wetness = value;
-  }
-
-  @Watch("settings.decay")
-  private onDecayChange(value: number) {
-    this.toneReverb.decay = value;
-  }
-
-  @Watch("settings.filterCutoff")
-  private onFilterCutoffChange(value: number) {
-    this.filterCutoffSignal.value = value;
-  }
-}
+});
 </script>
 
 <style scoped>
