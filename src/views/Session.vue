@@ -43,6 +43,7 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
+import { defineComponent, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   context as ToneContext,
   Destination as ToneDestination,
@@ -56,130 +57,151 @@ import { IMidiDevice } from "@/shared/interfaces/devices/IMidiDevice";
 import { IInstrumentDevice } from "@/shared/interfaces/devices/IInstrumentDevice";
 import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
 
-@Component({
+export default defineComponent({
   components: {
     InstrumentContainer,
     MidiDeviceContainer,
     EffectsDeviceContainer,
   },
-})
-export default class Session extends Vue {
-  private bpm = 120;
-  private transportRunning = false;
-  private recording = false;
-  private recorder: MediaRecorder;
-  private recorderChunks: BlobPart[];
-  private currentMidiDevice?: IMidiDevice;
-  private currentInstrumentDevice?: IInstrumentDevice;
-  private currentEffectsDevice?: IEffectsDevice;
-
-  $refs!: {
-    midiDeviceContainer: Vue;
-    instrumentContainer: InstrumentContainer;
-    effectsDeviceContainer: EffectsDeviceContainer;
-  };
-
-  public constructor() {
-    super();
-
-    // hack for making sure audio context starts right away
-    document.documentElement.addEventListener("mousedown", function () {
-      if (ToneContext.state !== "running") {
-        ToneContext.resume();
-        console.log("context resumed!");
-      }
-    });
-
-    document.documentElement.addEventListener("touchstart", function () {
-      if (ToneContext.state !== "running") {
-        ToneContext.resume();
-        console.log("context resumed!");
-      }
-    });
+  setup(props, context) {
+    // #region refs
 
     const recorderStreamDestination = ToneContext.createMediaStreamDestination();
     ToneDestination.connect(recorderStreamDestination);
-    this.recorder = new MediaRecorder(recorderStreamDestination.stream, {mimeType: "audio/webm"});
-    this.recorderChunks = [] as BlobPart[];
-    this.recorder.ondataavailable = (e) => {
-      this.recorderChunks.push(e.data);
+
+    const bpm = ref(120);
+    const transportRunning = ref(ToneTransport.state === "started");
+    const recording = ref(false);
+    const recorder = ref<MediaRecorder>(new MediaRecorder(recorderStreamDestination.stream, {mimeType: "audio/webm"}));
+    const recorderChunks = ref<BlobPart[]>([]);
+    const currentMidiDevice = ref<IMidiDevice>();
+    const currentInstrumentDevice = ref<IInstrumentDevice>();
+    const currentEffectsDevice = ref<IEffectsDevice>();
+
+    recorderChunks.value = [] as BlobPart[];
+    recorder.value.ondataavailable = (e) => {
+      recorderChunks.value.push(e.data);
     }
-    this.recorder.onstop = (e) => {
+    recorder.value.onstop = (e) => {
       // todo: wav download
-      const recording = new Blob(this.recorderChunks, {"type": "audio/webm"});
+      const recording = new Blob(recorderChunks.value, {"type": "audio/webm"});
       const url = (window.URL ? window.URL : window.webkitURL).createObjectURL(recording);
       const anchor = document.createElement("a");
       anchor.download = "cloudsynth.webm";
       anchor.href = url;
       anchor.click();
-      this.recorderChunks = [];
+      recorderChunks.value = [];
     }
 
-    ToneTransport.bpm.value = this.bpm;
-  }
+    ToneTransport.bpm.value = bpm.value;
 
-  // Methods
+    watch(bpm, (v: number) => {
+      ToneTransport.bpm.value = v;
+    });
 
-  newInstrumentDeviceMounted(device: IInstrumentDevice) {
-    this.currentInstrumentDevice = device;
-    this.reconnectDevices();
-  }
+    const midiDeviceContainer = ref<Vue>();
+    const instrumentContainer = ref<typeof InstrumentContainer>();
+    const effectsDeviceContainer = ref<typeof EffectsDeviceContainer>();
 
-  newMidiDeviceMounted(device: IMidiDevice) {
-    this.currentMidiDevice = device;
-    this.reconnectDevices();
-  }
+    // #endregion
 
-  newEffectsDeviceMounted(device: IEffectsDevice) {
-    this.currentEffectsDevice = device;
-    this.reconnectDevices();
-  }
+    // hack for making sure audio context starts right away
+    const resumeAudio = () => {
+      if (ToneContext.state !== "running") {
+        ToneContext.resume();
+        console.log("context resumed!");
+      }
+    };
 
-  reconnectDevices() {
-    // todo: could connect same devices multiple times
-    // for now this is ok since each device only has one input
-    // https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/connect
+    onMounted(() => {
+      document.documentElement.addEventListener("mousedown", resumeAudio);
+      document.documentElement.addEventListener("touchstart", resumeAudio);
+    });
 
-    if (this.currentMidiDevice && this.currentInstrumentDevice && this.currentEffectsDevice) {
-      // throws exceptions if already disconnected
-      
-      // this.currentMidiDevice.disconnect(this.currentInstrumentDevice);
-      this.currentMidiDevice.connect(this.currentInstrumentDevice);
+    onBeforeUnmount(() => {
+      document.documentElement.removeEventListener("mousedown", resumeAudio);
+      document.documentElement.removeEventListener("touchstart", resumeAudio);
+    });
 
-      // this.currentInstrumentDevice.output.disconnect(this.currentEffectsDevice.input);
-      this.currentInstrumentDevice.output.connect(this.currentEffectsDevice.input);
+    // #region Methods
 
-      // this.currentEffectsDevice.output.disconnect(ToneDestination);
-      this.currentEffectsDevice.output.connect(ToneDestination);
+    const reconnectDevices = function() {
+      // todo: could connect same devices multiple times
+      // for now this is ok since each device only has one input
+      // https://developer.mozilla.org/en-US/docs/Web/API/AudioNode/connect
+
+      if (currentMidiDevice.value && currentInstrumentDevice.value && currentEffectsDevice.value) {
+        // throws exceptions if already disconnected
+        
+        // this.currentMidiDevice.disconnect(this.currentInstrumentDevice);
+        currentMidiDevice.value.connect(currentInstrumentDevice.value);
+
+        // this.currentInstrumentDevice.output.disconnect(this.currentEffectsDevice.input);
+        currentInstrumentDevice.value.output.connect(currentEffectsDevice.value.input);
+
+        // this.currentEffectsDevice.output.disconnect(ToneDestination);
+        currentEffectsDevice.value.output.connect(ToneDestination);
+      }
     }
-  }
 
-  startStopTransport() {
-    if (ToneTransport.state === "started") {
-      ToneTransport.stop();
-      this.transportRunning = false;
-    } else {
-      ToneTransport.start();
-      this.transportRunning = true;
+    const newInstrumentDeviceMounted = function(device: IInstrumentDevice) {
+      currentInstrumentDevice.value = device;
+      reconnectDevices();
     }
-  }
 
-  async startStopRecording() {
-    if (this.recording) {
-      this.recorder.stop();
-      this.recording = false;
-    } else {
-      this.recorder.start();
-      this.recording = true;
+    const newMidiDeviceMounted = function(device: IMidiDevice) {
+      currentMidiDevice.value = device;
+      reconnectDevices();
     }
-  }
 
-  // Watches
-  @Watch("bpm")
-  onBpmChange(v: number) {
-    ToneTransport.bpm.value = v;
-  }
-}
+    const newEffectsDeviceMounted = function(device: IEffectsDevice) {
+      currentEffectsDevice.value = device;
+      reconnectDevices();
+    }
+
+    const startStopTransport = function() {
+      if (ToneTransport.state === "started") {
+        ToneTransport.stop();
+        transportRunning.value = false;
+      } else {
+        ToneTransport.start();
+        transportRunning.value = true;
+      }
+    }
+
+    const startStopRecording = async function() {
+      if (recording.value) {
+        recorder.value.stop();
+        recording.value = false;
+      } else {
+        recorder.value.start();
+        recording.value = true;
+      }
+    }
+
+    // #endregion
+
+  
+    return {
+      bpm,
+      transportRunning,
+      recording,
+      recorderChunks,
+      currentMidiDevice,
+      currentInstrumentDevice,
+      currentEffectsDevice,
+      midiDeviceContainer,
+      instrumentContainer,
+      effectsDeviceContainer,
+      newInstrumentDeviceMounted,
+      newMidiDeviceMounted,
+      newEffectsDeviceMounted,
+      startStopTransport,
+      startStopRecording,
+    };
+  },
+});
+
 </script>
 
 <style scoped>
