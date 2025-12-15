@@ -52,7 +52,6 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from "vue";
-import { Component, Vue, Prop } from "vue-property-decorator";
 import { IPresetBank } from "@/shared/interfaces/presets/IPresetBank";
 import { IPreset } from "@/shared/interfaces/presets/IPreset";
 
@@ -77,27 +76,4 @@ export default defineComponent({
     }
   }
 });
-
-@Component({})
-class PresetDropdown extends Vue {
-  @Prop({ required: true })
-  public bank!: IPresetBank;
-
-  @Prop({ required: true })
-  public selectedPreset!: IPreset;
-
-  @Prop({ required: true })
-  public label!: string;
-
-  private showMenu = false;
-
-  constructor() {
-    super();
-  }
-
-  presetSelected(p: IPreset) {
-    this.showMenu = false;
-    this.$emit("presetSelected", p);
-  }
-}
 </script>
