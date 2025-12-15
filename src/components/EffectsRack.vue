@@ -2,7 +2,6 @@
   <div class="effects-rack-container">
     <!-- new effects will be mounted here -->
     <div class="effects-rack" id="effectsRack">
-
       <component
         v-for="(effectsComponent, index) in effectsComponents"
         :key="effectsComponent.id"
@@ -12,7 +11,6 @@
         @elementDropped="(device) => moveEffect(device, index)"
         @componentDragstart="(device) => setDragSource(device, index)"
       />
-
     </div>
 
     <div class="add-new center-y center-x">
@@ -65,6 +63,9 @@ import Chorus from "@/components/effects/Chorus.vue";
 import { ToneAudioNode } from "tone";
 import { v4 as uuidv4 } from "uuid";
 
+import { defineComponent, onBeforeUnmount, onMounted, watch, ref } from "vue";
+import { useEffectsDevice } from "@/composables/useEffectsDevice";
+
 type TEffectsComponentType =
   | "Digital Delay"
   | "Analog Delay"
@@ -77,14 +78,15 @@ type TEffectsComponentType =
 type TEffectsComponentOption = {
   type: TEffectsComponentType;
   componentName: string;
-}
+};
 
 type TEffectsComponent = {
   componentName: string;
   id: string;
-}
+};
 
-@Component({
+export default defineComponent({
+  emits: ["deviceMounted"],
   components: {
     Reverb,
     DigitalDelay,
@@ -92,105 +94,132 @@ type TEffectsComponent = {
     Visualizer,
     Distortion,
     Phaser,
-    Chorus
+    Chorus,
   },
-})
-export default class EffectsRack extends Vue implements IEffectsDevice {
-  public guid: string;
-  public output: ToneAudioNode;
-  public input: ToneAudioNode;
-  public name: string;
-  public settings: any;
+  setup(props, context) {
+    const { guid, name, settings, output, input } = useEffectsDevice<any>(
+      "Effects Rack",
+      {}
+    );
 
-  public effectsComponents: TEffectsComponent[];
+    // #region refs
 
-  private chain: EffectsChain;
-  private effectsOptions: TEffectsComponentOption[];
-  private dragSourceIndex?: number;
-
-  private dragSourceDevice: IEffectsDevice | undefined;
-
-  constructor() {
-    super();
-
-    this.guid = uuidv4();
-    this.chain = new EffectsChain();
-    this.effectsOptions = [
+    const chain = new EffectsChain();
+    const effectsOptions = ref([
       { type: "Digital Delay", componentName: "DigitalDelay" },
       { type: "Analog Delay", componentName: "BBDelay" },
       { type: "Visualizer", componentName: "Visualizer" },
       { type: "Reverb", componentName: "Reverb" },
       { type: "Distortion", componentName: "Distortion" },
-      { type: "Phaser", componentName: "Phaser" }
+      { type: "Phaser", componentName: "Phaser" },
       // "Chorus" - commenting this out for now because it sounds kinda crappy
-    ];
+    ]);
+    const effectsComponents = ref<TEffectsComponent[]>([]);
+    const dragSourceIndex = ref<number | undefined>(0);
+    const dragSourceDevice = ref<IEffectsDevice | undefined>(undefined);
 
-    this.effectsComponents = [];
+    // #endregion
 
-    this.name = "Effects Rack";
-    this.output = this.chain.output;
-    this.input = this.chain.input;
-    this.settings = {};
-  }
+    input.connect(chain.input);
+    chain.output.connect(output);
 
-  // Lifecycle Hooks
+    // #region methods
 
-  mounted() {
-    this.addEffect({ type: "Visualizer", componentName: "Visualizer" });
-    this.$emit("deviceMounted");
-  }
-
-  beforeDestroy() {
-    this.dispose();
-  }
-
-  // Methods
-
-  effectsDeviceMounted(effectsDevice: IEffectsDevice) {
-    this.chain.addComponent(effectsDevice, this.chain.components.length);
-  }
-
-  addEffect(option: TEffectsComponentOption) {
-    this.effectsComponents.push({
-      componentName: option.componentName, id: uuidv4()
-    });
-  }
-
-  removeEffect(device: IEffectsDevice, index: number) {
-    this.chain.removeComponent(device);
-    this.effectsComponents.splice(index, 1).map(c => c.id);
-  }
-
-  setDragSource(device: IEffectsDevice, sourceIndex: number) {
-    this.dragSourceDevice = device;
-    this.dragSourceIndex = sourceIndex;
-  }
-
-  moveEffect(destinationDevice: IEffectsDevice, dragDestinationIndex: number) {
-    if (this.dragSourceDevice === undefined || this.dragSourceIndex === undefined) return;
-
-    if (this.dragSourceIndex != dragDestinationIndex) {
-      this.chain.removeComponentByIndex(this.dragSourceIndex);
-
-      const effectsComponent = this.effectsComponents.splice(this.dragSourceIndex, 1)[0];
-
-      this.effectsComponents.splice(dragDestinationIndex, 0, effectsComponent);
-
-      this.chain.addComponent(this.dragSourceDevice, dragDestinationIndex);
+    function effectsDeviceMounted(effectsDevice: IEffectsDevice) {
+      chain.addComponent(effectsDevice, chain.components.length);
+    }
+    
+    function addEffect(option: TEffectsComponentOption) {
+      effectsComponents.value.push({
+        componentName: option.componentName,
+        id: uuidv4(),
+      });
     }
 
-    // todo: will stay defined if the drag ends somewhere else
-    this.dragSourceDevice = this.dragSourceIndex = undefined;
-  }
+    function removeEffect(device: IEffectsDevice, index: number) {
+      chain.removeComponent(device);
+      effectsComponents.value.splice(index, 1).map((c) => c.id);
+    }
 
-  applySettings(settings: any): void {
-    this.settings = settings;
-  }
+    function setDragSource(device: IEffectsDevice, sourceIndex: number) {
+      dragSourceDevice.value = device;
+      dragSourceIndex.value = sourceIndex;
+    }
 
-  dispose() {
-    this.chain.dispose();
-  }
-}
+    function moveEffect(
+      destinationDevice: IEffectsDevice,
+      dragDestinationIndex: number
+    ) {
+      if (
+        dragSourceDevice.value === undefined ||
+        dragSourceIndex.value === undefined
+      )
+        return;
+
+      if (dragSourceIndex.value != dragDestinationIndex) {
+        chain.removeComponentByIndex(dragSourceIndex.value);
+
+        const effectsComponent = effectsComponents.value.splice(
+          dragSourceIndex.value,
+          1
+        )[0];
+
+        effectsComponents.value.splice(
+          dragDestinationIndex,
+          0,
+          effectsComponent
+        );
+
+        chain.addComponent(
+          dragSourceDevice.value as IEffectsDevice,
+          dragDestinationIndex
+        );
+      }
+
+      // todo: will stay defined if the drag ends somewhere else
+      dragSourceDevice.value = undefined;
+      dragSourceIndex.value = undefined;
+    }
+
+    function applySettings(settings: any): void {
+      // todo: settings?
+    }
+
+    function dispose() {
+      chain.dispose();
+    }
+
+    // #endregion
+
+    // #region lifecycle hooks
+
+    onBeforeUnmount(() => dispose());
+
+    onMounted(() => {
+      addEffect({ type: "Visualizer", componentName: "Visualizer" });
+      context.emit("deviceMounted");
+    });
+
+    // #endregion
+
+    return {
+      guid,
+      name,
+      settings,
+      output,
+      input,
+      effectsComponents,
+      effectsOptions,
+      effectsDeviceMounted,
+      addEffect,
+      removeEffect,
+      setDragSource,
+      moveEffect,
+      applySettings,
+      dispose,
+    };
+  },
+});
 </script>
 
 <style scoped>
