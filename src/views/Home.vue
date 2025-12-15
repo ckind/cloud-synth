@@ -5,27 +5,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { defineComponent } from "vue";
 import Session from "@/views/Session.vue";
 
-@Component({
+export default defineComponent({
   components: {
     Session
   }
-})
-export default class Home extends Vue {
-  public constructor() {
-    super();
-  }
-
-  // Lifecycle Hooks
-
-  // Computed
-
-  // Methods
-
-  // Watches
-}
+});
 </script>
 
 <style scoped></style>
