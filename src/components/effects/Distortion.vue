@@ -54,7 +54,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeUnmount } from "vue";
+import { defineComponent, onBeforeUnmount, watch } from "vue";
 import { useEffectsDevice } from "@/composables/useEffectsDevice";
 import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
 import KnobControl from "@/components/KnobControl.vue";
@@ -84,6 +84,8 @@ export default defineComponent({
       );
 
     const toneDistortion = new ToneDistortion(0.4);
+    toneDistortion.wet.value = settings.mix;
+    toneDistortion.distortion = settings.drive;
 
     function applySettings(newSettings: TDistortionSettings) {
       settings.drive = newSettings.drive;
@@ -116,6 +118,14 @@ export default defineComponent({
         dispose
       });
 
+    watch(() => settings.mix, (value) => {
+      toneDistortion.wet.value = value;
+    })
+
+    watch(() => settings.drive, (value) => {
+      toneDistortion.distortion = value;
+    })
+    
     onBeforeUnmount(() => dispose());
 
     input.connect(toneDistortion);
