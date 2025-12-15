@@ -50,7 +50,6 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
 import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
 import EffectsChain from "@/shared/classes/effects/EffectsChain";
 import Reverb from "@/components/effects/Reverb.vue";
@@ -60,10 +59,8 @@ import Visualizer from "@/components/effects/Visualizer.vue";
 import Distortion from "@/components/effects/Distortion.vue";
 import Phaser from "@/components/effects/Phaser.vue";
 import Chorus from "@/components/effects/Chorus.vue";
-import { ToneAudioNode } from "tone";
 import { v4 as uuidv4 } from "uuid";
-
-import { defineComponent, onBeforeUnmount, onMounted, watch, ref } from "vue";
+import { defineComponent, onBeforeUnmount, onMounted, ref } from "vue";
 import { useEffectsDevice } from "@/composables/useEffectsDevice";
 
 type TEffectsComponentType =
