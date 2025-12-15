@@ -2,8 +2,8 @@
   <div
     class="flex"
     draggable
-    @dragstart="this.componentDragstart"
-    @dragend="this.componentDragend"
+    @dragstart="componentDragstart"
+    @dragend="componentDragend"
     @drop="elementDropped"
     @dragover="
       (e) => {
@@ -63,146 +63,112 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Watch } from "vue-property-decorator";
-import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
+import { defineComponent, onBeforeUnmount, watch } from "vue";
 import KnobControl from "@/components/KnobControl.vue";
-import { v4 as uuidv4 } from "uuid";
-import {
-  ToneAudioNode,
-  Gain as ToneGain,
-  FeedbackDelay as ToneFeedbackDelay,
-  Signal as ToneSignal,
-} from "tone";
+import { useEffectsDevice } from "@/composables/useEffectsDevice";
+import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
+import { FeedbackDelay as ToneFeedbackDelay, Signal as ToneSignal } from "tone";
 
-interface IDigitalDelaySettings {
+type IDigitalDelaySettings = {
   mix: number;
   delayTime: number;
   feedback: number;
 }
 
-@Component({
+export default defineComponent({
+  emits: [
+    "deleteComponent",
+    "componentDragstart",
+    "componentDragend",
+    "elementDropped",
+    "effectsDeviceMounted"
+  ],
   components: {
-    KnobControl,
+    KnobControl
   },
-})
-export default class DigitalDelay extends Vue implements IEffectsDevice {
-  public guid: string;
-  public name: string;
-  public settings: IDigitalDelaySettings;
-  public input!: ToneAudioNode;
-  public output!: ToneAudioNode;
+  setup(props, context) {
+    const { guid, name, settings, output, input } =
+      useEffectsDevice<IDigitalDelaySettings>("Digital Delay", { mix: 0.5, delayTime: 0.2, feedback: 0.5 });
 
-  private toneDelay!: ToneFeedbackDelay;
-  private dryWetSignal!: ToneSignal;
-  private delayTimeSignal!: ToneSignal;
-  private feedbackSignal!: ToneSignal;
+    const toneDelay = new ToneFeedbackDelay();
+    const dryWetSignal = new ToneSignal(settings.mix);
+    const delayTimeSignal = new ToneSignal(settings.delayTime);
+    const feedbackSignal = new ToneSignal(settings.feedback);
 
-  private effectsDeviceProxy!: IEffectsDevice;
+    delayTimeSignal.connect(toneDelay.delayTime);
+    dryWetSignal.connect(toneDelay.wet);
+    feedbackSignal.connect(toneDelay.feedback);
 
-  constructor() {
-    super();
+    function applySettings(newSettings: IDigitalDelaySettings) {
+      settings.mix = newSettings.mix;
+      settings.delayTime = newSettings.delayTime;
+      settings.feedback = newSettings.feedback;
+    }
 
-    this.guid = uuidv4();
-    this.name = "Digital Delay";
-    this.settings = {
-      mix: 0.5,
-      delayTime: 0.2,
-      feedback: 0.5,
+    function dispose() {
+      input.disconnect(toneDelay);
+      toneDelay.disconnect();
+      dryWetSignal.disconnect();
+      feedbackSignal.disconnect();
+      delayTimeSignal.disconnect();
+
+      input.dispose();
+      output.dispose();
+      toneDelay.dispose();
+      dryWetSignal.dispose();
+      feedbackSignal.dispose();
+      delayTimeSignal.dispose();
+    }
+
+    const {
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped
+    } = useEffectsRackComponent(
+      context,
+      {
+        guid,
+        name,
+        settings,
+        input,
+        output,
+        applySettings,
+        dispose
+      }
+    );
+
+    watch(() => settings.mix, (value) => {
+      dryWetSignal.value = value;
+    });
+
+    watch(() => settings.delayTime, (value) => {
+      delayTimeSignal.linearRampTo(value, 0.1);
+    });
+
+    watch(() => settings.feedback, (value) => {
+      feedbackSignal.value = value;
+    });
+
+    onBeforeUnmount(() => dispose());
+
+    input.connect(toneDelay);
+    toneDelay.connect(output);
+
+    return {
+      input,
+      output,
+      guid,
+      name,
+      settings,
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped,
+      applySettings
     };
   }
-
-  // Lifecycle Hooks
-
-  created() {
-    this.input = new ToneGain(1);
-    this.output = new ToneGain(1);
-
-    this.toneDelay = new ToneFeedbackDelay();
-    this.dryWetSignal = new ToneSignal(0.5);
-    this.delayTimeSignal = new ToneSignal(1);
-    this.feedbackSignal = new ToneSignal(0.5);
-
-    this.delayTimeSignal.connect(this.toneDelay.delayTime);
-    this.dryWetSignal.connect(this.toneDelay.wet);
-    this.feedbackSignal.connect(this.toneDelay.feedback);
-
-    this.effectsDeviceProxy = {
-      guid: this.guid,
-      name: this.name,
-      settings: this.settings,
-      input: this.input,
-      output: this.output,
-      applySettings: this.applySettings,
-      dispose: this.dispose
-    };
-
-    this.input.connect(this.toneDelay);
-    this.toneDelay.connect(this.output);
-  }
-
-  mounted() {
-    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
-  }
-
-  beforeDestroy() {
-    this.dispose();
-  }
-
-  // Methods
-
-  deleteComponent() {
-    this.$emit("deleteComponent", this.effectsDeviceProxy);
-  }
-
-  componentDragstart() {
-    this.$emit("componentDragstart", this.effectsDeviceProxy);
-  }
-
-  componentDragend() {
-    this.$emit("componentDragend", this.effectsDeviceProxy);
-  }
-
-  elementDropped() {
-    this.$emit("elementDropped", this.effectsDeviceProxy);
-  }
-
-  applySettings(settings: any) {
-    this.settings = settings;
-  }
-
-  dispose() {
-    this.input.disconnect();
-    this.toneDelay.disconnect();
-    this.dryWetSignal.disconnect();
-    this.feedbackSignal.disconnect();
-    this.delayTimeSignal.disconnect();
-    // this.output.disconnect(); todo: should we handle this here?
-
-    this.input.dispose();
-    this.output.dispose();
-    this.toneDelay.dispose();
-    this.dryWetSignal.dispose();
-    this.feedbackSignal.dispose();
-    this.delayTimeSignal.dispose();
-  }
-
-  // Watches
-
-  @Watch("settings.mix")
-  private setMix(value: number) {
-    this.dryWetSignal.value = value;
-  }
-
-  @Watch("settings.delayTime")
-  private setDelayTime(value: number) {
-    this.delayTimeSignal.linearRampTo(value, 0.1);
-  }
-
-  @Watch("settings.feedback")
-  private setFeedback(value: number) {
-    this.feedbackSignal.value = value;
-  }
-}
+});
 </script>
 
 <style scoped>
