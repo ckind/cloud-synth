@@ -64,136 +64,113 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
-import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
+import { defineComponent, onBeforeUnmount, watch } from "vue";
+import { useEffectsDevice } from "@/composables/useEffectsDevice";
+import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
 import KnobControl from "@/components/KnobControl.vue";
-import { v4 as uuidv4 } from "uuid";
-import {
-  ToneAudioNode,
-  Gain as ToneGain,
-  Phaser as TonePhaser
-} from "tone";
+import { Phaser as TonePhaser } from "tone";
 
-interface IPhaserSettings {
+type IPhaserSettings = {
   mix: number;
   frequency: number;
   baseFrequency: number;
   octaves: number;
 }
 
-@Component({
+export default defineComponent({
+  emits: [
+    "deleteComponent",
+    "componentDragstart",
+    "componentDragend",
+    "elementDropped",
+    "effectsDeviceMounted"
+  ],
   components: {
-    KnobControl,
+    KnobControl
   },
-})
-export default class Phaser extends Vue implements IEffectsDevice {
-  public guid: string;
-  public input!: ToneAudioNode;
-  public output!: ToneAudioNode;
-  public name: string;
-  public settings: IPhaserSettings;
+  setup(props, context) {
+    const { guid, name, settings, output, input } =
+      useEffectsDevice<IPhaserSettings>(
+        "Phaser",
+        { mix: 0.5, frequency: 2, baseFrequency: 1200, octaves: 0.2 }
+      );
 
-  private tonePhaser!: TonePhaser;
+    const tonePhaser = new TonePhaser(2);
 
-  private effectsDeviceProxy!: IEffectsDevice;
+    tonePhaser.wet.value = settings.mix;
+    tonePhaser.frequency.value = settings.frequency;
+    tonePhaser.baseFrequency = settings.baseFrequency;
+    tonePhaser.octaves = settings.octaves;
 
-  constructor() {
-    super();
+    function applySettings(newSettings: IPhaserSettings) {
+      settings.mix = newSettings.mix;
+      settings.frequency = newSettings.frequency;
+      settings.baseFrequency = newSettings.baseFrequency;
+      settings.octaves = newSettings.octaves;
+    }
 
-    this.guid = uuidv4();
-    this.name = "Phaser";
-    this.settings = {
-      mix: 0.5,
-      frequency: 2,
-      baseFrequency: 1200,
-      octaves: 0.2,
+    function dispose() {
+      input.disconnect(tonePhaser);
+      tonePhaser.disconnect(output);
+
+      input.dispose();
+      output.dispose();
+      tonePhaser.dispose();
+    }
+
+    const {
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped
+    } = useEffectsRackComponent(
+      context,
+      {
+        guid,
+        name,
+        settings,
+        input,
+        output,
+        applySettings,
+        dispose
+      }
+    );
+
+    watch(() => settings.mix, (value) => {
+      tonePhaser.wet.value = value;
+    });
+
+    watch(() => settings.frequency, (value) => {
+      tonePhaser.frequency.value = value;
+    });
+
+    watch(() => settings.baseFrequency, (value) => {
+      tonePhaser.baseFrequency = value;
+    });
+
+    watch(() => settings.octaves, (value) => {
+      tonePhaser.octaves = value;
+    });
+
+    onBeforeUnmount(() => dispose());
+
+    input.connect(tonePhaser);
+    tonePhaser.connect(output);
+
+    return {
+      input,
+      output,
+      guid,
+      name,
+      settings,
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped,
+      applySettings
     };
   }
-
-  // Lifecycle hooks
-
-  created() {
-    this.output = new ToneGain(1);
-    this.input = new ToneGain(1);
-    this.tonePhaser = new TonePhaser(2);
-
-    this.onMixChange(this.settings.mix);
-		this.onFrequencyChange(this.settings.frequency);
-		this.onBaseFrequencyChange(this.settings.baseFrequency);
-		this.onOctavesChange(this.settings.octaves);
-
-    this.effectsDeviceProxy = {
-      guid: this.guid,
-      name: this.name,
-      settings: this.settings,
-      input: this.input,
-      output: this.output,
-      applySettings: this.applySettings,
-      dispose: this.dispose
-    };
-
-    this.input.chain(this.tonePhaser, this.output);
-  }
-
-  mounted() {
-    this.$emit("effectsDeviceMounted", this.effectsDeviceProxy);
-  }
-
-  beforeDestroy() {
-		this.dispose();
-  }
-
-  // Methods
-
-  deleteComponent() {
-    this.$emit("deleteComponent", this.effectsDeviceProxy);
-  }
-  
-  componentDragstart() {
-    this.$emit("componentDragstart", this.effectsDeviceProxy);
-  }
-
-  componentDragend() {
-    this.$emit("componentDragend", this.effectsDeviceProxy);
-  }
-
-  elementDropped() {
-    this.$emit("elementDropped", this.effectsDeviceProxy);
-  }
-
-  applySettings(settings: IPhaserSettings) {
-    this.settings = settings;
-  }
-
-  dispose() {
-    this.input.disconnect();
-    this.tonePhaser.disconnect();
-
-    this.input.dispose();
-    this.output.dispose();
-    this.tonePhaser.dispose();
-  }
-
-  @Watch("settings.mix")
-  private onMixChange(value: number) {
-    this.tonePhaser.wet.value = value;
-  }
-
-  @Watch("settings.frequency")
-  private onFrequencyChange(value: number) {
-    this.tonePhaser.frequency.value = value;
-  }
-
-  @Watch("settings.baseFrequency")
-  private onBaseFrequencyChange(value: number) {
-    this.tonePhaser.baseFrequency = value;
-  }
-
-	@Watch("settings.octaves")
-  private onOctavesChange(value: number) {
-    this.tonePhaser.octaves = value;
-  }
-}
+});
 </script>
 
 <style scoped>

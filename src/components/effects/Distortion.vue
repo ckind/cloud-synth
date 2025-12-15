@@ -60,7 +60,7 @@ import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
 import KnobControl from "@/components/KnobControl.vue";
 import { Distortion as ToneDistortion } from "tone";
 
-type TDistortionSettings = {
+type IDistortionSettings = {
   mix: number;
   drive: number;
 }
@@ -78,7 +78,7 @@ export default defineComponent({
   },
   setup(props, context) {
     const { guid, name, settings, output, input } =
-      useEffectsDevice<TDistortionSettings>(
+      useEffectsDevice<IDistortionSettings>(
         "Distortion",
         { mix: 1.0, drive: 0.4 }
       );
@@ -87,7 +87,7 @@ export default defineComponent({
     toneDistortion.wet.value = settings.mix;
     toneDistortion.distortion = settings.drive;
 
-    function applySettings(newSettings: TDistortionSettings) {
+    function applySettings(newSettings: IDistortionSettings) {
       settings.drive = newSettings.drive;
       settings.mix = newSettings.mix;
     }
