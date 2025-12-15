@@ -64,125 +64,120 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from "vue-property-decorator";
-import { IEffectsDevice } from "@/shared/interfaces/devices/IEffectsDevice";
+import { defineComponent, onBeforeUnmount, watch } from "vue";
 import KnobControl from "@/components/KnobControl.vue";
-import { v4 as uuidv4 } from "uuid";
-import { ToneAudioNode, Gain as ToneGain, Chorus as ToneChorus } from "tone";
+import { useEffectsDevice } from "@/composables/useEffectsDevice";
+import { useEffectsRackComponent } from "@/composables/useEffectsRackComponent";
+import { Chorus as ToneChorus } from "tone";
 
-interface IPhaserSettings {
+type IChorusSettings = {
   mix: number;
   frequency: number;
   delayTime: number;
   depth: number;
-	feedback: number;
+  feedback: number;
 }
 
-@Component({
+export default defineComponent({
+  emits: [
+    "deleteComponent",
+    "componentDragstart",
+    "componentDragend",
+    "elementDropped",
+    "effectsDeviceMounted"
+  ],
   components: {
-    KnobControl,
+    KnobControl
   },
-})
-export default class Chorus extends Vue implements IEffectsDevice {
-	// todo: this effects sounds kinda crappy - write our own?
-  public guid: string;
-  public input!: ToneAudioNode;
-  public output!: ToneAudioNode;
-  public name: string;
-  public settings: IPhaserSettings;
+  setup(props, context) {
+    const { guid, name, settings, output, input } =
+      useEffectsDevice<IChorusSettings>(
+        "Chorus",
+        { mix: 0.5, frequency: 2, delayTime: 10, depth: 0.2, feedback: 0.5 }
+      );
 
-  private toneChorus!: ToneChorus;
+    const toneChorus = new ToneChorus();
 
-  constructor() {
-    super();
+    toneChorus.wet.value = settings.mix;
+    toneChorus.frequency.value = settings.frequency;
+    toneChorus.delayTime = settings.delayTime;
+    toneChorus.depth = settings.depth;
+    toneChorus.feedback.value = settings.feedback;
 
-    this.guid = uuidv4();
-    this.name = "Chorus";
-    this.settings = {
-      mix: 0.5,
-      frequency: 2,
-      delayTime: 10,
-      depth: 0.2,
-			feedback: 0.5
+    function applySettings(newSettings: IChorusSettings) {
+      settings.mix = newSettings.mix;
+      settings.frequency = newSettings.frequency;
+      settings.delayTime = newSettings.delayTime;
+      settings.depth = newSettings.depth;
+      settings.feedback = newSettings.feedback;
+    }
+
+    function dispose() {
+      input.disconnect(toneChorus);
+      toneChorus.disconnect(output);
+
+      input.dispose();
+      output.dispose();
+      toneChorus.dispose();
+    }
+
+    const {
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped
+    } = useEffectsRackComponent(
+      context,
+      {
+        guid,
+        name,
+        settings,
+        input,
+        output,
+        applySettings,
+        dispose
+      }
+    );
+
+    watch(() => settings.mix, (value) => {
+      toneChorus.wet.value = value;
+    });
+
+    watch(() => settings.frequency, (value) => {
+      toneChorus.frequency.value = value;
+    });
+
+    watch(() => settings.delayTime, (value) => {
+      toneChorus.delayTime = value;
+    });
+
+    watch(() => settings.depth, (value) => {
+      toneChorus.depth = value;
+    });
+
+    watch(() => settings.feedback, (value) => {
+      toneChorus.feedback.value = value;
+    });
+
+    onBeforeUnmount(() => dispose());
+
+    input.connect(toneChorus);
+    toneChorus.connect(output);
+
+    return {
+      input,
+      output,
+      guid,
+      name,
+      settings,
+      deleteComponent,
+      componentDragstart,
+      componentDragend,
+      elementDropped,
+      applySettings
     };
   }
-
-  // Lifecycle hooks
-
-  created() {
-    this.output = new ToneGain(1);
-    this.input = new ToneGain(1);
-    this.toneChorus = new ToneChorus();
-
-    this.onMixChange(this.settings.mix);
-    this.onFrequencyChange(this.settings.frequency);
-    this.onDelayTimeChange(this.settings.delayTime);
-    this.onDepthChange(this.settings.depth);
-		this.onFeedbackChange(this.settings.feedback);
-
-    this.input.chain(this.toneChorus, this.output);
-  }
-
-  beforeDestroy() {
-    this.dispose();
-  }
-
-  // Methods
-
-  deleteComponent() {
-    this.$emit("deleteComponent", this);
-  }
-
-  componentDragstart() {
-    this.$emit("componentDragstart", this);
-  }
-
-  componentDragend() {
-    this.$emit("componentDragend", this);
-  }
-
-  elementDropped() {
-    this.$emit("elementDropped", this);
-  }
-
-  applySettings(settings: IPhaserSettings) {
-    this.settings = settings;
-  }
-
-  dispose() {
-    this.input.disconnect();
-    this.toneChorus.disconnect();
-
-    this.input.dispose();
-    this.output.dispose();
-    this.toneChorus.dispose();
-  }
-
-  @Watch("settings.mix")
-  private onMixChange(value: number) {
-    this.toneChorus.wet.value = value;
-  }
-
-  @Watch("settings.frequency")
-  private onFrequencyChange(value: number) {
-    this.toneChorus.frequency.value = value;
-  }
-
-  @Watch("settings.delayTime")
-  private onDelayTimeChange(value: number) {
-    this.toneChorus.delayTime = value;
-  }
-
-	@Watch("settings.feedback")
-  private onFeedbackChange(value: number) {
-    this.toneChorus.feedback.value = value;
-  }
-
-  @Watch("settings.depth")
-  private onDepthChange(value: number) {
-    this.toneChorus.depth = value;
-  }
-}
+});
 </script>
 
 <style scoped>
