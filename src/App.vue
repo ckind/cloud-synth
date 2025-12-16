@@ -50,37 +50,26 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import QuickStart from "./components/modal content/QuickStart.vue";
-import ChangeLog from "./components/modal content/ChangeLog.vue";
-import { Filter, Signal } from "tone";
-import { VANoiseSynth } from "@/shared/classes/synth/VANoiseSynth";
+import { defineComponent, ref } from "vue";
+import QuickStart from "@/components/modal content/QuickStart.vue";
+import ChangeLog from "@/components/modal content/ChangeLog.vue";
 
-export default Vue.extend({
+export default defineComponent({
   name: "App",
-
   components: {
     QuickStart,
     ChangeLog,
   },
+  setup() {
+    const showQuickStart = ref(true);
+    const showChangeLog = ref(false);
+    const drawer = ref(false);
 
-  data: () => ({
-    showQuickStart: true,
-    showChangeLog: false,
-    drawer: false,
-  }),
-
-  methods: {
-    test: () => {
-      // const s = new Signal<"frequency">(1000);
-      // const f = new Filter();
-      // s.connect(f.frequency);
-      // s.disconnect(f.frequency);
-      // s.dispose();
-      // f.dispose();
-      const n = new VANoiseSynth("white");
-      n.dispose();
-    },
+    return {
+      showQuickStart,
+      showChangeLog,
+      drawer,
+    };
   },
 });
 </script>
