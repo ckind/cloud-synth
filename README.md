@@ -51,7 +51,7 @@ License
 - MIT
 
 Acknowledgements
-- Built with Vue, Vuetify, Typscript Web Audio APIs.
+- Built with Vue, Vuetify, Typscript, Tone.js and Web Audio API.
 
 Contact
 - For questions or help, open an issue in this repository.
